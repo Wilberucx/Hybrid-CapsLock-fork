@@ -1,0 +1,67 @@
+; ===================================================================
+; HybridCapsLock Orchestrator (Modular)
+; ===================================================================
+#Requires AutoHotkey v2.0
+#SingleInstance Force
+#Warn All
+
+; Orquestador que incluye módulos modulares en src/
+; Nota: Los módulos están vacíos inicialmente como 
+; parte del scaffolding.
+
+; --------------------
+; Core
+; --------------------
+#Include src\core\globals.ahk
+#Include src\core\config.ahk
+#Include src\core\persistence.ahk
+#Include src\core\confirmations.ahk
+#Include src\core\mappings.ahk
+
+; --------------------
+; UI
+; --------------------
+#Include src\\ui\\tooltip_csharp_integration.ahk
+#Include src\\ui\\tooltips_native_wrapper.ahk
+#Include src\\ui\\scroll_tooltip_integration.ahk
+
+; --------------------
+; Layers & Leader
+; --------------------
+#Include src\layer\leader_router.ahk
+#Include src\layer\windows_layer.ahk
+#Include src\layer\programs_layer.ahk
+#Include src\layer\timestamps_layer.ahk
+#Include src\layer\information_layer.ahk
+#Include src\layer\commands_layer.ahk
+#Include src\layer\excel_layer.ahk
+#Include src\layer\nvim_layer.ahk
+#Include src\layer\modifier_mode.ahk
+#Include src\layer\scroll_layer.ahk
+
+; --------------------
+; Startup logic
+; --------------------
+try {
+    LoadLayerFlags()
+    LoadLayerState()
+    StartTooltipApp()  ; Start C# tooltip application
+} catch {
+}
+
+; --------------------
+; Minimal startup to confirm no errors
+; --------------------
+try {
+    SetCapsLockState("AlwaysOff")
+} catch {
+    ; Ignorar si no se puede ajustar el estado de CapsLock en este entorno
+}
+
+; Startup welcome (C# only)
+try {
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        ShowWelcomeStatusCS()
+    }
+} catch {
+}
