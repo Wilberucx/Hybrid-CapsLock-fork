@@ -21,9 +21,26 @@ Este script transforma la tecla `CapsLock` en una potente herramienta de product
 
 ## ⚙️ Instalación y Uso
 
-1. **Requisito:** Instalar [AutoHotkey v2](https://www.autohotkey.com/).
-2. **Ejecutar:** Doble click en `HybridCapsLock.ahk`.
-3. **Inicio automático (Opcional):** Crear un acceso directo al script en la carpeta de inicio de Windows (`shell:startup`).
+### Requisitos
+1. **Instalar:** [AutoHotkey v2.0](https://www.autohotkey.com/v2/)
+2. **Instalar:** [Kanata](https://github.com/jtroo/kanata) - Remapper de teclado a nivel bajo
+
+### Inicio Rápido
+
+**Opción 1 - Todo-en-Uno (Recomendado)**:
+```
+Doble click en StartAll.ahk
+```
+Inicia automáticamente Kanata + HybridCapsLock.
+
+**Opción 2 - Manual**:
+1. Ejecutar `start_kanata.vbs`
+2. Ejecutar `HybridCapsLock.ahk`
+
+**Inicio automático (Opcional):** Crear un acceso directo de `StartAll.ahk` en la carpeta de inicio de Windows (`shell:startup`).
+
+> **⚡ Nota Importante**: Este fork integra **Kanata** (ergonomía, homerow mods) con **AutoHotkey** (inteligencia, context-aware).  
+> Ver [MIGRATION.md](MIGRATION.md) para arquitectura completa y [STARTUP.md](STARTUP.md) para configuración de inicio.
 
 ## 📚 Documentación Completa
 

@@ -1,53 +1,41 @@
 ; ==============================
-; Nvim Layer (toggle on CapsLock tap)
+; Nvim Layer (toggle on F23 from Kanata)
 ; ==============================
-; Provides a lightweight Vim-like navigation layer toggled by a clean CapsLock tap.
-; - Toggle: clean tap on CapsLock (not used as modifier)
-; - Context: Active when isNvimLayerActive is true and CapsLock is not physically pressed
+; Provides a lightweight Vim-like navigation layer toggled by F23 key.
+; - Toggle: F23 sent by Kanata when CapsLock is tapped
+; - Context: Active when isNvimLayerActive is true
 ; - Visual Mode: simple ON/OFF indicator
-; Depends on: core/globals (isNvimLayerActive, VisualMode, capsLockUsedAsModifier),
+; Depends on: core/globals (isNvimLayerActive, VisualMode),
 ;             core/persistence (SaveLayerState), ui/tooltips_native_wrapper (status)
 
-; ---- Toggle via CapsLock clean tap (KeyWait-based, Claude-style) ----
-; Block until release, then decide by duration and whether CapsLock was used as modifier.
-*CapsLock:: {
-    global nvimLayerEnabled, isNvimLayerActive, VisualMode
-    global capsTapThresholdMs, capsLockUsedAsModifier, debug_mode
+; ---- Toggle via F23 (sent by Kanata on CapsLock tap) ----
+*F23:: {
+    global nvimLayerEnabled, isNvimLayerActive, VisualMode, debug_mode
     if (!nvimLayerEnabled)
         return
-    capsLockUsedAsModifier := false ; reset at down
-    downTick := A_TickCount
-    KeyWait("CapsLock") ; wait for release
-    dur := A_TickCount - downTick
+    
     if (debug_mode)
-        OutputDebug "[NVIM] KeyWait dur=" dur ", usedAsMod=" capsLockUsedAsModifier ", thr=" capsTapThresholdMs "\n"
-    if (capsLockUsedAsModifier)
-        return ; used as modifier, do not toggle
-    if (dur >= capsTapThresholdMs)
-        return ; long hold, ignore
+        OutputDebug "[NVIM] F23 received, toggling layer\n"
+    
     ; Toggle
     isNvimLayerActive := !isNvimLayerActive
     if (isNvimLayerActive) {
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled)
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
             ShowNvimLayerToggleCS(true)
-        else
+        } else {
             ShowNvimLayerStatus(true)
-        SetTempStatus("NVIM LAYER ON", 1500)
+            SetTempStatus("NVIM LAYER ON", 1500)
+        }
     } else {
         VisualMode := false
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled)
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
             ShowNvimLayerToggleCS(false)
-        else
+        } else {
             ShowNvimLayerStatus(false)
-        SetTempStatus("NVIM LAYER OFF", 1500)
+            SetTempStatus("NVIM LAYER OFF", 1500)
+        }
     }
     try SaveLayerState()
-}
-
-; Swallow CapsLock key-up so OS does not toggle CapsLock when used as modifier chords
-$*CapsLock Up:: {
-   ; Do nothing: prevents OS CapsLock state from changing on release
-   return
 }
 
 

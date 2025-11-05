@@ -2,16 +2,15 @@
 ; Leader Router (leader -> w, p)
 ; ==============================
 ; Activates leader and routes to Windows/Programs submenus.
-; Hotkey: CapsLock & Space
+; Hotkey: F24 (sent by Kanata when CapsLock hold + Space)
 ;
 ; Depends on: core/config (GetEffectiveTimeout), ui (tooltips),
 ; windows_layer (ShowWindowMenu, ExecuteWindowAction)
 
 #SuspendExempt
 #HotIf (leaderLayerEnabled)
-CapsLock & Space:: {
-    ; Mark CapsLock as used as modifier so CapsLock tap does not toggle NVIM
-    MarkCapsLockAsModifier()
+F24:: {
+    ; F24 sent by Kanata when CapsLock is held and Space is pressed
     TryActivateLeader()
 }
 #HotIf

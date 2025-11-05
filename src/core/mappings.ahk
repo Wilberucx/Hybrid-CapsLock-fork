@@ -194,25 +194,32 @@ UnregisterGenericMappings(layerName) {
 }
 
 ReloadModifierMappings() {
-    global debug_mode
-    try {
-        iniPath := A_ScriptDir . "\\config\\modifier_layer.ini"
-        maps := LoadSimpleMappings(iniPath)
-        if (IsSet(debug_mode) && debug_mode)
-            OutputDebug "[MOD] ReloadModifierMappings loaded=" (IsObject(maps) ? maps.Count : -1) "\n"
-        if (maps.Count > 0) {
-            if (IsSet(debug_mode) && debug_mode)
-                OutputDebug "[MOD] Applying modifier mappings: " maps.Count "\n"
-            ApplyGenericMappings("modifier", maps, (*) => (modifierLayerEnabled && ModifierLayerAppAllowed()), "CapsLock & ")
-        }
-        else {
-            if (IsSet(debug_mode) && debug_mode)
-                OutputDebug "[MOD] No modifier mappings found; unregistering\n"
-            UnregisterGenericMappings("modifier")
-        }
-    } catch {
-        UnregisterGenericMappings("modifier")
-    }
+    ; NOTA: Modifier mode desactivado - Delegado a Kanata
+    ; Esta función se mantiene vacía para compatibilidad con código existente
+    ; que pueda llamarla, pero no hace nada ya que Kanata maneja todas las
+    ; combinaciones CapsLock+tecla ahora.
+    return
+    
+    ; ---- CÓDIGO ORIGINAL DESACTIVADO ----
+    ; global debug_mode
+    ; try {
+    ;     iniPath := A_ScriptDir . "\\config\\modifier_layer.ini"
+    ;     maps := LoadSimpleMappings(iniPath)
+    ;     if (IsSet(debug_mode) && debug_mode)
+    ;         OutputDebug "[MOD] ReloadModifierMappings loaded=" (IsObject(maps) ? maps.Count : -1) "\n"
+    ;     if (maps.Count > 0) {
+    ;         if (IsSet(debug_mode) && debug_mode)
+    ;             OutputDebug "[MOD] Applying modifier mappings: " maps.Count "\n"
+    ;         ApplyGenericMappings("modifier", maps, (*) => (modifierLayerEnabled && ModifierLayerAppAllowed()), "CapsLock & ")
+    ;     }
+    ;     else {
+    ;         if (IsSet(debug_mode) && debug_mode)
+    ;             OutputDebug "[MOD] No modifier mappings found; unregistering\n"
+    ;         UnregisterGenericMappings("modifier")
+    ;     }
+    ; } catch {
+    ;     UnregisterGenericMappings("modifier")
+    ; }
 }
 
 ReloadExcelMappings() {

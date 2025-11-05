@@ -1,8 +1,19 @@
 ; ==============================
-; Modifier Mode (CapsLock & key)
+; Modifier Mode (DESACTIVADO - Delegado a Kanata)
 ; ==============================
-; Migrated core of Modifier Mode: window controls, navigation, scrolling, common shortcuts.
-; Depends on: core/globals (MarkCapsLockAsModifier), ui (status/tooltip helpers)
+; NOTA: Este layer ha sido desactivado completamente.
+; Todas las combinaciones CapsLock + tecla ahora son manejadas por Kanata.
+; - Navegación hjkl: Kanata (CapsLock hold + hjkl)
+; - Homerow mods: Kanata (a/s/d/f = Ctrl/Alt/Win/Shift)
+; - Common shortcuts: Kanata (vía homerow mods)
+; 
+; Este archivo se mantiene para referencia histórica pero no ejecuta código.
+
+return ; DESACTIVAR TODO EL ARCHIVO
+
+; ==============================
+; CÓDIGO ORIGINAL (DESACTIVADO)
+; ==============================
 
 ; Try dynamic mappings if available (modifier)
 try {

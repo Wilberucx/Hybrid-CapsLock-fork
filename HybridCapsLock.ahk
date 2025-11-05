@@ -36,7 +36,7 @@
 #Include src\layer\commands_layer.ahk
 #Include src\layer\excel_layer.ahk
 #Include src\layer\nvim_layer.ahk
-#Include src\layer\modifier_mode.ahk
+; #Include src\layer\modifier_mode.ahk  ; DESACTIVADO - Delegado a Kanata
 #Include src\layer\scroll_layer.ahk
 
 ; --------------------
@@ -52,11 +52,12 @@ try {
 ; --------------------
 ; Minimal startup to confirm no errors
 ; --------------------
-try {
-    SetCapsLockState("AlwaysOff")
-} catch {
-    ; Ignorar si no se puede ajustar el estado de CapsLock en este entorno
-}
+; NOTA: SetCapsLockState desactivado - Kanata maneja CapsLock ahora
+; try {
+;     SetCapsLockState("AlwaysOff")
+; } catch {
+;     ; Ignorar si no se puede ajustar el estado de CapsLock en este entorno
+; }
 
 ; Startup welcome (C# only)
 try {
