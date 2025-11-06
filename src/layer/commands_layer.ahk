@@ -92,15 +92,9 @@ ShowDynamicCommandsMenu(catKey) {
             else
                 menuText .= k . " - [Missing mapping in [" . sec . "]]" . "`n"
         }
-    } else if (catKey = "h") {
-        ; Fallback default for Hybrid Management if INI is missing
-        menuText .= "R - Reload Script (Kanata + AHK)`n"
-        menuText .= "k - Restart Kanata Only`n"
-        menuText .= "c - Open Config Folder`n"
-        menuText .= "l - View Log File`n"
-        menuText .= "v - Version Info`n"
-        menuText .= "e - Exit Script (Kanata + AHK)`n"
     } else {
+        ; Fallback eliminado - hybrid management debe estar en commands.ini
+        ; Ver src/actions/hybrid_actions.ahk para las funciones disponibles
         menuText .= "[Missing order in [" . sec . "]]" . "`n"
     }
     menuText .= "`n[Backspace: Back] [Esc: Exit]"
@@ -194,6 +188,12 @@ ExecuteSystemCommand(cmd) {
     ; Auto-hide tooltip first if configured
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry
+    if (ExecuteKeymap("system", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible)
     switch cmd {
         ; Core system
         case "s": Run("cmd.exe /k systeminfo")
@@ -231,6 +231,12 @@ ExecuteSystemCommand(cmd) {
 ExecuteNetworkCommand(cmd) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry
+    if (ExecuteKeymap("network", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible)
     switch cmd {
         case "i": Run("cmd.exe /k ipconfig /all")
         case "p": Run("cmd.exe /k ping google.com")
@@ -344,13 +350,20 @@ ih.KeyOpt("{Backspace}", "S")
 }
 
 ExecutePowerOptionsCommand(cmd) {
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
+        HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry (maneja confirmación internamente)
+    if (ExecuteKeymap("power", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible)
     ; Ask confirmation for power actions by default (configurable via INI)
     if (ShouldConfirmCommand("power", cmd)) {
         if (!ConfirmYN("Execute power action?", "commands"))
             return
     }
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
-        HideCSharpTooltip()
+    
     switch cmd {
         case "s": ; Sleep
             DllCall("PowrProf\SetSuspendState", "int", 0, "int", 0, "int", 0)
@@ -380,6 +393,12 @@ ExecutePowerOptionsCommand(cmd) {
 ExecuteADBCommand(cmd) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry
+    if (ExecuteKeymap("adb", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible)
     switch cmd {
         case "d": Run("cmd.exe /k adb devices"), ShowCommandExecuted("ADB", "List Devices")
         case "i": Run("cmd.exe /k echo Select APK file to install && pause && adb install"), ShowCommandExecuted("ADB", "Install APK")
@@ -398,6 +417,12 @@ ExecuteADBCommand(cmd) {
 ExecuteVaultFlowCommand(cmd) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry
+    if (ExecuteKeymap("vaultflow", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible)
     switch cmd {
         case "v": Run("powershell.exe -Command `"vaultflow`""), ShowCommandExecuted("VaultFlow", "Run VaultFlow")
         case "s": Run("cmd.exe /k vaultflow status"), ShowCommandExecuted("VaultFlow", "Status")
@@ -410,94 +435,41 @@ ExecuteVaultFlowCommand(cmd) {
     }
 }
 
+; ---- Hybrid Management: Delegador a funciones de hybrid_actions.ahk ----
+; Fase 2: Usar keymap registry primero, fallback a switch
 ExecuteHybridManagementCommand(cmd) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry
+    if (ExecuteKeymap("hybrid", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible con INI custom)
     switch cmd {
-        case "R": ; Reload Script (Kanata + AHK)
-            ; Notificación
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-                try ShowCSharpStatusNotification("HYBRID", "RELOADING...")
-                Sleep(600)
-            } else {
-                ShowCenteredToolTip("RELOADING SCRIPT...")
-                SetTimer(() => RemoveToolTip(), -600)
-                Sleep(600)
-            }
-            ; Detener tooltip app
-            try StopTooltipApp()
-            ; Reiniciar Kanata (si estaba corriendo)
-            if (IsKanataRunning()) {
-                RestartKanata()
-            }
-            ; Reiniciar AHK
-            Run('"' . A_AhkPath . '" "' . A_ScriptFullPath . '"')
-            ExitApp()
-            
-        case "k": ; Restart Kanata Only
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-                try ShowCSharpStatusNotification("KANATA", "RESTARTING...")
-            } else {
-                ShowCenteredToolTip("RESTARTING KANATA...")
-                SetTimer(() => RemoveToolTip(), -800)
-            }
-            RestartKanata()
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-                Sleep(600)
-                try ShowCSharpStatusNotification("KANATA", "RESTARTED")
-                Sleep(1000)
-            } else {
-                Sleep(800)
-                ShowCenteredToolTip("KANATA RESTARTED")
-                SetTimer(() => RemoveToolTip(), -1500)
-            }
-            
-        case "e": ; Exit Script (Kanata + AHK)
-            ; Notificación
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-                try ShowCSharpStatusNotification("HYBRID", "EXITING...")
-                Sleep(500)
-                try StopTooltipApp()
-            } else {
-                ShowCenteredToolTip("EXITING SCRIPT...")
-                SetTimer(() => RemoveToolTip(), -600)
-                Sleep(600)
-            }
-            ; Detener Kanata (si estaba corriendo)
-            if (IsKanataRunning()) {
-                StopKanata()
-            }
-            ; Salir de AHK
-            ExitApp()
-        case "c": ; Open Config Folder
-            Run('explorer.exe "' . A_ScriptDir . '\\config"')
-            ShowCommandExecuted("Hybrid", "Config Folder")
-        case "l": ; View Log File
-            logFile := A_ScriptDir . "\\hybrid_log.txt"
-            if (FileExist(logFile)) {
-                Run('notepad.exe "' . logFile . '"')
-                ShowCommandExecuted("Hybrid", "Log File")
-            } else {
-                ShowCenteredToolTip("No log file found")
-                SetTimer(() => RemoveToolTip(), -1500)
-                return
-            }
-        case "v": ; Show Version Info
-            ShowCenteredToolTip("HybridCapsLock")
-            SetTimer(() => RemoveToolTip(), -1500)
-        case "p": ; Hybrid Pause (auto timer + resume on Leader)
-            ToggleHybridPause()
-            return
-       default:
+        case "R": ReloadHybridScript()          ; desc: "Reload Script (Kanata + AHK)"
+        case "k": RestartKanataOnly()           ; desc: "Restart Kanata Only"
+        case "e": ExitHybridScript()            ; desc: "Exit Script"
+        case "p": PauseHybridScript()           ; desc: "Pause Hybrid"
+        case "c": OpenConfigFolder()            ; desc: "Open Config Folder"
+        case "l": ViewLogFile()                 ; desc: "View Log File"
+        case "v": ShowVersionInfo()             ; desc: "Show Version Info"
+        case "s": ShowSystemStatus()            ; desc: "Show System Status"
+        default:
             ShowCenteredToolTip("Unknown hybrid command: " . cmd)
             SetTimer(() => RemoveToolTip(), -1500)
-            return
     }
 }
 
 ExecuteFolderCommand(cmd) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry
+    if (ExecuteKeymap("folder", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible)
     switch cmd {
         case "t": Run('explorer.exe "' . EnvGet("TEMP") . '"')
         case "a": Run('explorer.exe "' . EnvGet("APPDATA") . '"')
@@ -555,24 +527,15 @@ HybridAutoResumeTimer() {
     }
 }
 
-ToggleHiddenFiles() {
-    try {
-        currentValue := RegRead("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "Hidden")
-        newValue := (currentValue = 1) ? 2 : 1
-        RegWrite(newValue, "REG_DWORD", "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "Hidden")
-        Send("{F5}")
-        statusText := (newValue = 1) ? "HIDDEN FILES SHOWN" : "HIDDEN FILES HIDDEN"
-        ShowCenteredToolTip(statusText)
-        SetTimer(() => RemoveToolTip(), -2000)
-    } catch Error as err {
-        ShowCenteredToolTip("Error toggling hidden files")
-        SetTimer(() => RemoveToolTip(), -2000)
-    }
-}
-
 ExecuteGitCommand(cmd) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry
+    if (ExecuteKeymap("git", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible)
     switch cmd {
         case "s": Run("cmd.exe /k git status")
         case "l": Run("cmd.exe /k git log --oneline -10")
@@ -591,6 +554,12 @@ ExecuteGitCommand(cmd) {
 ExecuteMonitoringCommand(cmd) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
+    
+    ; Intentar ejecutar desde keymap registry
+    if (ExecuteKeymap("monitoring", cmd))
+        return
+    
+    ; Fallback: Switch clásico (backward compatible)
     switch cmd {
         case "p":
             Run("powershell.exe -Command `"Get-Process | Sort-Object CPU -Descending | Select-Object -First 20 | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")

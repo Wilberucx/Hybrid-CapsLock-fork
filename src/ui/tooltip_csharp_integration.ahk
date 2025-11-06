@@ -1271,23 +1271,33 @@ ShowDeleteMenuCS() {
 ; ===================================================================
 
 ; Submenú System Commands (leader → c → s)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowSystemCommandsMenuCS() {
     TooltipNavPush("CMD_s")
-    items := BuildCommandItemsFromCategoryKey("s")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("system")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        BuildCommandItemsFromCategoryKey("s")
+        items := BuildCommandItemsFromCategoryKey("s")
         if (items = "")
-            items := "s:System Info|t:Task Manager|v:Services|x:Event Viewer|d:Device Manager|c:Disk Cleanup|h:Toggle Hidden Files|r:Registry Editor|E:Environment Variables"
+            items := "s:System Info|t:Task Manager|v:Services|d:Device Manager|c:Disk Cleanup|h:Toggle Hidden Files|r:Registry Editor|E:Environment Variables|e:Event Viewer"
     }
     ShowCSharpOptionsMenu("SYSTEM COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Network Commands (leader → c → n)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowNetworkCommandsMenuCS() {
     TooltipNavPush("CMD_n")
-    items := BuildCommandItemsFromCategoryKey("n")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("network")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        BuildCommandItemsFromCategoryKey("n")
+        items := BuildCommandItemsFromCategoryKey("n")
         if (items = "")
             items := "i:IP Config|p:Ping Google|n:Netstat"
     }
@@ -1295,11 +1305,16 @@ ShowNetworkCommandsMenuCS() {
 }
 
 ; Submenú Git Commands (leader → c → g)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowGitCommandsMenuCS() {
     TooltipNavPush("CMD_g")
-    items := BuildCommandItemsFromCategoryKey("g")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("git")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        BuildCommandItemsFromCategoryKey("g")
+        items := BuildCommandItemsFromCategoryKey("g")
         if (items = "")
             items := "s:Status|l:Log|b:Branches|d:Diff|a:Add All|p:Pull"
     }
@@ -1307,11 +1322,16 @@ ShowGitCommandsMenuCS() {
 }
 
 ; Submenú Monitoring Commands (leader → c → m)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowMonitoringCommandsMenuCS() {
     TooltipNavPush("CMD_m")
-    items := BuildCommandItemsFromCategoryKey("m")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("monitoring")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        BuildCommandItemsFromCategoryKey("m")
+        items := BuildCommandItemsFromCategoryKey("m")
         if (items = "")
             items := "p:Processes|s:Services|d:Disk Usage|m:Memory|c:CPU Usage"
     }
@@ -1319,11 +1339,16 @@ ShowMonitoringCommandsMenuCS() {
 }
 
 ; Submenú Folder Commands (leader → c → f)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowFolderCommandsMenuCS() {
     TooltipNavPush("CMD_f")
-    items := BuildCommandItemsFromCategoryKey("f")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("folder")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        BuildCommandItemsFromCategoryKey("f")
+        items := BuildCommandItemsFromCategoryKey("f")
         if (items = "")
             items := "t:Temp|a:AppData|p:Program Files|u:User Profile|d:Desktop|s:System32"
     }
@@ -1343,41 +1368,69 @@ ShowWindowsCommandsMenuCS() {
 }
 
 ; Submenú Power Options (leader → c → o)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowPowerOptionsCommandsMenuCS() {
     TooltipNavPush("CMD_o")
-    items := BuildCommandItemsFromCategoryKey("o")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("power")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        items := "s:Sleep|h:Hibernate|r:Restart|S:Shutdown|l:Lock Screen|o:Sign Out"
+        items := BuildCommandItemsFromCategoryKey("o")
+        if (items = "")
+            items := "s:Sleep|h:Hibernate|r:Restart|S:Shutdown|l:Lock Screen|o:Sign Out"
     }
     ShowCSharpOptionsMenu("POWER OPTIONS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú ADB Tools (leader → c → a)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowADBCommandsMenuCS() {
     TooltipNavPush("CMD_a")
-    items := BuildCommandItemsFromCategoryKey("a")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("adb")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        items := "d:List Devices|i:Install APK|u:Uninstall Package|l:Logcat|s:Shell|r:Reboot Device|c:Clear App Data"
+        items := BuildCommandItemsFromCategoryKey("a")
+        if (items = "")
+            items := "d:List Devices|i:Install APK|u:Uninstall Package|l:Logcat|s:Shell|r:Reboot Device|c:Clear App Data"
     }
     ShowCSharpOptionsMenu("ADB TOOLS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Hybrid Management (leader → c → h)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowHybridManagementMenuCS() {
     TooltipNavPush("CMD_h")
-    items := BuildCommandItemsFromCategoryKey("h")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("hybrid")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        items := "R:Reload Script|e:Exit Script|c:Open Config Folder|l:View Log File|v:Show Version Info"
+        items := BuildCommandItemsFromCategoryKey("h")
+        if (items = "") {
+            items := "R:Reload Script|k:Restart Kanata|e:Exit Script|p:Pause Hybrid|c:Open Config|l:View Log|v:Version Info|s:System Status"
+        }
     }
+    
     ShowCSharpOptionsMenu("HYBRID MANAGEMENT", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú VaultFlow Commands (leader → c → v)
+; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowVaultFlowCommandsMenuCS() {
     TooltipNavPush("CMD_v")
-    items := BuildCommandItemsFromCategoryKey("v")
+    
+    ; Intentar generar items desde keymap registry
+    items := GenerateCategoryItems("vaultflow")
+    
+    ; Fallback: INI o hardcoded
     if (items = "") {
-        BuildCommandItemsFromCategoryKey("v")
+        items := BuildCommandItemsFromCategoryKey("v")
         if (items = "")
             items := "v:Run VaultFlow|s:VaultFlow Status|l:List Vaults|h:VaultFlow Help"
     }

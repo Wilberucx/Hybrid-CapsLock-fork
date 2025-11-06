@@ -17,7 +17,21 @@
 #Include src\core\config.ahk
 #Include src\core\persistence.ahk
 #Include src\core\confirmations.ahk
+#Include src\core\keymap_registry.ahk
 #Include src\core\mappings.ahk
+
+; --------------------
+; Actions (funciones reutilizables)
+; --------------------
+#Include src\actions\hybrid_actions.ahk
+#Include src\actions\system_actions.ahk
+#Include src\actions\network_actions.ahk
+#Include src\actions\git_actions.ahk
+#Include src\actions\monitoring_actions.ahk
+#Include src\actions\folder_actions.ahk
+#Include src\actions\power_actions.ahk
+#Include src\actions\adb_actions.ahk
+#Include src\actions\vaultflow_actions.ahk
 
 ; --------------------
 ; UI
@@ -47,6 +61,17 @@
 try {
     ; Iniciar Kanata primero (si existe)
     StartKanataIfNeeded()
+    
+    ; Registrar keymaps (Fase 2 - Sistema Declarativo)
+    RegisterHybridKeymaps()
+    RegisterSystemKeymaps()
+    RegisterNetworkKeymaps()
+    RegisterGitKeymaps()
+    RegisterMonitoringKeymaps()
+    RegisterFolderKeymaps()
+    RegisterPowerKeymaps()
+    RegisterADBKeymaps()
+    RegisterVaultFlowKeymaps()
     
     ; Luego cargar configuración de AHK
     LoadLayerFlags()
