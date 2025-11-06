@@ -12,6 +12,7 @@
 ; --------------------
 ; Core
 ; --------------------
+#Include src\core\kanata_launcher.ahk
 #Include src\core\globals.ahk
 #Include src\core\config.ahk
 #Include src\core\persistence.ahk
@@ -28,6 +29,7 @@
 ; --------------------
 ; Layers & Leader
 ; --------------------
+#Include src\layer\window_shortcuts.ahk
 #Include src\layer\leader_router.ahk
 #Include src\layer\windows_layer.ahk
 #Include src\layer\programs_layer.ahk
@@ -43,6 +45,10 @@
 ; Startup logic
 ; --------------------
 try {
+    ; Iniciar Kanata primero (si existe)
+    StartKanataIfNeeded()
+    
+    ; Luego cargar configuración de AHK
     LoadLayerFlags()
     LoadLayerState()
     StartTooltipApp()  ; Start C# tooltip application

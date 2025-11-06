@@ -58,12 +58,17 @@
 
 ;; Capa de navegación vim (caps)
 (deflayer vim-nav
-  _    _    _    _   end   _    _    _    _    _   home  _    _    _
+  _    f13  _    _   end   _    _    _    _    _   home  _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    left down up   rght _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _             f24             _    _    _
 )
+
+;; En esta capa:
+;; - hjkl = flechas (navegación)
+;; - 1 = F13 (minimize window en AHK)
+;; - Space = F24 (leader menu en AHK)
 
 ;; Numpad izquierdo (o) 
 (deflayer numpad

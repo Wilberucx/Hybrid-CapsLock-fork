@@ -94,11 +94,12 @@ ShowDynamicCommandsMenu(catKey) {
         }
     } else if (catKey = "h") {
         ; Fallback default for Hybrid Management if INI is missing
-        menuText .= "R - Reload Script`n"
+        menuText .= "R - Reload Script (Kanata + AHK)`n"
+        menuText .= "k - Restart Kanata Only`n"
         menuText .= "c - Open Config Folder`n"
         menuText .= "l - View Log File`n"
         menuText .= "v - Version Info`n"
-        menuText .= "e - Exit Script`n"
+        menuText .= "e - Exit Script (Kanata + AHK)`n"
     } else {
         menuText .= "[Missing order in [" . sec . "]]" . "`n"
     }
@@ -413,7 +414,8 @@ ExecuteHybridManagementCommand(cmd) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.autoHide)
         HideCSharpTooltip()
     switch cmd {
-        case "R": ; Reload Script
+        case "R": ; Reload Script (Kanata + AHK)
+            ; Notificación
             if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
                 try ShowCSharpStatusNotification("HYBRID", "RELOADING...")
                 Sleep(600)
@@ -422,10 +424,36 @@ ExecuteHybridManagementCommand(cmd) {
                 SetTimer(() => RemoveToolTip(), -600)
                 Sleep(600)
             }
+            ; Detener tooltip app
             try StopTooltipApp()
+            ; Reiniciar Kanata (si estaba corriendo)
+            if (IsKanataRunning()) {
+                RestartKanata()
+            }
+            ; Reiniciar AHK
             Run('"' . A_AhkPath . '" "' . A_ScriptFullPath . '"')
             ExitApp()
-        case "e": ; Exit Script
+            
+        case "k": ; Restart Kanata Only
+            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+                try ShowCSharpStatusNotification("KANATA", "RESTARTING...")
+            } else {
+                ShowCenteredToolTip("RESTARTING KANATA...")
+                SetTimer(() => RemoveToolTip(), -800)
+            }
+            RestartKanata()
+            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+                Sleep(600)
+                try ShowCSharpStatusNotification("KANATA", "RESTARTED")
+                Sleep(1000)
+            } else {
+                Sleep(800)
+                ShowCenteredToolTip("KANATA RESTARTED")
+                SetTimer(() => RemoveToolTip(), -1500)
+            }
+            
+        case "e": ; Exit Script (Kanata + AHK)
+            ; Notificación
             if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
                 try ShowCSharpStatusNotification("HYBRID", "EXITING...")
                 Sleep(500)
@@ -435,6 +463,11 @@ ExecuteHybridManagementCommand(cmd) {
                 SetTimer(() => RemoveToolTip(), -600)
                 Sleep(600)
             }
+            ; Detener Kanata (si estaba corriendo)
+            if (IsKanataRunning()) {
+                StopKanata()
+            }
+            ; Salir de AHK
             ExitApp()
         case "c": ; Open Config Folder
             Run('explorer.exe "' . A_ScriptDir . '\\config"')
