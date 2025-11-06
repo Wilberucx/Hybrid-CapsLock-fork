@@ -1,49 +1,50 @@
 ; ==============================
-; Power Actions - Funciones reutilizables
+; Power Actions - Sistema Declarativo Completo
 ; ==============================
-; Extracted from commands_layer.ahk para seguir arquitectura declarativa
+; Estilo lazy.nvim: UNA SOLA DECLARACIÓN por comando
 
 ; ==============================
-; FUNCIONES DE ENERGÍA
+; FUNCIONES DE ACCIÓN
 ; ==============================
 
 SuspendSystem() {
     DllCall("PowrProf\SetSuspendState", "int", 0, "int", 0, "int", 0)
+    ShowCommandExecuted("Power", "Sleep")
 }
 
 HibernateSystem() {
     DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
+    ShowCommandExecuted("Power", "Hibernate")
 }
 
 RestartSystem() {
     Run("shutdown.exe /r /t 0")
+    ShowCommandExecuted("Power", "Restart")
 }
 
 ShutdownSystem() {
     Run("shutdown.exe /s /t 0")
+    ShowCommandExecuted("Power", "Shutdown")
 }
 
 LockWorkstation() {
     DllCall("user32\LockWorkStation")
+    ShowCommandExecuted("Power", "Lock Screen")
 }
 
 SignOutUser() {
     Run("shutdown.exe /l")
+    ShowCommandExecuted("Power", "Sign Out")
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (Fase 2 - Sistema Declarativo)
+; REGISTRO DECLARATIVO (Estilo lazy.nvim)
 ; ==============================
 RegisterPowerKeymaps() {
-    RegisterKeymap("power", "s", "Sleep", Func("SuspendSystem"), true)
-    RegisterKeymap("power", "h", "Hibernate", Func("HibernateSystem"), true)
-    RegisterKeymap("power", "r", "Restart", Func("RestartSystem"), true)
-    RegisterKeymap("power", "S", "Shutdown", Func("ShutdownSystem"), true)
-    RegisterKeymap("power", "l", "Lock Screen", Func("LockWorkstation"), false)
-    RegisterKeymap("power", "o", "Sign Out", Func("SignOutUser"), true)
+    RegisterKeymap("power", "l", "Lock Screen", LockWorkstation, false, 1)
+    RegisterKeymap("power", "s", "Sleep", SuspendSystem, false, 2)
+    RegisterKeymap("power", "h", "Hibernate", HibernateSystem, false, 3)
+    RegisterKeymap("power", "o", "Sign Out", SignOutUser, true, 4)
+    RegisterKeymap("power", "r", "Restart", RestartSystem, true, 5)
+    RegisterKeymap("power", "S", "Shutdown", ShutdownSystem, true, 6)
 }
-
-; ==============================
-; NOTA: Estas funciones son reutilizables
-; Pueden ser llamadas desde cualquier parte del código
-; ==============================

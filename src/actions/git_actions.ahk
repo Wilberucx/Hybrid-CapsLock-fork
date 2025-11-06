@@ -1,49 +1,50 @@
 ; ==============================
-; Git Actions - Funciones reutilizables
+; Git Actions - Sistema Declarativo Completo
 ; ==============================
-; Extracted from commands_layer.ahk para seguir arquitectura declarativa
+; Estilo lazy.nvim: UNA SOLA DECLARACIÓN por comando
 
 ; ==============================
-; FUNCIONES DE GIT
+; FUNCIONES DE ACCIÓN
 ; ==============================
 
 GitStatus() {
     Run("cmd.exe /k git status")
+    ShowCommandExecuted("Git", "Status")
 }
 
 GitLog() {
     Run("cmd.exe /k git log --oneline -10")
+    ShowCommandExecuted("Git", "Log")
 }
 
 GitBranches() {
     Run("cmd.exe /k git branch -a")
+    ShowCommandExecuted("Git", "Branches")
 }
 
 GitDiff() {
     Run("cmd.exe /k git diff")
+    ShowCommandExecuted("Git", "Diff")
 }
 
 GitAddAll() {
     Run("cmd.exe /k git add .")
+    ShowCommandExecuted("Git", "Add All")
 }
 
 GitPull() {
     Run("cmd.exe /k git pull")
+    ShowCommandExecuted("Git", "Pull")
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (Fase 2 - Sistema Declarativo)
+; REGISTRO DECLARATIVO (Estilo lazy.nvim)
 ; ==============================
 RegisterGitKeymaps() {
-    RegisterKeymap("git", "s", "Git Status", Func("GitStatus"), false)
-    RegisterKeymap("git", "l", "Git Log", Func("GitLog"), false)
-    RegisterKeymap("git", "b", "Git Branches", Func("GitBranches"), false)
-    RegisterKeymap("git", "d", "Git Diff", Func("GitDiff"), false)
-    RegisterKeymap("git", "a", "Git Add All", Func("GitAddAll"), false)
-    RegisterKeymap("git", "p", "Git Pull", Func("GitPull"), false)
+    RegisterKeymap("git", "s", "Status", GitStatus, false, 1)
+    RegisterKeymap("git", "l", "Log (last 10)", GitLog, false, 2)
+    RegisterKeymap("git", "b", "Branches", GitBranches, false, 3)
+    RegisterKeymap("git", "d", "Diff", GitDiff, false, 4)
+    RegisterKeymap("git", "a", "Add All", GitAddAll, true, 5)
+    RegisterKeymap("git", "p", "Pull", GitPull, true, 6)
 }
-
-; ==============================
-; NOTA: Estas funciones son reutilizables
-; Pueden ser llamadas desde cualquier parte del código
-; ==============================

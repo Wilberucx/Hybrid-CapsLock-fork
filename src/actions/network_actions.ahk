@@ -1,34 +1,32 @@
 ; ==============================
-; Network Actions - Funciones reutilizables
+; Network Actions - Sistema Declarativo Completo
 ; ==============================
-; Extracted from commands_layer.ahk para seguir arquitectura declarativa
+; Estilo lazy.nvim: UNA SOLA DECLARACIÓN por comando
 
 ; ==============================
-; FUNCIONES DE RED
+; FUNCIONES DE ACCIÓN
 ; ==============================
 
 ShowIPConfig() {
     Run("cmd.exe /k ipconfig /all")
+    ShowCommandExecuted("Network", "IP Config")
 }
 
 PingGoogle() {
     Run("cmd.exe /k ping google.com")
+    ShowCommandExecuted("Network", "Ping Test")
 }
 
 ShowNetstat() {
     Run("cmd.exe /k netstat -an")
+    ShowCommandExecuted("Network", "Netstat")
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (Fase 2 - Sistema Declarativo)
+; REGISTRO DECLARATIVO (Estilo lazy.nvim)
 ; ==============================
 RegisterNetworkKeymaps() {
-    RegisterKeymap("network", "i", "IP Config", Func("ShowIPConfig"), false)
-    RegisterKeymap("network", "p", "Ping Google", Func("PingGoogle"), false)
-    RegisterKeymap("network", "n", "Netstat", Func("ShowNetstat"), false)
+    RegisterKeymap("network", "i", "IP Config", ShowIPConfig, false, 1)
+    RegisterKeymap("network", "p", "Ping Google", PingGoogle, false, 2)
+    RegisterKeymap("network", "n", "Netstat", ShowNetstat, false, 3)
 }
-
-; ==============================
-; NOTA: Estas funciones son reutilizables
-; Pueden ser llamadas desde cualquier parte del código
-; ==============================

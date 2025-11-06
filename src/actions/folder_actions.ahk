@@ -1,49 +1,50 @@
 ; ==============================
-; Folder Actions - Funciones reutilizables
+; Folder Actions - Sistema Declarativo Completo
 ; ==============================
-; Extracted from commands_layer.ahk para seguir arquitectura declarativa
+; Estilo lazy.nvim: UNA SOLA DECLARACIÓN por comando
 
 ; ==============================
-; FUNCIONES DE CARPETAS
+; FUNCIONES DE ACCIÓN
 ; ==============================
 
 OpenTempFolder() {
     Run('explorer.exe "' . EnvGet("TEMP") . '"')
+    ShowCommandExecuted("Folder", "Temp Folder")
 }
 
 OpenAppDataFolder() {
     Run('explorer.exe "' . EnvGet("APPDATA") . '"')
+    ShowCommandExecuted("Folder", "AppData")
 }
 
 OpenProgramFilesFolder() {
     Run('explorer.exe "C:\\Program Files"')
+    ShowCommandExecuted("Folder", "Program Files")
 }
 
 OpenUserProfileFolder() {
     Run('explorer.exe "' . EnvGet("USERPROFILE") . '"')
+    ShowCommandExecuted("Folder", "User Profile")
 }
 
 OpenDesktopFolder() {
     Run('explorer.exe "' . EnvGet("USERPROFILE") . '\\Desktop"')
+    ShowCommandExecuted("Folder", "Desktop")
 }
 
 OpenSystem32Folder() {
     Run('explorer.exe "C:\\Windows\\System32"')
+    ShowCommandExecuted("Folder", "System32")
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (Fase 2 - Sistema Declarativo)
+; REGISTRO DECLARATIVO (Estilo lazy.nvim)
 ; ==============================
 RegisterFolderKeymaps() {
-    RegisterKeymap("folder", "t", "Temp Folder", Func("OpenTempFolder"), false)
-    RegisterKeymap("folder", "a", "AppData Folder", Func("OpenAppDataFolder"), false)
-    RegisterKeymap("folder", "p", "Program Files", Func("OpenProgramFilesFolder"), false)
-    RegisterKeymap("folder", "u", "User Profile", Func("OpenUserProfileFolder"), false)
-    RegisterKeymap("folder", "d", "Desktop", Func("OpenDesktopFolder"), false)
-    RegisterKeymap("folder", "s", "System32", Func("OpenSystem32Folder"), false)
+    RegisterKeymap("folder", "t", "Temp Folder", OpenTempFolder, false, 1)
+    RegisterKeymap("folder", "a", "AppData", OpenAppDataFolder, false, 2)
+    RegisterKeymap("folder", "p", "Program Files", OpenProgramFilesFolder, false, 3)
+    RegisterKeymap("folder", "u", "User Profile", OpenUserProfileFolder, false, 4)
+    RegisterKeymap("folder", "d", "Desktop", OpenDesktopFolder, false, 5)
+    RegisterKeymap("folder", "s", "System32", OpenSystem32Folder, false, 6)
 }
-
-; ==============================
-; NOTA: Estas funciones son reutilizables
-; Pueden ser llamadas desde cualquier parte del código
-; ==============================

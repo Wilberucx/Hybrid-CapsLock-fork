@@ -4,119 +4,37 @@
 ; Builds and shows the Commands main menu. Category handling will be added in step 2.
 ; Depends on: globals (CommandsIni), ui (tooltips), core/config (GetEffectiveTimeout)
 
-BuildCommandsMainMenuText() {
-    global CommandsIni
-    text := ""
-    order := IniRead(CommandsIni, "Categories", "order", "")
-    if (order != "" && order != "ERROR") {
-        keys := StrSplit(order, [",", " ", "`t"])
-        for _, k in keys {
-            k := Trim(k)
-            if (k = "")
-                continue
-            name := IniRead(CommandsIni, k . "_category", "title", "")
-            if (name = "" || name = "ERROR")
-                name := IniRead(CommandsIni, "Categories", k, "")
-            if (name != "" && name != "ERROR")
-                text .= k . " - " . name . "`n"
-        }
-    }
-    return text
-}
-
 ShowCommandsMenu() {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         ShowCommandsMenuCS()
     } else {
-        global CommandsIni
         ToolTipX := A_ScreenWidth // 2 - 110
         ToolTipY := A_ScreenHeight // 2 - 120
-        menuText := "COMMAND PALETTE`n`n"
-        configText := BuildCommandsMainMenuText()
-        if (configText != "") {
-            menuText .= configText
-        } else {
-            hasConfigMenu := false
-            Loop 20 {
-                lineContent := IniRead(CommandsIni, "MenuDisplay", "main_line" . A_Index, "")
-                if (lineContent != "" && lineContent != "ERROR") {
-                    menuText .= lineContent . "`n"
-                    hasConfigMenu := true
-                }
-            }
-            if (!hasConfigMenu) {
-                menuText .= "s - System Commands`n"
-                menuText .= "n - Network Commands`n"
-                menuText .= "g - Git Commands`n"
-                menuText .= "m - Monitoring Commands`n"
-                menuText .= "f - Folder Commands`n"
-                menuText .= "o - Power Options`n"
-                menuText .= "a - ADB Tools`n"
-                menuText .= "v - VaultFlow`n"
-                menuText .= "h - Hybrid Management`n"
-            }
-        }
-        menuText .= "`n[Backspace: Back] [Esc: Exit]"
+        ; Auto-generar menú desde registry (sistema declarativo)
+        menuText := BuildMainMenuFromRegistry()
         ToolTip(menuText, ToolTipX, ToolTipY, 2)
     }
 }
 
-; ---- Dynamic category menu (new schema) ----
-ShowDynamicCommandsMenu(catKey) {
+; ---- Dynamic category menu (sistema declarativo) ----
+ShowDynamicCommandsMenu(categoryInternal) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         ; In C# mode, category menus are handled by *_CS functions
         return
     }
-    global CommandsIni
-    sec := catKey . "_category"
-    title := IniRead(CommandsIni, sec, "title", "")
-    if (title = "" || title = "ERROR")
-        title := IniRead(CommandsIni, "Categories", catKey, "COMMANDS")
-    order := IniRead(CommandsIni, sec, "order", "")
-    if (order = "" || order = "ERROR") {
-        ; Fallback to simple order from Categories if present
-        order := IniRead(CommandsIni, "Categories", catKey, "")
-    }
     ToolTipX := A_ScreenWidth // 2 - 120
     ToolTipY := A_ScreenHeight // 2 - 100
-    menuText := title . "`n`n"
-    if (order != "" && order != "ERROR") {
-        keys := StrSplit(order, [",", " ", "`t"])
-        for _, k in keys {
-            k := Trim(k)
-            if (k = "")
-                continue
-            itemTitle := IniRead(CommandsIni, sec, k, "")
-            if (itemTitle != "" && itemTitle != "ERROR")
-                menuText .= k . " - " . itemTitle . "`n"
-            else
-                menuText .= k . " - [Missing mapping in [" . sec . "]]" . "`n"
-        }
-    } else {
-        ; Fallback eliminado - hybrid management debe estar en commands.ini
-        ; Ver src/actions/hybrid_actions.ahk para las funciones disponibles
-        menuText .= "[Missing order in [" . sec . "]]" . "`n"
-    }
-    menuText .= "`n[Backspace: Back] [Esc: Exit]"
+    ; Auto-generar menú desde registry
+    menuText := BuildCategoryMenuFromRegistry(categoryInternal)
     ToolTip(menuText, ToolTipX, ToolTipY, 2)
 }
 
-; ---- Category submenus (step 2: System + Network) ----
+; ---- Category submenus (auto-generadas desde registry) ----
 ShowSystemCommandsMenu() {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         ShowSystemCommandsMenuCS()
     } else {
-        global CommandsIni
-        ToolTipX := A_ScreenWidth // 2 - 120
-        ToolTipY := A_ScreenHeight // 2 - 90
-        menuText := "SYSTEM COMMANDS`n`n"
-        Loop 10 {
-            lineContent := IniRead(CommandsIni, "MenuDisplay", "system_line" . A_Index, "")
-            if (lineContent != "" && lineContent != "ERROR")
-                menuText .= lineContent . "`n"
-        }
-        menuText .= "`n[Backspace: Back] [Esc: Exit]"
-        ToolTip(menuText, ToolTipX, ToolTipY, 2)
+        ShowDynamicCommandsMenu("system")
     }
 }
 
@@ -124,17 +42,7 @@ ShowNetworkCommandsMenu() {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         ShowNetworkCommandsMenuCS()
     } else {
-        global CommandsIni
-        ToolTipX := A_ScreenWidth // 2 - 120
-        ToolTipY := A_ScreenHeight // 2 - 70
-        menuText := "NETWORK COMMANDS`n`n"
-        Loop 10 {
-            lineContent := IniRead(CommandsIni, "MenuDisplay", "network_line" . A_Index, "")
-            if (lineContent != "" && lineContent != "ERROR")
-                menuText .= lineContent . "`n"
-        }
-        menuText .= "`n[Backspace: Back] [Esc: Exit]"
-        ToolTip(menuText, ToolTipX, ToolTipY, 2)
+        ShowDynamicCommandsMenu("network")
     }
 }
 
@@ -142,17 +50,7 @@ ShowGitCommandsMenu() {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         ShowGitCommandsMenuCS()
     } else {
-        global CommandsIni
-        ToolTipX := A_ScreenWidth // 2 - 120
-        ToolTipY := A_ScreenHeight // 2 - 90
-        menuText := "GIT COMMANDS`n`n"
-        Loop 10 {
-            lineContent := IniRead(CommandsIni, "MenuDisplay", "git_line" . A_Index, "")
-            if (lineContent != "" && lineContent != "ERROR")
-                menuText .= lineContent . "`n"
-        }
-        menuText .= "`n[Backspace: Back] [Esc: Exit]"
-        ToolTip(menuText, ToolTipX, ToolTipY, 2)
+        ShowDynamicCommandsMenu("git")
     }
 }
 
@@ -160,17 +58,7 @@ ShowMonitoringCommandsMenu() {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         ShowMonitoringCommandsMenuCS()
     } else {
-        global CommandsIni
-        ToolTipX := A_ScreenWidth // 2 - 120
-        ToolTipY := A_ScreenHeight // 2 - 90
-        menuText := "MONITORING COMMANDS`n`n"
-        Loop 10 {
-            lineContent := IniRead(CommandsIni, "MenuDisplay", "monitoring_line" . A_Index, "")
-            if (lineContent != "" && lineContent != "ERROR")
-                menuText .= lineContent . "`n"
-        }
-        menuText .= "`n[Backspace: Back] [Esc: Exit]"
-        ToolTip(menuText, ToolTipX, ToolTipY, 2)
+        ShowDynamicCommandsMenu("monitoring")
     }
 }
 

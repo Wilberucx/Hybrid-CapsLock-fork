@@ -1,44 +1,44 @@
 ; ==============================
-; Monitoring Actions - Funciones reutilizables
+; Monitoring Actions - Sistema Declarativo Completo
 ; ==============================
-; Extracted from commands_layer.ahk para seguir arquitectura declarativa
+; Estilo lazy.nvim: UNA SOLA DECLARACIÓN por comando
 
 ; ==============================
-; FUNCIONES DE MONITOREO
+; FUNCIONES DE ACCIÓN
 ; ==============================
 
 ShowTopProcesses() {
     Run("powershell.exe -Command `"Get-Process | Sort-Object CPU -Descending | Select-Object -First 20 | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
+    ShowCommandExecuted("Monitoring", "Top Processes")
 }
 
 ShowServicesStatus() {
     Run("powershell.exe -Command `"Get-Service | Sort-Object Status,Name | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
+    ShowCommandExecuted("Monitoring", "Services Status")
 }
 
 ShowDiskSpace() {
     Run("powershell.exe -Command `"Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID,Size,FreeSpace | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
+    ShowCommandExecuted("Monitoring", "Disk Space")
 }
 
 ShowMemoryUsage() {
     Run("powershell.exe -Command `"Get-WmiObject -Class Win32_OperatingSystem | Select-Object TotalVisibleMemorySize,FreePhysicalMemory | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
+    ShowCommandExecuted("Monitoring", "Memory Usage")
 }
 
 ShowCPUUsage() {
     Run("powershell.exe -Command `"Get-WmiObject -Class Win32_Processor | Select-Object Name,LoadPercentage | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
+    ShowCommandExecuted("Monitoring", "CPU Usage")
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (Fase 2 - Sistema Declarativo)
+; REGISTRO DECLARATIVO (Estilo lazy.nvim)
 ; ==============================
 RegisterMonitoringKeymaps() {
-    RegisterKeymap("monitoring", "p", "Top Processes", Func("ShowTopProcesses"), false)
-    RegisterKeymap("monitoring", "s", "Services Status", Func("ShowServicesStatus"), false)
-    RegisterKeymap("monitoring", "d", "Disk Space", Func("ShowDiskSpace"), false)
-    RegisterKeymap("monitoring", "m", "Memory Usage", Func("ShowMemoryUsage"), false)
-    RegisterKeymap("monitoring", "c", "CPU Usage", Func("ShowCPUUsage"), false)
+    RegisterKeymap("monitoring", "p", "Top Processes", ShowTopProcesses, false, 1)
+    RegisterKeymap("monitoring", "s", "Services Status", ShowServicesStatus, false, 2)
+    RegisterKeymap("monitoring", "d", "Disk Space", ShowDiskSpace, false, 3)
+    RegisterKeymap("monitoring", "m", "Memory Usage", ShowMemoryUsage, false, 4)
+    RegisterKeymap("monitoring", "c", "CPU Usage", ShowCPUUsage, false, 5)
 }
-
-; ==============================
-; NOTA: Estas funciones son reutilizables
-; Pueden ser llamadas desde cualquier parte del código
-; ==============================

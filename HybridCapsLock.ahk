@@ -21,7 +21,7 @@
 #Include src\core\mappings.ahk
 
 ; --------------------
-; Actions (funciones reutilizables)
+; Actions (funciones reutilizables - sistema declarativo)
 ; --------------------
 #Include src\actions\hybrid_actions.ahk
 #Include src\actions\system_actions.ahk
@@ -32,6 +32,9 @@
 #Include src\actions\power_actions.ahk
 #Include src\actions\adb_actions.ahk
 #Include src\actions\vaultflow_actions.ahk
+
+; Command System Init (DEBE ir después de actions)
+#Include src\core\command_system_init.ahk
 
 ; --------------------
 ; UI
@@ -89,6 +92,9 @@ try {
 ; } catch {
 ;     ; Ignorar si no se puede ajustar el estado de CapsLock en este entorno
 ; }
+
+; Initialize Command System (Declarativo completo)
+InitializeCommandSystem()
 
 ; Startup welcome (C# only)
 try {

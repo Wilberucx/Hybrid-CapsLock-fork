@@ -119,21 +119,15 @@ ShowSystemStatus() {
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (Fase 2 - Sistema Declarativo)
+; REGISTRO DECLARATIVO (Estilo lazy.nvim)
 ; ==============================
-; Registrar todos los comandos Hybrid en el keymap registry
 RegisterHybridKeymaps() {
-    RegisterKeymap("hybrid", "R", "Reload Script (Kanata + AHK)", Func("ReloadHybridScript"), true)
-    RegisterKeymap("hybrid", "k", "Restart Kanata Only", Func("RestartKanataOnly"), false)
-    RegisterKeymap("hybrid", "e", "Exit Script", Func("ExitHybridScript"), true)
-    RegisterKeymap("hybrid", "p", "Pause Hybrid", Func("PauseHybridScript"), false)
-    RegisterKeymap("hybrid", "c", "Open Config Folder", Func("OpenConfigFolder"), false)
-    RegisterKeymap("hybrid", "l", "View Log File", Func("ViewLogFile"), false)
-    RegisterKeymap("hybrid", "v", "Show Version Info", Func("ShowVersionInfo"), false)
-    RegisterKeymap("hybrid", "s", "Show System Status", Func("ShowSystemStatus"), false)
+    RegisterKeymap("hybrid", "p", "Pause Hybrid", PauseHybridScript, false, 1)
+    RegisterKeymap("hybrid", "s", "Show System Status", ShowSystemStatus, false, 2)
+    RegisterKeymap("hybrid", "v", "Show Version Info", ShowVersionInfo, false, 3)
+    RegisterKeymap("hybrid", "l", "View Log File", ViewLogFile, false, 4)
+    RegisterKeymap("hybrid", "c", "Open Config Folder", OpenConfigFolder, false, 5)
+    RegisterKeymap("hybrid", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
+    RegisterKeymap("hybrid", "R", "Reload Script", ReloadHybridScript, true, 7)
+    RegisterKeymap("hybrid", "e", "Exit Script", ExitHybridScript, true, 8)
 }
-
-; ==============================
-; NOTA: Estas funciones son reutilizables
-; Pueden ser llamadas desde cualquier parte del código
-; ==============================

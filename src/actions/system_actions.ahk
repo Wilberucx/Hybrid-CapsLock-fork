@@ -1,31 +1,35 @@
 ; ==============================
-; System Actions - Funciones reutilizables
+; System Actions - Sistema Declarativo Completo
 ; ==============================
-; Extracted from commands_layer.ahk para seguir arquitectura declarativa
-; Cada función es independiente y puede ser llamada desde cualquier lugar
+; Estilo lazy.nvim: UNA SOLA DECLARACIÓN por comando
 
 ; ==============================
-; FUNCIONES DE SISTEMA
+; FUNCIONES DE ACCIÓN
 ; ==============================
 
 ShowSystemInfo() {
     Run("cmd.exe /k systeminfo")
+    ShowCommandExecuted("System", "System Info")
 }
 
 ShowTaskManager() {
     Run("taskmgr.exe")
+    ShowCommandExecuted("System", "Task Manager")
 }
 
 ShowServicesManager() {
     Run("services.msc")
+    ShowCommandExecuted("System", "Services Manager")
 }
 
 ShowDeviceManager() {
     Run("devmgmt.msc")
+    ShowCommandExecuted("System", "Device Manager")
 }
 
 ShowDiskCleanup() {
     Run("cleanmgr.exe")
+    ShowCommandExecuted("System", "Disk Cleanup")
 }
 
 ToggleHiddenFiles() {
@@ -45,10 +49,12 @@ ToggleHiddenFiles() {
 
 ShowRegistryEditor() {
     Run("regedit.exe")
+    ShowCommandExecuted("System", "Registry Editor")
 }
 
 ShowEnvironmentVariables() {
     Run("rundll32.exe sysdm.cpl,EditEnvironmentVariables")
+    ShowCommandExecuted("System", "Environment Variables")
 }
 
 ShowEventViewer() {
@@ -57,24 +63,20 @@ ShowEventViewer() {
     } catch {
         try Run("eventvwr.msc")
     }
+    ShowCommandExecuted("System", "Event Viewer")
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (Fase 2 - Sistema Declarativo)
+; REGISTRO DECLARATIVO (Estilo lazy.nvim)
 ; ==============================
 RegisterSystemKeymaps() {
-    RegisterKeymap("system", "s", "System Info", Func("ShowSystemInfo"), false)
-    RegisterKeymap("system", "t", "Task Manager", Func("ShowTaskManager"), false)
-    RegisterKeymap("system", "v", "Services Manager", Func("ShowServicesManager"), false)
-    RegisterKeymap("system", "d", "Device Manager", Func("ShowDeviceManager"), false)
-    RegisterKeymap("system", "c", "Disk Cleanup", Func("ShowDiskCleanup"), false)
-    RegisterKeymap("system", "h", "Toggle Hidden Files", Func("ToggleHiddenFiles"), false)
-    RegisterKeymap("system", "r", "Registry Editor", Func("ShowRegistryEditor"), false)
-    RegisterKeymap("system", "E", "Environment Variables", Func("ShowEnvironmentVariables"), false)
-    RegisterKeymap("system", "e", "Event Viewer", Func("ShowEventViewer"), false)
+    RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+    RegisterKeymap("system", "t", "Task Manager", ShowTaskManager, false, 2)
+    RegisterKeymap("system", "v", "Services Manager", ShowServicesManager, false, 3)
+    RegisterKeymap("system", "e", "Event Viewer", ShowEventViewer, false, 4)
+    RegisterKeymap("system", "d", "Device Manager", ShowDeviceManager, false, 5)
+    RegisterKeymap("system", "c", "Disk Cleanup", ShowDiskCleanup, false, 6)
+    RegisterKeymap("system", "h", "Toggle Hidden Files", ToggleHiddenFiles, false, 7)
+    RegisterKeymap("system", "r", "Registry Editor", ShowRegistryEditor, false, 8)
+    RegisterKeymap("system", "E", "Environment Variables", ShowEnvironmentVariables, false, 9)
 }
-
-; ==============================
-; NOTA: Estas funciones son reutilizables
-; Pueden ser llamadas desde cualquier parte del código
-; ==============================
