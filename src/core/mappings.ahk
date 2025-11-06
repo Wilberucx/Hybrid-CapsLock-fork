@@ -148,10 +148,7 @@ ApplyGenericMappings(layerName, mappings, contextFn, keyPrefix := "") {
     if (!IsSet(mappings) || mappings.Count = 0)
         return
     ; disable static per-layer if applicable
-    if (layerName = "modifier") {
-        global modifierStaticEnabled
-        modifierStaticEnabled := false
-    } else if (layerName = "excel") {
+    if (layerName = "excel") {
         global excelStaticEnabled
         excelStaticEnabled := false
     } else if (SubStr(layerName, 1, 4) = "nvim") {
@@ -161,7 +158,7 @@ ApplyGenericMappings(layerName, mappings, contextFn, keyPrefix := "") {
     HotIf(contextFn)
     for key, action in mappings.OwnProps() {
         hk := (keyPrefix = "") ? key : (keyPrefix . key)
-        Hotkey(hk, (*) => (layerName = "modifier" ? (MarkCapsLockAsModifier(), ExecuteAction(layerName, action)) : ExecuteAction(layerName, action)), "On")
+        Hotkey(hk, (*) => ExecuteAction(layerName, action), "On")
         if (!_layerRegisteredHotkeys.Has(layerName))
             _layerRegisteredHotkeys[layerName] := []
         _layerRegisteredHotkeys[layerName].Push(hk)
@@ -181,10 +178,7 @@ UnregisterGenericMappings(layerName) {
         _layerRegisteredHotkeys.Delete(layerName)
     }
     ; re-enable static per-layer if applicable
-    if (layerName = "modifier") {
-        global modifierStaticEnabled
-        modifierStaticEnabled := true
-    } else if (layerName = "excel") {
+    if (layerName = "excel") {
         global excelStaticEnabled
         excelStaticEnabled := true
     } else if (SubStr(layerName, 1, 4) = "nvim") {
@@ -193,34 +187,9 @@ UnregisterGenericMappings(layerName) {
     }
 }
 
-ReloadModifierMappings() {
-    ; NOTA: Modifier mode desactivado - Delegado a Kanata
-    ; Esta función se mantiene vacía para compatibilidad con código existente
-    ; que pueda llamarla, pero no hace nada ya que Kanata maneja todas las
-    ; combinaciones CapsLock+tecla ahora.
-    return
-    
-    ; ---- CÓDIGO ORIGINAL DESACTIVADO ----
-    ; global debug_mode
-    ; try {
-    ;     iniPath := A_ScriptDir . "\\config\\modifier_layer.ini"
-    ;     maps := LoadSimpleMappings(iniPath)
-    ;     if (IsSet(debug_mode) && debug_mode)
-    ;         OutputDebug "[MOD] ReloadModifierMappings loaded=" (IsObject(maps) ? maps.Count : -1) "\n"
-    ;     if (maps.Count > 0) {
-    ;         if (IsSet(debug_mode) && debug_mode)
-    ;             OutputDebug "[MOD] Applying modifier mappings: " maps.Count "\n"
-    ;         ApplyGenericMappings("modifier", maps, (*) => (modifierLayerEnabled && ModifierLayerAppAllowed()), "CapsLock & ")
-    ;     }
-    ;     else {
-    ;         if (IsSet(debug_mode) && debug_mode)
-    ;             OutputDebug "[MOD] No modifier mappings found; unregistering\n"
-    ;         UnregisterGenericMappings("modifier")
-    ;     }
-    ; } catch {
-    ;     UnregisterGenericMappings("modifier")
-    ; }
-}
+; ReloadModifierMappings() - REMOVED
+; Modifier layer is now fully handled by Kanata (homerow mods + CapsLock combinations)
+; Legacy function removed as of cleanup - no longer needed
 
 ReloadExcelMappings() {
     try {

@@ -26,15 +26,10 @@ global leaderActive := false
 global excelLayerActive := false
 ; Default: enable static Excel hotkeys unless dynamic mappings disable them
 global excelStaticEnabled := true
-global capsLockWasHeld := false
-global capsLockUsedAsModifier := false
-; Tap detection for CapsLock (to toggle Nvim only on quick tap)
-global capsTapThresholdMs := 250  ; configurable via configuration.ini [Behavior].nvim_tap_threshold_ms
 global rightClickHeld := false
 global scrollModeActive := false
 global _yankAwait := false
 global _deleteAwait := false
-global capsActsNormal := false
 
 ; Temporary status tracking (UI)
 global currentTempStatus := ""
@@ -43,9 +38,6 @@ global tempStatusExpiry := 0
 ; ---- Layer enable flags (safe defaults) ----
 global nvimLayerEnabled := true
 global excelLayerEnabled := true
-global modifierLayerEnabled := true
-; Default: enable static Modifier hotkeys unless dynamic mappings disable them
-global modifierStaticEnabled := true
 global leaderLayerEnabled := true
 
 ; Static mapping toggles for dynamic override
@@ -56,9 +48,3 @@ global debug_mode := false
 
 ; Persistence master flag (can be overwritten by LoadLayerFlags)
 global enableLayerPersistence := true
-
-; ---- Helper: mark CapsLock usage as modifier ----
-MarkCapsLockAsModifier() {
-    global capsLockUsedAsModifier
-    capsLockUsedAsModifier := true
-}

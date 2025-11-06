@@ -50,18 +50,11 @@ KeyInList(key, listStr) {
 
 ; ---- Load layer enable flags from configuration ----
 LoadLayerFlags() {
-
-    global capsTapThresholdMs, ConfigIni
-    global ConfigIni, nvimLayerEnabled, excelLayerEnabled, modifierLayerEnabled, leaderLayerEnabled, enableLayerPersistence, debug_mode
+    global ConfigIni, nvimLayerEnabled, excelLayerEnabled, leaderLayerEnabled, enableLayerPersistence, debug_mode
     nvimLayerEnabled := CleanIniBool(IniRead(ConfigIni, "Layers", "nvim_layer_enabled", "true"))
     excelLayerEnabled := CleanIniBool(IniRead(ConfigIni, "Layers", "excel_layer_enabled", "true"))
-    modifierLayerEnabled := CleanIniBool(IniRead(ConfigIni, "Layers", "modifier_layer_enabled", "true"))
     leaderLayerEnabled := CleanIniBool(IniRead(ConfigIni, "Layers", "leader_layer_enabled", "true"))
     enableLayerPersistence := CleanIniBool(IniRead(ConfigIni, "Layers", "enable_layer_persistence", "true"))
-    ; Read Nvim tap threshold if present
-    thr := CleanIniNumber(IniRead(ConfigIni, "Behavior", "nvim_tap_threshold_ms", ""))
-    if (thr != "" && thr != "ERROR")
-        capsTapThresholdMs := Integer(thr)
 
     ; Hybrid pause settings
     global hybridPauseMinutes, enableEmergencyResumeHotkey

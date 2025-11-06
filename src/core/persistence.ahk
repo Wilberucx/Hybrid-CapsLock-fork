@@ -15,19 +15,18 @@ EnsureLayerStateDir() {
 }
 
 SaveLayerState() {
-    global enableLayerPersistence, isNvimLayerActive, excelLayerActive, capsActsNormal
+    global enableLayerPersistence, isNvimLayerActive, excelLayerActive
     if (!enableLayerPersistence)
         return
     EnsureLayerStateDir()
     stateFile := GetLayerStateFile()
     IniWrite(isNvimLayerActive ? "true" : "false", stateFile, "LayerState", "isNvimLayerActive")
     IniWrite(excelLayerActive ? "true" : "false", stateFile, "LayerState", "excelLayerActive")
-    IniWrite(capsActsNormal ? "true" : "false", stateFile, "LayerState", "capsActsNormal")
 }
 
 LoadLayerState() {
     global enableLayerPersistence, nvimLayerEnabled, excelLayerEnabled
-    global isNvimLayerActive, excelLayerActive, capsActsNormal
+    global isNvimLayerActive, excelLayerActive
     if (!enableLayerPersistence)
         return
     stateFile := GetLayerStateFile()
@@ -36,10 +35,8 @@ LoadLayerState() {
     ; Read values with defaults to current in-memory states
     nvimState := IniRead(stateFile, "LayerState", "isNvimLayerActive", isNvimLayerActive ? "true" : "false")
     excelState := IniRead(stateFile, "LayerState", "excelLayerActive", excelLayerActive ? "true" : "false")
-    capsState := IniRead(stateFile, "LayerState", "capsActsNormal", capsActsNormal ? "true" : "false")
     
     ; Apply with gating clamps
     isNvimLayerActive := (nvimLayerEnabled && (StrLower(nvimState) = "true"))
     excelLayerActive := (excelLayerEnabled && (StrLower(excelState) = "true"))
-    capsActsNormal := (StrLower(capsState) = "true")
 }

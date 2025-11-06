@@ -8,7 +8,35 @@ El Modo Líder es un sistema de menús contextuales que organiza funciones avanz
 
 ## 🎯 Activación
 
-**Combinación:** `leader`
+**Atajo por defecto:** `Hold CapsLock + Space`
+
+> **Cómo funciona:**
+> 1. Mantén presionado `CapsLock` físicamente
+> 2. Mientras lo mantienes, presiona `Space`
+> 3. Se abrirá el menú de Leader
+
+**Personalización del atajo:** El atajo es configurable editando `kanata.kbd`. Por defecto, cuando mantienes CapsLock, se activa la capa `vim-nav` donde `Space` envía `F24` (que AutoHotkey detecta como Leader). Puedes cambiar esto a cualquier otra tecla:
+
+```lisp
+;; En kanata.kbd, busca la capa vim-nav:
+(deflayer vim-nav
+  _    f13  _    _   end   _    _    _    _    _   home  _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    left down up   rght _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _             f24             _    _    _
+                           ↑
+                    Space envía F24 (Leader)
+)
+
+;; Ejemplo: Cambiar Leader a "Hold CapsLock + L"
+;; Reemplaza: _    _    _    _    _    _    left down up   rght _    _    _
+;; Por:       _    _    _    _    _    _    left down up   f24  _    _    _
+;;                                                          ↑
+;;                                                    L ahora es Leader
+```
+
+Después de editar, recarga el sistema: **Leader → c → h → R** (Reload completo) o **Leader → c → h → k** (Restart Kanata solamente).
 
 Al activar el modo líder, aparece un menú visual que muestra las opciones disponibles.
 

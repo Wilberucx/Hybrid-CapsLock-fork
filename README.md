@@ -48,21 +48,23 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 
 ### 🎹 Capas y Modos
 
-- **🏠 Homerow Mods (Kanata):** Las teclas de la home row actúan como modificadores cuando las mantienes presionadas:
+#### Kanata (Hardware-Level)
+- **🏠 Homerow Mods:** Modificadores sin salir de la home row
   - **Mano izquierda**: `a`=Ctrl, `s`=Alt, `d`=Win, `f`=Shift
   - **Mano derecha**: `j`=Shift, `k`=Win, `l`=Alt, `;`=Ctrl
+  - [**📖 Guía Completa de Homerow Mods**](doc/HOMEROW_MODS.md)
   
-- **📝 Capa Nvim (Tap CapsLock):** Un toque rápido en `CapsLock` activa la capa de navegación y edición estilo Vim en AutoHotkey (hjkl, visual mode, comandos, etc).
+- **🧭 Navegación Rápida (Hold CapsLock):** Navegación hjkl instantánea mientras mantienes CapsLock presionado (sin persistencia, desaparece al soltar)
 
-- **🧭 Navegación Vim (Hold CapsLock):** Mantener presionado `CapsLock` activa navegación hjkl local en Kanata (sin delay, a nivel hardware).
+- **🔢 Numpad (Hold O):** Teclado numérico completo en mano izquierda
+- **🎵 Media (Hold E):** Controles multimedia (play/pause/volume)
+- **🖱️ Mouse (Hold N/M/B):** Clicks de mouse desde teclado
+- [**📖 Guía de Numpad y Media Layers**](doc/NUMPAD_MEDIA_LAYERS.md)
 
-- **🎯 Modo Líder (Hold CapsLock + Space):** Accede a menús contextuales organizados en AutoHotkey para programas, ventanas, comandos, timestamps, información y más.
+#### AutoHotkey (Lógica Context-Aware)
+- **📝 Nvim Layer (Tap CapsLock):** Toggle persistente de navegación Vim con lógica avanzada (visual mode, comandos :wq, gg/G, etc). A diferencia de `Hold CapsLock`, esta capa permanece activa hasta que vuelvas a tocar CapsLock.
 
-### ⌨️ Otras Capas
-
-- **🔢 Numpad (Hold O):** Teclado numérico en la mano izquierda
-- **🎵 Media (Hold E):** Controles de media (play/pause, volumen, siguiente/anterior)
-- **🖱️ Mouse (Hold N/M/B):** Clicks de mouse integrados en el teclado
+- **🎯 Modo Líder (Hold CapsLock + Space):** Menús contextuales inteligentes para programas, ventanas, comandos del sistema, timestamps, información personal y más. Configurable como atajo en `kanata.kbd` (F24 en capa vim-nav).
 
 ## ⚙️ Instalación y Uso
 
@@ -83,6 +85,15 @@ Inicia automáticamente Kanata + HybridCapsLock en un solo paso.
 2. Ejecutar `HybridCapsLock.ahk`
 
 **Inicio automático en Windows (Opcional):** Crear un acceso directo de `HybridCapsLock.ahk` en la carpeta de inicio de Windows (`shell:startup`).
+
+### Recargar Configuración
+
+Después de editar cualquier archivo de configuración (`kanata.kbd`, `.ini`, `.ahk`):
+
+**Atajo de recarga integrado:** `Hold CapsLock + Space → c → h → R`
+
+- **R**: Reload completo (Kanata + AutoHotkey) - recomendado
+- **k**: Restart solo Kanata (útil si solo editaste `kanata.kbd`)
 
 > **⚡ Nota Importante**: Este fork integra **Kanata** (ergonomía, homerow mods) con **AutoHotkey** (inteligencia, context-aware).  
 > Ver [MIGRATION.md](MIGRATION.md) para arquitectura completa y [STARTUP.md](STARTUP.md) para configuración de inicio.

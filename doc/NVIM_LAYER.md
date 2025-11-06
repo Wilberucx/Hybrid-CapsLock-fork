@@ -6,7 +6,52 @@
 
 La Capa Nvim transforma tu teclado en un entorno de navegación y edición inspirado en Vim, proporcionando control preciso sin necesidad de mantener teclas modificadoras.
 
-## 🎯 Activación
+## 🎯 Diferencia: vim-nav (Kanata) vs Nvim Layer (AutoHotkey)
+
+Este proyecto tiene **DOS sistemas de navegación Vim-style** con propósitos diferentes:
+
+### 🔹 vim-nav (Kanata) - Hold CapsLock
+- **Activación**: Mantener presionado `CapsLock` físicamente
+- **Persistencia**: ❌ No persistente (desaparece al soltar CapsLock)
+- **Propósito**: Navegación hjkl **rápida y temporal** a nivel hardware
+- **Ventajas**: 
+  - Timing perfecto (<10ms)
+  - Funciona incluso en pantallas de login
+  - No requiere toggle (solo mantener)
+- **Limitaciones**: 
+  - Solo hjkl básico (sin Visual Mode, sin comandos dd/yy/:wq)
+  - No context-aware
+
+### 🔸 Nvim Layer (AutoHotkey) - Tap CapsLock
+- **Activación**: Presionar y soltar `CapsLock` rápidamente (tap)
+- **Persistencia**: ✅ Persistente (permanece activo hasta volver a tap CapsLock)
+- **Propósito**: Navegación Vim **completa y avanzada** con lógica inteligente
+- **Ventajas**:
+  - Visual Mode (seleccionar con v)
+  - Comandos avanzados (gg/G, dd/yy, :wq, c/a)
+  - Context-aware (whitelist/blacklist de apps)
+  - Tooltips visuales
+  - Insert mode temporal
+- **Limitaciones**:
+  - Delay ~50-100ms (software-level)
+  - Requiere toggle ON/OFF
+
+### 🎯 ¿Cuándo usar cada uno?
+
+| Situación | Usa vim-nav (Hold) | Usa Nvim Layer (Tap) |
+|-----------|-------------------|----------------------|
+| Navegación rápida de 2-3 segundos | ✅ | ❌ |
+| Edición larga de documento | ❌ | ✅ |
+| Necesitas Visual Mode | ❌ | ✅ |
+| Quieres comandos :wq/dd/yy | ❌ | ✅ |
+| Pantalla de login/BIOS | ✅ | ❌ |
+| Dentro de Nvim/Vim real | ✅ | ❌ |
+
+> **💡 Tip**: Combínalos según la tarea. Hold CapsLock para ajustes rápidos, Tap CapsLock para sesiones de edición.
+
+---
+
+## 🎯 Activación de Nvim Layer (AutoHotkey)
 
 **Método:** Presiona y suelta `CapsLock` rápidamente (tap)
 

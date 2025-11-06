@@ -10,10 +10,13 @@ Bienvenido al centro de documentación de HybridCapsLock. Aquí encontrarás tod
 
 Cada capa tiene un propósito específico. Aprende a usarlas y configurarlas en sus documentos dedicados:
 
-### Modos de Operación Principales
-- **[Modo Modificador](MODIFIER_MODE.md)**: Atajos disponibles al *mantener* `CapsLock`.
-- **[Capa Nvim](NVIM_LAYER.md)**: Navegación y edición estilo Vim al *pulsar* `CapsLock`.
-- **[Modo Líder](LEADER_MODE.md)**: Menús contextuales que se activan con `CapsLock + Space`.
+### Capas de Kanata (Hardware-Level)
+- **[🏠 Homerow Mods](HOMEROW_MODS.md)**: Modificadores (Ctrl/Alt/Win/Shift) en las teclas a/s/d/f y j/k/l/; sin salir de la home row. **¡Característica clave de ergonomía!**
+- **[🔢 Numpad y Media Layers](NUMPAD_MEDIA_LAYERS.md)**: Teclado numérico (Hold O) y controles multimedia (Hold E) manejados 100% por Kanata.
+
+### Capas de AutoHotkey (Lógica Context-Aware)
+- **[Capa Nvim](NVIM_LAYER.md)**: Navegación y edición estilo Vim persistente al *pulsar* `CapsLock` (toggle ON/OFF).
+- **[Modo Líder](LEADER_MODE.md)**: Menús contextuales inteligentes que se activan con `Hold CapsLock + Space`.
 
 ### Sub-Capas del Modo Líder
 - **[Capa Windows](WINDOWS_LAYER.md)**: Gestión de ventanas, escritorios virtuales y zoom.

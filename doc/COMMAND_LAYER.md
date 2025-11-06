@@ -111,13 +111,20 @@ Esta capa proporciona un **command palette jerárquico** que permite ejecutar sc
 
 ### 🧩 Hybrid Management (h)
 
-- R - Reload HybridCapsLock (confirma)
-- p - Pause Hybrid (suspende hotkeys, auto-resume configurable; reanuda al pulsar Leader)
-- l - View log file
-- c - Open config folder
-- v - Show version info
-- s - Show System Status
-- e - Exit Script
+Esta categoría especial controla el sistema HybridCapsLock completo, incluyendo recargas de Kanata.
+
+| Tecla | Comando | Descripción |
+|-------|---------|-------------|
+| **R** | **Reload Script** | Recarga completa: reinicia Kanata + reloads AutoHotkey (confirma) |
+| **k** | **Restart Kanata Only** | Reinicia solo Kanata (útil después de editar kanata.kbd) |
+| **p** | **Pause Hybrid** | Suspende hotkeys temporalmente (auto-resume configurable; reanuda al pulsar Leader) |
+| **e** | **Exit Script** | Cierra Kanata + AutoHotkey completamente |
+| **c** | **Open Config Folder** | Abre carpeta config/ en explorador |
+| **l** | **View Log File** | Abre hybrid_log.txt en Notepad |
+| **v** | **Show Version Info** | Muestra versión actual |
+| **s** | **Show System Status** | Estado del sistema Hybrid |
+
+> **💡 Tip importante**: Después de editar `kanata.kbd` o cualquier archivo `.ini`, usa **Leader → c → h → R** para recargar todo el sistema sin cerrar aplicaciones.
 
 | Tecla | Comando       | Descripción          |
 | ----- | ------------- | -------------------- |

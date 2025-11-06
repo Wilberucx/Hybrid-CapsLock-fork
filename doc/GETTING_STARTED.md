@@ -55,4 +55,9 @@ Esta es una mini referencia para la configuración inicial. Para una guía exhau
     -   **Información Personal:** `information.ini` (Guarda snippets de texto en `[PersonalInfo]` y asígnales atajos en `[InfoMapping]`)
     -   **Timestamps:** `timestamps.ini` (Define tus formatos de fecha y hora preferidos).
     -   **Comandos:** `commands.ini` (Define comandos de sistema y organízalos en el menú).
-4.  **Recarga los cambios:** Usa el atajo `leader → c → h → R` para aplicar la nueva configuración sin reiniciar el script.
+4.  **Recarga los cambios:** 
+    -   **Atajo completo:** `Hold CapsLock + Space → c → h → R`
+    -   **Qué hace:** Reinicia Kanata (para aplicar cambios en `kanata.kbd`) + Recarga AutoHotkey (para aplicar cambios en `.ini` y `.ahk`)
+    -   **Alternativa:** `Leader → c → h → k` para reiniciar solo Kanata sin recargar AHK
+
+> **💡 Tip**: Después de cualquier cambio en configuración (`kanata.kbd` o archivos `.ini`), usa siempre **Leader → c → h → R** en lugar de cerrar y abrir el script manualmente.

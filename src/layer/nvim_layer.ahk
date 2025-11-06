@@ -98,7 +98,16 @@ g::GLogicStart()
 +g::NvimGoToDocEdge(false)
 #HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock","P") && NvimLayerAppAllowed()) : false)
 
-; Basic navigation (hjkl) wildcard to capture Ctrl/Alt/Shift combinations
+; Basic navigation (hjkl) - DUPLICACIÓN INTENCIONAL con Kanata
+; Kanata maneja: Hold CapsLock + hjkl = navegación instantánea (no persistente)
+; AHK maneja: Nvim Layer activa (tap CapsLock) + hjkl = navegación persistente con lógica avanzada
+; 
+; Los wildcards (*h, *j, *k, *l) permiten combinar con modificadores:
+; - Shift+j → Shift+Down (seleccionar hacia abajo en Visual Mode)
+; - Ctrl+l → Ctrl+Right (navegar por palabras)
+; - Alt+h → Alt+Left (retroceder en navegador)
+; Kanata hace esto a nivel hardware, pero cuando Nvim Layer está activo, AHK toma control
+; para integrar con Visual Mode y otras funcionalidades context-aware
 *h::NvimDirectionalSend("Left")
 *j::NvimDirectionalSend("Down")
 *k::NvimDirectionalSend("Up")
