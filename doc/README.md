@@ -2,6 +2,18 @@
 
 Bienvenido al centro de documentación de HybridCapsLock. Aquí encontrarás toda la información detallada para dominar y personalizar el script.
 
+## ⭐ Lo Nuevo
+
+**🎉 Sistema Declarativo de Comandos** - Inspirado en lazy.nvim/which-key de Neovim
+- ✨ Cada comando en una sola línea
+- 🚀 Menús auto-generados dinámicamente  
+- 📦 Sin archivos de configuración externa
+- 🔧 Extensibilidad trivial
+
+📖 **[Ver COMMAND_LAYER.md](COMMAND_LAYER.md)** | **[Arquitectura](DECLARATIVE_SYSTEM.md)** | **[Cómo funciona](COMO_FUNCIONA_REGISTER.md)**
+
+---
+
 ## 🚀 Primeros Pasos
 
 - **[Guía de Inicio Rápido](GETTING_STARTED.md)**: ¿Nuevo aquí? Empieza con los atajos esenciales y una guía de configuración de 2 minutos.

@@ -1,558 +1,476 @@
-# Capa de Comandos (Líder: leader → `c`)
+# Command Layer - Sistema Declarativo (Estilo lazy.nvim/which-key)
 
-Navegación y salida
+## 🎯 Resumen
 
-- Esc: salir completamente de la paleta de comandos desde cualquier nivel (EXIT total)
-- Backspace: volver al menú anterior (back inteligente). Si estás en una categoría, regresa a COMMAND PALETTE; si estás en COMMAND PALETTE, regresa al Leader.
-- Backslash (\): reservado para back, pero puede no funcionar en todos los contextos; se estandariza Backspace como tecla de back.
+El **Command Layer** es un sistema de paleta de comandos inspirado en Neovim's which-key, donde **cada comando se define en una sola línea** sin archivos de configuración externa. Todo el sistema se genera dinámicamente desde el código AHK en runtime.
 
-Cómo se logró el back inteligente
+**Navegación:**
+- **Esc**: Salir completamente
+- **Backspace**: Volver al menú anterior  
+- **Timeout**: 10 segundos de inactividad
 
-- Con tooltips C# deshabilitados para entrada (tooltip_handles_input=false), el router de Leader mantiene un bucle dedicado (LeaderCommandsMenuLoop) que intercepta Esc/Backspace/"\" y retorna "EXIT" o "BACK" según corresponda, evitando que "\" llegue a los ejecutores como opción desconocida.
-- Con tooltips C# habilitados para entrada, la navegación usa una pila (breadcrumb) que permite volver exactamente al menú anterior.
+## 🚀 Acceso Rápido
 
-> Referencia rápida
->
-> - Configuración: config/commands.ini
-> - Confirmaciones: ver “Confirmaciones — Modelo de Configuración” en doc/CONFIGURATION.md y “Precedencia de Confirmación (Commands)” en este documento
-> - Tooltips (C#): sección [Tooltips] en config/configuration.ini (CONFIGURATION.md)
-
-Esta capa proporciona un **command palette jerárquico** que permite ejecutar scripts, comandos de terminal, comandos de PowerShell y aplicaciones directamente desde el teclado, organizados en categorías para una navegación más intuitiva.
-
-## 🎯 Cómo Acceder
-
-1. **Activa el Líder:** Presiona `leader`
-2. **Entra en Capa Comandos:** Presiona `c`
-3. **Selecciona categoría:** Presiona una tecla de categoría (s, n, g, m, f, w, v, o, a)
-4. **Ejecuta comando:** Presiona la tecla del comando específico
-
-## 🎮 Navegación en el Menú
-
-- **`Esc`** - Salir completamente del modo líder
-- **`Backspace`** - Volver al menú anterior
-- **Timeout:** 10 segundos de inactividad cierra automáticamente
-
-## 📋 Categorías Disponibles
-
-### 🖥️ System Commands (s)
-
-| Tecla | Comando            | Descripción                       |
-| ----- | ------------------ | --------------------------------- |
-| `s`   | **System Info**    | Información detallada del sistema |
-| `t`   | **Task Manager**   | Administrador de tareas           |
-| `v`   | **Services**       | Administrador de servicios        |
-| `e`   | **Event Viewer**   | Visor de eventos                  |
-| `d`   | **Device Manager** | Administrador de dispositivos     |
-| `c`   | **Disk Cleanup**   | Limpieza de disco                 |
-
-### 🌐 Network Commands (n)
-
-| Tecla | Comando          | Descripción                       |
-| ----- | ---------------- | --------------------------------- |
-| `i`   | **IP Config**    | Configuración de red completa     |
-| `p`   | **Ping Test**    | Test de conectividad a Google     |
-| `n`   | **Network Info** | Información de conexiones activas |
-
-### 🔧 Git Commands (g)
-
-| Tecla | Comando          | Descripción                       |
-| ----- | ---------------- | --------------------------------- |
-| `s`   | **Git Status**   | Estado del repositorio            |
-| `l`   | **Git Log**      | Historial de commits (últimos 10) |
-| `b`   | **Git Branches** | Lista de ramas locales y remotas  |
-| `d`   | **Git Diff**     | Diferencias no confirmadas        |
-| `a`   | **Git Add All**  | Agregar todos los archivos        |
-| `p`   | **Git Pull**     | Actualizar desde remoto           |
-
-### 📊 Monitoring Commands (m)
-
-| Tecla | Comando          | Descripción                    |
-| ----- | ---------------- | ------------------------------ |
-| `p`   | **Process List** | Lista de procesos activos      |
-| `s`   | **Service List** | Lista de servicios del sistema |
-| `d`   | **Disk Space**   | Espacio en disco disponible    |
-| `m`   | **Memory Usage** | Uso de memoria RAM             |
-| `c`   | **CPU Usage**    | Uso del procesador             |
-
-### 📁 Folder Access (f)
-
-| Tecla | Comando           | Descripción                       |
-| ----- | ----------------- | --------------------------------- |
-| `t`   | **Temp Folder**   | Carpeta temporal del sistema      |
-| `a`   | **AppData**       | Datos de aplicaciones del usuario |
-| `p`   | **Program Files** | Archivos de programa              |
-| `u`   | **User Profile**  | Perfil del usuario actual         |
-| `d`   | **Desktop**       | Escritorio del usuario            |
-| `s`   | **System32**      | Carpeta del sistema Windows       |
-
-> Nota: "Windows Commands (w)" fue integrado en "System Commands (s)".
-
-### 🖥️ System Commands (s)
-
-| Tecla | Comando                   | Descripción                          |
-| ----- | ------------------------- | ------------------------------------ |
-| `s`   | **System Info**           | Información del sistema (systeminfo) |
-| `t`   | **Task Manager**          | Administrador de tareas              |
-| `v`   | **Services**              | Servicios del sistema                |
-| `d`   | **Device Manager**        | Administrador de dispositivos        |
-| `c`   | **Disk Cleanup**          | Liberador de espacio en disco        |
-| `h`   | **Toggle Hidden Files**   | Mostrar/ocultar archivos ocultos     |
-| `r`   | **Registry Editor**       | Editor del registro                  |
-| `e`   | **Event Viewer**          | Visor de eventos                     |
-| `E`   | **Environment Variables** | Variables de entorno                 |
-
-### 🔐 [VaultFlow](https://github.com/Wilberucx/vaultflow) Commands (v)
-
-| Tecla | Comando              | Descripción                |
-| ----- | -------------------- | -------------------------- |
-| `v`   | **Launch VaultFlow** | Ejecutar comando VaultFlow |
-
-### ⚡ Power Options (o)
-
-### 🧩 Hybrid Management (h)
-
-Esta categoría especial controla el sistema HybridCapsLock completo, incluyendo recargas de Kanata.
-
-| Tecla | Comando | Descripción |
-|-------|---------|-------------|
-| **R** | **Reload Script** | Recarga completa: reinicia Kanata + reloads AutoHotkey (confirma) |
-| **k** | **Restart Kanata Only** | Reinicia solo Kanata (útil después de editar kanata.kbd) |
-| **p** | **Pause Hybrid** | Suspende hotkeys temporalmente (auto-resume configurable; reanuda al pulsar Leader) |
-| **e** | **Exit Script** | Cierra Kanata + AutoHotkey completamente |
-| **c** | **Open Config Folder** | Abre carpeta config/ en explorador |
-| **l** | **View Log File** | Abre hybrid_log.txt en Notepad |
-| **v** | **Show Version Info** | Muestra versión actual |
-| **s** | **Show System Status** | Estado del sistema Hybrid |
-
-> **💡 Tip importante**: Después de editar `kanata.kbd` o cualquier archivo `.ini`, usa **Leader → c → h → R** para recargar todo el sistema sin cerrar aplicaciones.
-
-| Tecla | Comando       | Descripción          |
-| ----- | ------------- | -------------------- |
-| `s`   | **Sleep**     | Suspender el sistema |
-| `h`   | **Hibernate** | Hibernar el sistema  |
-| `r`   | **Restart**   | Reiniciar el sistema |
-| `u`   | **Shutdown**  | Apagar el sistema    |
-
-### 📱 ADB Tools (a)
-
-| Tecla | Comando            | Descripción                        |
-| ----- | ------------------ | ---------------------------------- |
-| `d`   | **ADB Devices**    | Listar dispositivos conectados     |
-| `x`   | **ADB Disconnect** | Desconectar todos los dispositivos |
-| `s`   | **ADB Shell**      | Abrir shell de Android             |
-| `l`   | **ADB Logcat**     | Ver logs del dispositivo           |
-| `r`   | **ADB Reboot**     | Reiniciar dispositivo Android      |
-
-## 🔧 Personalización de Tooltips
-
-### Editar Tooltips Existentes
-
-Los tooltips se configuran en `commands.ini` en la sección `[MenuDisplay]`. Cada línea sigue el formato:
-
-```ini
-[MenuDisplay]
-# Menú principal
-main_line1=SYSTEM:
-main_line2=s - System Commands  n - Network Commands
-main_line3=g - Git Commands     m - Monitoring Commands
-main_line4=f - Folder Access    w - Windows Commands
-main_line5=
-main_line6=CUSTOM:
-main_line7=v - VaultFlow        o - Power Options
-main_line8=a - ADB Tools
-
-# Submenús por categoría
-system_line1=s - System Info
-system_line2=t - Task Manager
-system_line3=v - Services
-system_line4=e - Event Viewer
-system_line5=d - Device Manager
-system_line6=c - Disk Cleanup
-
-network_line1=i - IP Config
-network_line2=p - Ping Test
-network_line3=n - Network Info
-
-git_line1=s - Git Status
-git_line2=l - Git Log
-git_line3=b - Git Branches
-git_line4=d - Git Diff
-git_line5=a - Git Add All
-git_line6=p - Git Pull
-```
-
-### Agregar Nuevas Líneas
-
-Para agregar una nueva opción al tooltip:
-
-```ini
-# Ejemplo: Agregar comando al menú de sistema
-system_line7=x - Mi Nuevo Comando
-```
-
-### Personalizar Texto
-
-Puedes cambiar cualquier texto del tooltip:
-
-```ini
-# Cambiar de inglés a español
-system_line1=s - Información del Sistema
-system_line2=t - Administrador de Tareas
-network_line1=i - Configuración IP
-git_line1=s - Estado de Git
-```
-
-### Reorganizar Menús
-
-Puedes reorganizar completamente los menús:
-
-```ini
-# Ejemplo: Reorganizar menú principal
-main_line1=DESARROLLO:
-main_line2=g - Git Commands     n - Network Commands
-main_line3=
-main_line4=SISTEMA:
-main_line5=s - System Commands  m - Monitoring Commands
-main_line6=f - Folder Access    w - Windows Commands
-```
-
-## 🚀 Agregar Nuevos Comandos
-
-### Paso 1: Actualizar el Tooltip
-
-Primero, agrega la nueva opción al tooltip en `commands.ini`:
-
-```ini
-[MenuDisplay]
-system_line7=x - Mi Comando Personalizado
-```
-
-### Paso 2: Modificar la Función de Ejecución
-
-En `HybridCapsLock.ahk`, localiza la función correspondiente y agrega el nuevo caso:
-
-```autohotkey
-ExecuteSystemCommand(cmd) {
-    Switch cmd {
-        Case "s":
-            Run("cmd.exe /k systeminfo")
-        Case "t":
-            Run, taskmgr.exe
-        Case "v":
-            Run, services.msc
-        Case "e":
-            Run("eventvwr.msc")
-        Case "d":
-            Run, devmgmt.msc
-        Case "c":
-            Run("cleanmgr.exe")
-        Case "x":  ; Tu nuevo comando
-            Run, notepad.exe
-    }
-    ShowCommandExecuted("System", cmd)
-    return
-}
-```
-
-### Paso 3: Actualizar el Input
-
-Agrega la nueva tecla al Input de la categoría:
-
-```autohotkey
-# Buscar esta línea en el código:
-Input, _sysCmd, L1 T10, {Escape}{Backspace}, s,t,v,e,d,c
-
-# Cambiar a:
-ih := InputHook("L1 T10", "{Escape}{Backspace}")
-ih.Start()
-ih.Wait()
-_sysCmd := ih.Input
-```
-
-## 🆕 Agregar Nueva Categoría
-
-### Paso 1: Agregar al Menú Principal
-
-En `commands.ini`, agrega la nueva categoría al menú principal:
-
-```ini
-[MenuDisplay]
-main_line9=x - Mi Nueva Categoría
-```
-
-### Paso 2: Crear Tooltip de la Categoría
-
-```ini
-[MenuDisplay]
-micategoria_line1=a - Mi Primer Comando
-micategoria_line2=b - Mi Segundo Comando
-micategoria_line3=c - Mi Tercer Comando
-```
-
-### Paso 3: Crear Función de Menú
-
-En `HybridCapsLock.ahk`, agrega la nueva función:
-
-```autohotkey
-ShowMiCategoriaCommandsMenu() {
-    global CommandsIni
-    ToolTipX := A_ScreenWidth // 2 - 120
-    ToolTipY := A_ScreenHeight // 2 - 90
-    MenuText := "MI CATEGORIA`n"
-    MenuText .= "`n"
-
-    Loop, 10 {
-        lineContent := IniRead(CommandsIni, "MenuDisplay", "micategoria_line" . A_Index, "")
-        if (lineContent != "ERROR" && lineContent != "") {
-            MenuText .= lineContent . "`n"
-        }
-    }
-
-    MenuText .= "`n"
-    MenuText .= "[Backspace: Back] [Esc: Exit]"
-    ToolTip(MenuText, ToolTipX, ToolTipY)
-    return
-}
-```
-
-### Paso 4: Crear Función de Ejecución
-
-```autohotkey
-ExecuteMiCategoriaCommand(cmd) {
-    Switch cmd {
-        Case "a":
-            Run("cmd.exe /k echo \"Mi Primer Comando\"")
-        Case "b":
-            Run, notepad.exe
-        Case "c":
-            Run("calc.exe")
-    }
-    ShowCommandExecuted("MiCategoria", cmd)
-    return
-}
-```
-
-### Paso 5: Integrar en el Switch Principal
-
-En la función principal de comandos, agrega el nuevo caso:
-
-```autohotkey
-# Buscar esta línea:
-Input, _cmdCategory, L1 T10, {Escape}{Backspace}, s,n,g,m,f,w,v,o,a
-
-# Cambiar a:
-ih := InputHook("L1 T10", "{Escape}{Backspace}")
-ih.Start()
-ih.Wait()
-_cmdCategory := ih.Input
-
-# Agregar al Switch:
-Case "x": ; Mi Nueva Categoría
-    ShowMiCategoriaCommandsMenu()
-    ih := InputHook("L1 T10", "{Escape}{Backspace}")
-ih.Start()
-ih.Wait()
-_miCmd := ih.Input
-
-    if (ErrorLevel = "Timeout" || ErrorLevel = "EndKey:Escape") {
-        _exitLeader := true
-    } else if (ErrorLevel = "EndKey:Backspace") {
-        continue ; Back to commands menu
-    } else {
-        ExecuteMiCategoriaCommand(_miCmd)
-        _exitLeader := true
-    }
-```
-
-## 📝 Tipos de Comandos Soportados
-
-### Comandos CMD
-
-```autohotkey
-Run("cmd.exe /k ipconfig /all")
-```
-
-### Comandos PowerShell
-
-```autohotkey
-Run("powershell.exe -Command \"Get-Process | Sort-Object CPU\"")
-```
-
-### Ejecutables Directos
-
-```autohotkey
-Run, taskmgr.exe
-Run, notepad.exe
-```
-
-### Scripts
-
-```autohotkey
-Run("C:\\Scripts\\mi_script.bat")
-Run("powershell.exe -File \"C:\\Scripts\\mi_script.ps1\"")
-```
-
-### Archivos MSC (Consolas de Windows)
-
-```autohotkey
-Run, services.msc
-Run, devmgmt.msc
-```
-
-## ⚙️ Configuración y Confirmaciones
-
-### Precedencia de Confirmación (Commands)
-
-Orden (mayor a menor):
-
-1. Global: `configuration.ini` → `[Behavior]` → `show_confirmation_global`
-2. Categoría: `commands.ini` → `[CategorySettings]` `<Friendly>_show_confirmation`
-   - `true`: fuerza confirmación para toda la categoría (omite per-command)
-   - `false`: delega a per-command
-3. Per-command (listas): `commands.ini` → `[Confirmations.<Friendly>]`
-   - `confirm_keys`: teclas que DEBEN confirmar (case-sensitive)
-   - `no_confirm_keys`: teclas que NO deben confirmar
-   - Compatibilidad extendida: alias `key_ascii_<ord>` → `key_<char>` → clave raw
-4. Default de capa: `commands.ini` → `[Settings]` → `show_confirmation`
-5. Fallback: `power=true`, otros `false`
-
-Ejemplos:
-
-```ini
-[Behavior]
-show_confirmation_global=false
-
-[CategorySettings]
-PowerOptions_show_confirmation=true
-
-[Confirmations.HybridManagement]
-confirm_keys=R
-
-[Settings]
-show_confirmation=true
-[Confirmations.PowerOptions]
-no_confirm_keys=s h
-```
-
-## ⚙️ Configuración Avanzada
-
-### Custom Commands y CommandFlag (qué y cómo)
-
-- Custom Commands (`[CustomCommands]`): definen QUÉ ejecutar (tipo:payload).
-- CommandFlag (`[CommandFlag.<Nombre>]`): definen CÓMO ejecutar (terminal, admin, working_dir, env, etc.).
-- Menú por categoría (`[<catKey>_category]`): cada tecla puede apuntar a una acción con `k_action=@Nombre` o `k_action=tipo:payload` inline.
-- Confirmación: se controla por la jerarquía actual (global → categoría → per-key listas); no se define en CommandFlag.
-- Variables opcionales (`[CustomVars]`): placeholders `{Var}` en payloads/opciones.
-
-Ejemplo:
-
-```ini
-[CustomCommands]
-GitStatus=cmd:git status
-
-[CommandFlag.GitStatus]
-terminal=conhost
-keep_open=true
-
-[t_category]
-title=Tools
-order=g
-g=Git Status
-g_action=@GitStatus
-; confirmación si se desea, en la categoría:
-; confirm_keys=g
-```
-
-Para detalles ver `doc/COMMANDS_CUSTOM.md`.
-
-### Archivo commands.ini - Sección [Settings]
-
-```ini
-[Settings]
-show_output=true          ; Mostrar ventana de salida
-close_on_success=false    ; No cerrar automáticamente
-timeout_seconds=30        ; Timeout para comandos largos
-enable_custom_commands=true ; Permitir comandos personalizados
-```
-
-### Sección [CategorySettings]
-
-```ini
-[CategorySettings]
-system_timeout=10         ; Timeout específico para comandos de sistema
-network_timeout=10        ; Timeout para comandos de red
-git_timeout=10           ; Timeout para comandos Git
-show_execution_feedback=true ; Mostrar feedback de ejecución
-feedback_duration=1500   ; Duración del feedback (ms)
-```
-
-## 💡 Consejos de Uso
-
-### 🚀 Flujo Rápido
+**Activación:** `Hold CapsLock + Space → c`
 
 ```
-leader → c → s → t (Task Manager en 4 teclas)
-leader → c → g → s (Git Status en 4 teclas)
-leader → c → f → t (Temp folder en 4 teclas)
+<leader> → c (Commands)
+         ↓
+┌─────────────────────────────┐
+│   COMMAND PALETTE           │
+│                             │
+│ s - System Commands         │
+│ h - Hybrid Management       │
+│ g - Git Commands            │
+│ m - Monitoring Commands     │
+│ n - Network Commands        │
+│ f - Folder Access           │
+│ o - Power Options           │
+│ a - ADB Tools               │
+│ v - VaultFlow               │
+└─────────────────────────────┘
 ```
-
-### 🎯 Comandos Frecuentes
-
-- **Desarrollo:** `g` (Git), `n` (Network), `f` (Folders)
-- **Administración:** `s` (System), `m` (Monitoring), `w` (Windows)
-- **Utilidades:** `o` (Power), `a` (ADB), `v` (VaultFlow)
-
-### ⚡ Memoria Muscular
-
-Las teclas siguen patrones mnemotécnicos:
-
-- `s` = **S**ystem
-- `g` = **G**it
-- `n` = **N**etwork
-- `m` = **M**onitoring
-- `f` = **F**older
-
-## ⚠️ Solución de Problemas
-
-### Comando No Aparece en Tooltip
-
-1. **Verificar sintaxis:** Asegúrate de que la línea en `commands.ini` esté bien formateada
-2. **Reiniciar script:** Recarga HybridCapsLock para aplicar cambios
-3. **Verificar numeración:** Las líneas deben ser consecutivas (line1, line2, etc.)
-
-### Comando No Se Ejecuta
-
-1. **Verificar función:** Asegúrate de que el comando esté en la función Execute correspondiente
-2. **Verificar Input:** La tecla debe estar incluida en el Input de la categoría
-3. **Verificar permisos:** Algunos comandos requieren permisos de administrador
-
-### Tooltip Se Ve Mal
-
-1. **Longitud de líneas:** Mantén las líneas de tooltip relativamente cortas
-2. **Alineación:** Usa espacios para alinear columnas si es necesario
-3. **Líneas vacías:** Usa `main_line5=` (vacía) para agregar espacios
-
-## 🔄 Migración y Compatibilidad
-
-Si vienes de una versión anterior:
-
-1. **Los comandos siguen funcionando** - La funcionalidad no ha cambiado
-2. **Tooltips ahora editables** - Puedes personalizar todos los menús desde `commands.ini`
-3. **Mismas teclas** - La navegación es idéntica
-4. **Mejor organización** - Los tooltips están centralizados en el archivo .ini
 
 ---
 
-## ✅ Estado de Implementación
+## 🏗️ Arquitectura del Sistema
 
-**✅ COMPLETAMENTE IMPLEMENTADO** - La capa de comandos está totalmente funcional con tooltips editables desde `commands.ini`.
+### **Filosofía: Todo en Código, Nada en Configuración Externa**
 
-### 🎯 Funcionalidades Destacadas
+```mermaid
+graph TD
+    A[src/actions/adb_actions.ahk] -->|Una línea por comando| B[RegisterADBKeymaps]
+    B -->|Al inicio| C[KeymapRegistry]
+    C -->|En runtime| D[GenerateCategoryItems]
+    D --> E[Tooltip dinámico]
+    
+    style A fill:#e1f5fe
+    style C fill:#fff3e0
+    style E fill:#f1f8e9
+```
 
-- **📝 Tooltips Editables:** Todos los menús se pueden personalizar desde `commands.ini`
-- **🔧 Fácil Extensión:** Agregar nuevos comandos y categorías es sencillo
-- **🎨 Personalización Completa:** Cambiar texto, reorganizar menús, agregar opciones
-- **⚡ Navegación Rápida:** Sistema jerárquico intuitivo con timeouts configurables
-- **🔄 Compatibilidad:** Mantiene toda la funcionalidad existente
+**Flujo completo:**
+```
+1. INICIO → InitializeCommandSystem()
+2. REGISTRO → RegisterKeymap("adb", "d", "List Devices", ADBListDevices, false, 1)
+3. ALMACENAMIENTO → KeymapRegistry["adb"]["d"] = {...}
+4. RUNTIME → GenerateCategoryItems("adb") → "d:List Devices|x:Disconnect..."
+5. DISPLAY → Tooltip C# o nativo
+```
 
-**¿Necesitas más comandos?** Sigue esta guía para agregar tus propios comandos y categorías personalizadas.
+---
+
+## ✨ Cómo Agregar Nuevos Comandos
+
+### **Método 1: Agregar a Categoría Existente** ⭐
+
+**Ejemplo: Agregar "Windows Version" a System Commands**
+
+1. **Abre:** `src/actions/system_actions.ahk`
+
+2. **Agrega la función:**
+```ahk
+ShowWindowsVersion() {
+    Run("cmd.exe /k ver")
+    ShowCommandExecuted("System", "Windows Version")
+}
+```
+
+3. **Registra el comando (UNA LÍNEA):**
+```ahk
+RegisterSystemKeymaps() {
+    RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+    RegisterKeymap("system", "w", "Windows Version", ShowWindowsVersion, false, 10)  // ← NUEVA
+}
+```
+
+4. **Reinicia:** `<leader> → c → h → R`
+
+✅ **¡Listo!** El comando aparece automáticamente en el menú.
+
+---
+
+### **Método 2: Crear Nueva Categoría Completa**
+
+**Ejemplo: Agregar "Docker Commands"**
+
+<details>
+<summary><b>📖 Ver guía completa (click para expandir)</b></summary>
+
+#### **Paso 1: Crear archivo de acciones**
+
+Crea: `src/actions/docker_actions.ahk`
+
+```ahk
+; ==============================
+; Docker Actions - Sistema Declarativo Completo
+; ==============================
+
+; FUNCIONES DE ACCIÓN
+DockerPS() {
+    Run("cmd.exe /k docker ps")
+    ShowCommandExecuted("Docker", "List Containers")
+}
+
+DockerStopAll() {
+    Run("cmd.exe /k docker stop $(docker ps -q)")
+    ShowCommandExecuted("Docker", "Stop All")
+}
+
+; REGISTRO DECLARATIVO
+RegisterDockerKeymaps() {
+    RegisterKeymap("docker", "p", "List Containers", DockerPS, false, 1)
+    RegisterKeymap("docker", "s", "Stop All", DockerStopAll, true, 2)  // confirm
+}
+```
+
+#### **Paso 2: Include en HybridCapsLock.ahk**
+
+```ahk
+#Include src\actions\docker_actions.ahk
+```
+
+#### **Paso 3: Registrar en command_system_init.ahk**
+
+```ahk
+InitializeCommandSystem() {
+    RegisterCategory("d", "docker", "Docker Commands", 10)
+    RegisterDockerKeymaps()
+}
+```
+
+#### **Paso 4: Integrar tooltip C# (opcional)**
+
+En `src/ui/tooltip_csharp_integration.ahk`:
+
+**A) Switch de navegación:**
+```ahk
+case "d": ShowDockerCommandsMenuCS()
+```
+
+**B) Función de menú:**
+```ahk
+ShowDockerCommandsMenuCS() {
+    TooltipNavPush("CMD_d")
+    items := GenerateCategoryItems("docker")
+    if (items = "")
+        items := "[No commands registered]"
+    ShowCSharpOptionsMenu("DOCKER COMMANDS", items, "\\: Back|ESC: Exit")
+}
+```
+
+**C) Case en TooltipShowById:**
+```ahk
+case "CMD_d": ShowDockerCommandsMenuCS()
+```
+
+</details>
+
+---
+
+## 📝 Referencia: `RegisterKeymap()`
+
+```ahk
+RegisterKeymap(category, key, description, actionFunc, needsConfirm, order)
+```
+
+### **Parámetros:**
+
+| Parámetro | Tipo | Descripción | Ejemplo |
+|-----------|------|-------------|---------|
+| `category` | String | Nombre interno | `"system"`, `"docker"` |
+| `key` | String | Tecla (case-sensitive) | `"s"`, `"S"` (mayúscula) |
+| `description` | String | Texto del menú | `"System Info"` |
+| `actionFunc` | Function | Referencia directa | `ShowSystemInfo` (sin `Func()`) |
+| `needsConfirm` | Boolean | Confirmar antes de ejecutar | `false`, `true` |
+| `order` | Integer | Posición (menor = primero) | `1`, `2`, `10` |
+
+### **Ejemplos:**
+
+```ahk
+// Comando simple
+RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+
+// Comando peligroso con confirmación
+RegisterKeymap("power", "S", "Shutdown", ShutdownSystem, true, 6)
+
+// Usar mayúscula para variantes
+RegisterKeymap("power", "s", "Sleep", SuspendSystem, false, 2)      // s minúscula
+RegisterKeymap("power", "S", "Shutdown", ShutdownSystem, true, 6)   // S mayúscula
+
+// Función inline (closure)
+RegisterKeymap("folder", "w", "Windows Dir", 
+    (*) => Run('explorer.exe "C:\Windows"'), false, 10)
+```
+
+---
+
+## 📊 Categorías Disponibles
+
+### **🖥️ System Commands** (`s`)
+
+```ahk
+s - System Info           // systeminfo
+t - Task Manager          // taskmgr
+v - Services Manager      // services.msc
+e - Event Viewer          // eventvwr
+d - Device Manager        // devmgmt.msc
+c - Disk Cleanup          // cleanmgr
+h - Toggle Hidden Files   // Registry toggle
+r - Registry Editor       // regedit
+E - Environment Variables // sysdm.cpl (Shift+e)
+```
+
+### **🧩 Hybrid Management** (`h`)
+
+```ahk
+p - Pause Hybrid          // Suspender hotkeys
+s - Show System Status    // Estado Kanata/layers
+v - Show Version Info     // Versión del script
+l - View Log File         // hybrid_log.txt
+c - Open Config Folder    // Explorer config/
+k - Restart Kanata Only   // Solo reiniciar Kanata
+R - Reload Script         // Kanata + AHK (confirm)
+e - Exit Script           // Salir completo (confirm)
+```
+
+**💡 Tip:** Usa `<leader> → c → h → R` después de editar `kanata.kbd` o archivos `.ahk`
+
+### **🔧 Git Commands** (`g`)
+
+```ahk
+s - Status                // git status
+l - Log (last 10)         // git log --oneline -10
+b - Branches              // git branch -a
+d - Diff                  // git diff
+a - Add All               // git add . (confirm)
+p - Pull                  // git pull (confirm)
+```
+
+### **📊 Monitoring Commands** (`m`)
+
+```ahk
+p - Top Processes         // PowerShell Get-Process
+s - Services Status       // Get-Service
+d - Disk Space            // Win32_LogicalDisk
+m - Memory Usage          // Win32_OperatingSystem
+c - CPU Usage             // Win32_Processor
+```
+
+### **🌐 Network Commands** (`n`)
+
+```ahk
+i - IP Config             // ipconfig /all
+p - Ping Google           // ping google.com
+n - Netstat               // netstat -an
+```
+
+### **📁 Folder Access** (`f`)
+
+```ahk
+t - Temp Folder           // %TEMP%
+a - AppData               // %APPDATA%
+p - Program Files         // C:\Program Files
+u - User Profile          // %USERPROFILE%
+d - Desktop               // Desktop
+s - System32              // C:\Windows\System32
+```
+
+### **⚡ Power Options** (`o`)
+
+```ahk
+l - Lock Screen           // LockWorkStation
+s - Sleep                 // SetSuspendState
+h - Hibernate             // SetSuspendState
+o - Sign Out              // shutdown /l (confirm)
+r - Restart               // shutdown /r (confirm)
+S - Shutdown              // shutdown /s (confirm, Shift+s)
+```
+
+### **📱 ADB Tools** (`a`)
+
+```ahk
+d - List Devices          // adb devices
+x - Disconnect            // adb disconnect
+s - Shell                 // adb shell
+l - Logcat                // adb logcat
+i - Install APK           // adb install
+u - Uninstall Package     // adb uninstall
+c - Clear App Data        // adb shell pm clear
+r - Reboot Device         // adb reboot
+```
+
+### **🔐 VaultFlow** (`v`)
+
+```ahk
+v - Run VaultFlow         // vaultflow
+s - Status                // vaultflow status
+l - List                  // vaultflow list
+h - Help                  // vaultflow --help
+```
+
+---
+
+## 🎨 Características Avanzadas
+
+### **1. Ordenamiento Dinámico**
+
+```ahk
+RegisterKeymap("adb", "d", "List Devices", ..., false, 1)   // ↑ Primero
+RegisterKeymap("adb", "x", "Disconnect", ..., false, 2)
+RegisterKeymap("adb", "r", "Reboot", ..., false, 99)        // ↓ Último
+```
+
+### **2. Confirmaciones Selectivas**
+
+```ahk
+// Sin confirmación (safe)
+RegisterKeymap("system", "t", "Task Manager", ShowTaskManager, false, 2)
+
+// Con confirmación (destructivo)
+RegisterKeymap("power", "S", "Shutdown", ShutdownSystem, true, 6)
+```
+
+### **3. Case-Sensitivity**
+
+```ahk
+RegisterKeymap("power", "s", "Sleep", SuspendSystem, false, 2)       // s
+RegisterKeymap("power", "S", "Shutdown", ShutdownSystem, true, 6)    // S (Shift)
+```
+
+---
+
+## 📖 Comparación con Neovim which-key
+
+| Aspecto | Neovim | Este Sistema | ✅ |
+|---------|--------|--------------|---|
+| **Registro** | `which_key.register()` | `RegisterKeymap()` | ✅ |
+| **Una línea** | `{ "s", "System", cmd }` | `RegisterKeymap(...)` | ✅ |
+| **Sin config** | Lua puro | AHK puro | ✅ |
+| **Auto-gen** | Runtime | Runtime | ✅ |
+| **Orden** | `order = N` | `order := N` | ✅ |
+
+**Ejemplo equivalente:**
+
+```lua
+-- Neovim
+require("which-key").register({
+  s = { "<cmd>SystemInfo<cr>", "System Info" }
+})
+```
+
+```ahk
+; Este sistema
+RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+```
+
+---
+
+## 💡 Tips y Mejores Prácticas
+
+### **✅ Nombres Claros**
+
+```ahk
+// ✅ Bueno
+ShowSystemInfo()
+RestartKanata()
+
+// ❌ Evitar
+DoStuff()
+Handler()
+```
+
+### **✅ Descripciones Específicas**
+
+```ahk
+// ✅ Bueno
+RegisterKeymap("git", "l", "Log (last 10)", GitLog, false, 2)
+
+// ❌ Evitar
+RegisterKeymap("git", "l", "Log", GitLog, false, 2)
+```
+
+### **✅ Orden Lógico**
+
+```ahk
+// Info → Management → Actions → Dangerous
+RegisterKeymap("system", "s", "System Info", ..., false, 1)      // Info
+RegisterKeymap("system", "t", "Task Manager", ..., false, 2)     // Management
+RegisterKeymap("system", "r", "Registry Editor", ..., false, 8)  // Dangerous
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### **Comando no aparece**
+
+✅ **Verificar:**
+1. ¿Registraste el keymap?
+2. ¿Llamaste `Register*Keymaps()` en `command_system_init.ahk`?
+3. ¿Incluiste el archivo en `HybridCapsLock.ahk`?
+4. Reinicia el script
+
+### **Orden incorrecto**
+
+Cambiar el parámetro `order`:
+
+```ahk
+RegisterKeymap("adb", "d", "...", ..., false, 1)  // Primero
+RegisterKeymap("adb", "r", "...", ..., false, 8)  // Último
+```
+
+### **Tecla no responde**
+
+1. Verifica duplicados (misma tecla registrada 2 veces)
+2. Verifica case-sensitivity (`s` ≠ `S`)
+
+---
+
+## 🎉 Ventajas del Sistema Declarativo
+
+### **✅ Sin Duplicación**
+
+**Antes:** 3 lugares (INI + switch + tooltip)  
+**Ahora:** 1 línea define TODO
+
+### **✅ Cambios Triviales**
+
+**Cambiar descripción:**
+```ahk
+RegisterKeymap("system", "s", "System Info PLUS", ShowSystemInfo, false, 1)
+```
+
+**Cambiar orden:**
+```ahk
+RegisterKeymap("adb", "d", "...", ..., false, 8)  // Mueve al final
+```
+
+### **✅ Extensibilidad**
+
+Agregar comando = 2 pasos:
+1. Crear función
+2. Registrarla (1 línea)
+
+---
+
+## 📚 Recursos Adicionales
+
+- **[COMO_FUNCIONA_REGISTER.md](COMO_FUNCIONA_REGISTER.md)** - Flujo técnico detallado
+- **[DECLARATIVE_SYSTEM.md](DECLARATIVE_SYSTEM.md)** - Arquitectura completa
+- **[Código fuente](../src/actions/)** - Ejemplos de todas las categorías
+
+---
+
+## ✅ Estado
+
+**✅ SISTEMA COMPLETO Y FUNCIONAL**
+
+- Sistema 100% declarativo (estilo lazy.nvim/which-key)
+- Menús auto-generados dinámicamente
+- Sin archivos de configuración externa (no usa `commands.ini`)
+- Extensible: agregar comandos es trivial
+- Probado y verificado
+
+**🎉 Celebra con confianza: has implementado un sistema de nivel profesional.**
+

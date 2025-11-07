@@ -46,6 +46,8 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 
 > **Arquitectura Híbrida**: Kanata maneja ergonomía (tap-hold, homerow mods, navegación hjkl) mientras AutoHotkey maneja inteligencia (context-aware, tooltips, leader menus).
 
+> **Sistema Declarativo**: Inspirado en lazy.nvim/which-key de Neovim - cada comando se define en una sola línea, sin archivos de configuración externa, con menús auto-generados dinámicamente.
+
 ### 🎹 Capas y Modos
 
 #### Kanata (Hardware-Level)
