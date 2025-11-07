@@ -66,6 +66,10 @@ ShowEventViewer() {
     ShowCommandExecuted("System", "Event Viewer")
 }
 
+ShowWindowsVersion() {
+    Run("cmd.exe /k ver")
+    ShowCommandExecuted("System", "Windows Version")
+}
 ; ==============================
 ; REGISTRO DECLARATIVO (Estilo lazy.nvim)
 ; ==============================
@@ -79,4 +83,5 @@ RegisterSystemKeymaps() {
     RegisterKeymap("system", "h", "Toggle Hidden Files", ToggleHiddenFiles, false, 7)
     RegisterKeymap("system", "r", "Registry Editor", ShowRegistryEditor, false, 8)
     RegisterKeymap("system", "E", "Environment Variables", ShowEnvironmentVariables, false, 9)
+    RegisterKeymap("system", "w", "Windows Version", ShowWindowsVersion, false, 10)
 }

@@ -72,13 +72,3 @@ RegisterADBKeymaps() {
     RegisterKeymap("adb", "r", "Reboot Device", ADBRebootDevice, false, 8)
 }
 
-; ==============================
-; BENEFICIOS DE ESTE ENFOQUE:
-; ==============================
-; ✓ Todo definido en UN SOLO LUGAR
-; ✓ No duplicación con INI
-; ✓ Menús auto-generados desde registry
-; ✓ Fácil agregar/modificar comandos
-; ✓ Ordenamiento explícito
-; ✓ Confirmaciones por comando
-; ==============================

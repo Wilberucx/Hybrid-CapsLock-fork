@@ -653,11 +653,33 @@ GenerateInformationItemsForCS() {
 ; Reemplazar ShowCommandsMenu() original
 ShowCommandsMenuCS() {
     TooltipNavPush("COMMANDS")
-    items := BuildCommandsMainItemsFromCategories()
+    
+    ; Generar items desde CategoryRegistry (DINÁMICO)
+    items := BuildMainMenuItemsFromRegistry()
+    
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "s:System Commands|n:Network Commands|g:Git Commands|m:Monitoring Commands|f:Folder Commands|o:Power Options|a:ADB Tools|v:VaultFlow|h:Hybrid Management"
+        items := "[No categories registered]"
     }
+    
     ShowCSharpOptionsMenu("COMMAND PALETTE", items, "\\: Back|ESC: Exit")
+}
+
+; Helper: Generar items para menú principal desde CategoryRegistry
+BuildMainMenuItemsFromRegistry() {
+    categories := GetSortedCategories()
+    
+    if (categories.Length = 0)
+        return ""
+    
+    items := ""
+    for cat in categories {
+        if (items != "")
+            items .= "|"
+        items .= cat["symbol"] . ":" . cat["title"]
+    }
+    
+    return items
 }
 
 ; ===================================================================
@@ -1275,15 +1297,14 @@ ShowDeleteMenuCS() {
 ShowSystemCommandsMenuCS() {
     TooltipNavPush("CMD_s")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("system")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío (no debería pasar)
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("s")
-        if (items = "")
-            items := "s:System Info|t:Task Manager|v:Services|d:Device Manager|c:Disk Cleanup|h:Toggle Hidden Files|r:Registry Editor|E:Environment Variables|e:Event Viewer"
+        items := "[No commands registered for System]"
     }
+    
     ShowCSharpOptionsMenu("SYSTEM COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
@@ -1292,15 +1313,14 @@ ShowSystemCommandsMenuCS() {
 ShowNetworkCommandsMenuCS() {
     TooltipNavPush("CMD_n")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("network")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("n")
-        if (items = "")
-            items := "i:IP Config|p:Ping Google|n:Netstat"
+        items := "[No commands registered for Network]"
     }
+    
     ShowCSharpOptionsMenu("NETWORK COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
@@ -1309,15 +1329,14 @@ ShowNetworkCommandsMenuCS() {
 ShowGitCommandsMenuCS() {
     TooltipNavPush("CMD_g")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("git")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("g")
-        if (items = "")
-            items := "s:Status|l:Log|b:Branches|d:Diff|a:Add All|p:Pull"
+        items := "[No commands registered for Git]"
     }
+    
     ShowCSharpOptionsMenu("GIT COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
@@ -1326,15 +1345,14 @@ ShowGitCommandsMenuCS() {
 ShowMonitoringCommandsMenuCS() {
     TooltipNavPush("CMD_m")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("monitoring")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("m")
-        if (items = "")
-            items := "p:Processes|s:Services|d:Disk Usage|m:Memory|c:CPU Usage"
+        items := "[No commands registered for Monitoring]"
     }
+    
     ShowCSharpOptionsMenu("MONITORING COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
@@ -1343,15 +1361,14 @@ ShowMonitoringCommandsMenuCS() {
 ShowFolderCommandsMenuCS() {
     TooltipNavPush("CMD_f")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("folder")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("f")
-        if (items = "")
-            items := "t:Temp|a:AppData|p:Program Files|u:User Profile|d:Desktop|s:System32"
+        items := "[No commands registered for Folder]"
     }
+    
     ShowCSharpOptionsMenu("FOLDER ACCESS", items, "\\: Back|ESC: Exit")
 }
 
@@ -1372,15 +1389,14 @@ ShowWindowsCommandsMenuCS() {
 ShowPowerOptionsCommandsMenuCS() {
     TooltipNavPush("CMD_o")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("power")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("o")
-        if (items = "")
-            items := "s:Sleep|h:Hibernate|r:Restart|S:Shutdown|l:Lock Screen|o:Sign Out"
+        items := "[No commands registered for Power]"
     }
+    
     ShowCSharpOptionsMenu("POWER OPTIONS", items, "\\: Back|ESC: Exit")
 }
 
@@ -1389,14 +1405,12 @@ ShowPowerOptionsCommandsMenuCS() {
 ShowADBCommandsMenuCS() {
     TooltipNavPush("CMD_a")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("adb")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("a")
-        if (items = "")
-            items := "d:List Devices|i:Install APK|u:Uninstall Package|l:Logcat|s:Shell|r:Reboot Device|c:Clear App Data"
+        items := "[No commands registered for ADB]"
     }
     ShowCSharpOptionsMenu("ADB TOOLS", items, "\\: Back|ESC: Exit")
 }
@@ -1406,15 +1420,12 @@ ShowADBCommandsMenuCS() {
 ShowHybridManagementMenuCS() {
     TooltipNavPush("CMD_h")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("hybrid")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("h")
-        if (items = "") {
-            items := "R:Reload Script|k:Restart Kanata|e:Exit Script|p:Pause Hybrid|c:Open Config|l:View Log|v:Version Info|s:System Status"
-        }
+        items := "[No commands registered for Hybrid]"
     }
     
     ShowCSharpOptionsMenu("HYBRID MANAGEMENT", items, "\\: Back|ESC: Exit")
@@ -1425,14 +1436,12 @@ ShowHybridManagementMenuCS() {
 ShowVaultFlowCommandsMenuCS() {
     TooltipNavPush("CMD_v")
     
-    ; Intentar generar items desde keymap registry
+    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("vaultflow")
     
-    ; Fallback: INI o hardcoded
+    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := BuildCommandItemsFromCategoryKey("v")
-        if (items = "")
-            items := "v:Run VaultFlow|s:VaultFlow Status|l:List Vaults|h:VaultFlow Help"
+        items := "[No commands registered for VaultFlow]"
     }
     ShowCSharpOptionsMenu("VAULTFLOW COMMANDS", items, "\\: Back|ESC: Exit")
 }
