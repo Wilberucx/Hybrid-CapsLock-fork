@@ -68,21 +68,25 @@ GetSortedCategories() {
             categories.Push(CategoryRegistry[sym])
     }
     
-    ; Ordenar por campo 'order'
-    sorted := []
-    Loop categories.Length {
-        minIdx := A_Index
-        for i, cat in categories {
-            if (i < A_Index)
-                continue
-            if (cat["order"] < categories[minIdx]["order"])
-                minIdx := i
+    ; Ordenar por campo 'order' usando bubble sort
+    n := categories.Length
+    Loop n - 1 {
+        swapped := false
+        Loop n - A_Index {
+            i := A_Index
+            if (categories[i]["order"] > categories[i + 1]["order"]) {
+                ; Swap
+                temp := categories[i]
+                categories[i] := categories[i + 1]
+                categories[i + 1] := temp
+                swapped := true
+            }
         }
-        sorted.Push(categories[minIdx])
-        categories.RemoveAt(minIdx)
+        if (!swapped)
+            break
     }
     
-    return sorted
+    return categories
 }
 
 ; ==============================
@@ -141,21 +145,25 @@ GetSortedCategoryKeymaps(category) {
         kmArray.Push(km)
     }
     
-    ; Ordenar por campo 'order'
-    sorted := []
-    Loop kmArray.Length {
-        minIdx := A_Index
-        for i, km in kmArray {
-            if (i < A_Index)
-                continue
-            if (km["order"] < kmArray[minIdx]["order"])
-                minIdx := i
+    ; Ordenar por campo 'order' usando bubble sort
+    n := kmArray.Length
+    Loop n - 1 {
+        swapped := false
+        Loop n - A_Index {
+            i := A_Index
+            if (kmArray[i]["order"] > kmArray[i + 1]["order"]) {
+                ; Swap
+                temp := kmArray[i]
+                kmArray[i] := kmArray[i + 1]
+                kmArray[i + 1] := temp
+                swapped := true
+            }
         }
-        sorted.Push(kmArray[minIdx])
-        kmArray.RemoveAt(minIdx)
+        if (!swapped)
+            break
     }
     
-    return sorted
+    return kmArray
 }
 
 ; ---- Función: Buscar keymap específico ----
