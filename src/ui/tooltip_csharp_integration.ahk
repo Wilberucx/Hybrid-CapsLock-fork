@@ -2,7 +2,7 @@
 ; INTEGRACIÓN C# TOOLTIP PARA HYBRIDCAPSLOCK v2
 ; ===================================================================
 ; Archivo de integración para reemplazar tooltips básicos con C# + WPF
-; Incluir este archivo en HybridCapsLock.ahk con: #Include tooltip_csharp_integration.ahk
+; Incluir este archivo en init.ahk con: #Include tooltip_csharp_integration.ahk
 
 ; ===================================================================
 ; VARIABLES GLOBALES NECESARIAS

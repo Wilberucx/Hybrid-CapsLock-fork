@@ -56,7 +56,7 @@ global capsTapThresholdMs := 250  ; configurable via configuration.ini [Behavior
 
 2) Project structure
 
-- Entry point and initialization (HybridCapsLock.ahk):
+- Entry point and initialization (init.ahk):
   - Includes core (globals, config, persistence, confirmations, mappings), UI tooltips, and all layers.
   - On startup, calls `LoadLayerFlags()` and `LoadLayerState()` and sets `SetCapsLockState("AlwaysOff")`.
 

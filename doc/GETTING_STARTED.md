@@ -45,7 +45,7 @@ Este documento proporciona los atajos esenciales y una guía de configuración r
 
 Esta es una mini referencia para la configuración inicial. Para una guía exhaustiva, consulta el documento [CONFIGURATION.md](CONFIGURATION.md).
 
-1.  Ejecuta `HybridCapsLock.ahk` al menos una vez para generar los archivos de configuración.
+1.  Ejecuta `init.ahk` al menos una vez para generar los archivos de configuración.
 2.  Abre `config/configuration.ini` y ajusta las opciones más comunes:
     -   `[Behavior]`: `global_timeout_seconds`, `leader_timeout_seconds`, `show_confirmation_global`
     -   `[Layers]`: Habilita o deshabilita capas enteras (`nvim`, `excel`, `modifier`, `leader`).

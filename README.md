@@ -78,15 +78,15 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 
 **Inicio Automático (Recomendado)**:
 ```
-Doble click en HybridCapsLock.ahk
+Doble click en init.ahk
 ```
 Inicia automáticamente Kanata + HybridCapsLock en un solo paso.
 
 **Inicio Manual (Avanzado)**:
 1. Ejecutar `start_kanata.vbs`
-2. Ejecutar `HybridCapsLock.ahk`
+2. Ejecutar `init.ahk`
 
-**Inicio automático en Windows (Opcional):** Crear un acceso directo de `HybridCapsLock.ahk` en la carpeta de inicio de Windows (`shell:startup`).
+**Inicio automático en Windows (Opcional):** Crear un acceso directo de `init.ahk` en la carpeta de inicio de Windows (`shell:startup`).
 
 ### Recargar Configuración
 

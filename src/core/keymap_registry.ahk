@@ -1,38 +1,33 @@
 ; ==============================
-; Keymap Registry - Sistema Declarativo (Estilo lazy.nvim)
+; Keymap Registry - Sistema Declarativo Jerárquico
 ; ==============================
-; Registro central de keymaps estilo Neovim which-key
-; TODO LO DEFINIDO UNA SOLA VEZ: categorías + keymaps con metadata completa
+; Registro central estilo Neovim which-key con soporte jerárquico
+; 
+; SOPORTA DOS SINTAXIS:
+; 1. Sintaxis flat (legacy):
+;    RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+;
+; 2. Sintaxis jerárquica (nueva):
+;    RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
+;    Crea: Leader → c → a → d (multinivel)
+;
+; El sistema detecta automáticamente qué sintaxis se está usando.
 
-; ---- Estructura de Keymap ----
-; Map con:
-;   category: "hybrid" | "system" | "git" | etc
-;   key: "R" | "k" | "s" | etc  
-;   desc: "Reload Script" | "Restart Kanata" | etc
-;   action: Func("ReloadHybridScript") | etc
-;   confirm: true | false
-;   order: número para ordenamiento (opcional)
-
-; ---- Estructura de Categoría ----
-; Map con:
-;   symbol: "h" | "s" | "g" | etc (tecla para activar)
-;   internal: "hybrid" | "system" | "git" | etc (nombre interno)
-;   title: "Hybrid Management" | "System Commands" | etc
-;   order: número para ordenamiento en menú principal
-
-global KeymapRegistry := Map()
-global CategoryRegistry := Map()  ; Map indexed por symbol
-global CategoryOrder := []        ; Array de symbols en orden
+global KeymapRegistry := Map()      ; Keymaps jerárquicos y flat
+global CategoryRegistry := Map()    ; Categorías con metadata
+global CategoryOrder := []          ; Orden de categorías
+global LeaderRoot := "leader"       ; Raíz del sistema jerárquico
 
 ; ==============================
 ; REGISTRO DE CATEGORÍAS
 ; ==============================
 
 ; RegisterCategory(symbol, internal, title, order := 999)
-; symbol: tecla para activar (ej: "h", "s", "g")
-; internal: nombre interno para keymaps (ej: "hybrid", "system")
-; title: título mostrado en menú
-; order: posición en menú (menor = primero)
+; SINTAXIS FLAT (legacy compatible):
+;   symbol: tecla para activar (ej: "h", "s")
+;   internal: nombre interno para keymaps (ej: "hybrid", "system")
+;   title: título mostrado
+;   order: posición en menú
 RegisterCategory(symbol, internal, title, order := 999) {
     global CategoryRegistry, CategoryOrder
     
@@ -43,22 +38,21 @@ RegisterCategory(symbol, internal, title, order := 999) {
         "order", order
     )
     
-    ; Mantener orden
     CategoryOrder.Push(symbol)
     
-    ; Inicializar Map de keymaps para esta categoría
+    ; Inicializar Map de keymaps para esta categoría (flat)
     if (!KeymapRegistry.Has(internal)) {
         KeymapRegistry[internal] := Map()
     }
 }
 
-; Obtener categoría por símbolo
+; GetCategoryBySymbol(symbol)
 GetCategoryBySymbol(symbol) {
     global CategoryRegistry
     return CategoryRegistry.Has(symbol) ? CategoryRegistry[symbol] : false
 }
 
-; Obtener todas las categorías ordenadas
+; GetSortedCategories()
 GetSortedCategories() {
     global CategoryRegistry, CategoryOrder
     
@@ -68,14 +62,13 @@ GetSortedCategories() {
             categories.Push(CategoryRegistry[sym])
     }
     
-    ; Ordenar por campo 'order' usando bubble sort
+    ; Bubble sort por 'order'
     n := categories.Length
     Loop n - 1 {
         swapped := false
         Loop n - A_Index {
             i := A_Index
             if (categories[i]["order"] > categories[i + 1]["order"]) {
-                ; Swap
                 temp := categories[i]
                 categories[i] := categories[i + 1]
                 categories[i + 1] := temp
@@ -90,39 +83,244 @@ GetSortedCategories() {
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS
+; REGISTRO DE KEYMAPS (DUAL SYNTAX)
 ; ==============================
 
-; RegisterKeymap(category, key, description, actionFunc, needsConfirm := false, order := 999)
-; category: nombre interno (ej: "hybrid", "system")
-; key: tecla (ej: "R", "k", "s")
-; description: texto mostrado en menú
-; actionFunc: Func("FunctionName") o closure
-; needsConfirm: mostrar confirmación antes de ejecutar
-; order: posición en submenú (opcional)
-RegisterKeymap(category, key, description, actionFunc, needsConfirm := false, order := 999) {
+; RegisterKeymap(args*)
+; DETECTA AUTOMÁTICAMENTE LA SINTAXIS:
+;
+; FLAT (2 keys + metadata):
+;   RegisterKeymap(category, key, desc, action, [confirm], [order])
+;   Ejemplo: RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+;
+; JERÁRQUICA (3+ keys + metadata):
+;   RegisterKeymap(key1, key2, key3, ..., desc, action, [confirm], [order])
+;   Ejemplo: RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
+;
+; Metadata siempre al final:
+;   - desc (requerido)
+;   - action (requerido)
+;   - confirm (opcional, boolean)
+;   - order (opcional, integer)
+
+RegisterKeymap(args*) {
     global KeymapRegistry
     
-    ; Crear subcategoría si no existe
+    ; Validar mínimo (2 keys + desc + action = 4 args)
+    if (args.Length < 4) {
+        throw Error("RegisterKeymap requiere al menos: key1, key2, description, action")
+    }
+    
+    ; ==============================
+    ; PASO 1: Detectar metadata al final
+    ; ==============================
+    
+    metadataStart := args.Length - 1  ; Al menos desc + action
+    hasConfirm := false
+    hasOrder := false
+    
+    lastArg := args[args.Length]
+    secondLastArg := args[args.Length - 1]
+    
+    ; Detectar: desc, action, confirm, order
+    if (Type(lastArg) = "Integer" && (secondLastArg = true || secondLastArg = false)) {
+        metadataStart := args.Length - 3
+        hasConfirm := true
+        hasOrder := true
+    }
+    ; Detectar: desc, action, confirm
+    else if (lastArg = true || lastArg = false) {
+        metadataStart := args.Length - 2
+        hasConfirm := true
+    }
+    ; Detectar: desc, action, order
+    else if (Type(lastArg) = "Integer") {
+        metadataStart := args.Length - 2
+        hasOrder := true
+    }
+    
+    ; ==============================
+    ; PASO 2: Extraer path keys
+    ; ==============================
+    
+    pathKeys := []
+    Loop metadataStart - 1 {
+        pathKeys.Push(args[A_Index])
+    }
+    
+    ; ==============================
+    ; PASO 3: Extraer metadata
+    ; ==============================
+    
+    description := args[metadataStart]
+    actionFunc := args[metadataStart + 1]
+    needsConfirm := false
+    order := 999
+    
+    if (hasConfirm && hasOrder) {
+        needsConfirm := args[metadataStart + 2]
+        order := args[metadataStart + 3]
+    } else if (hasConfirm) {
+        needsConfirm := args[metadataStart + 2]
+    } else if (hasOrder) {
+        order := args[metadataStart + 2]
+    }
+    
+    ; ==============================
+    ; PASO 4: Determinar sintaxis
+    ; ==============================
+    
+    if (pathKeys.Length = 2) {
+        ; SINTAXIS FLAT: RegisterKeymap("system", "s", ...)
+        RegisterKeymapFlat(pathKeys[1], pathKeys[2], description, actionFunc, needsConfirm, order)
+    } else {
+        ; SINTAXIS JERÁRQUICA: RegisterKeymap("c", "a", "d", ...)
+        RegisterKeymapHierarchical(pathKeys, description, actionFunc, needsConfirm, order)
+    }
+}
+
+; ==============================
+; REGISTRO FLAT (legacy compatible)
+; ==============================
+
+RegisterKeymapFlat(category, key, description, actionFunc, needsConfirm, order) {
+    global KeymapRegistry
+    
+    ; Crear categoría si no existe
     if (!KeymapRegistry.Has(category)) {
         KeymapRegistry[category] := Map()
     }
     
-    ; Registrar keymap con metadata completa
+    ; Registrar keymap flat
     KeymapRegistry[category][key] := Map(
         "key", key,
         "desc", description,
         "action", actionFunc,
         "confirm", needsConfirm,
+        "order", order,
+        "isCategory", false
+    )
+}
+
+; ==============================
+; REGISTRO JERÁRQUICO (nuevo)
+; ==============================
+
+RegisterKeymapHierarchical(pathKeys, description, actionFunc, needsConfirm, order) {
+    global KeymapRegistry, LeaderRoot
+    
+    ; Construir path completo: "leader.c.a.d"
+    fullPath := LeaderRoot . "." . JoinArray(pathKeys, ".")
+    lastKey := pathKeys[pathKeys.Length]
+    
+    ; Construir path del padre: "leader.c.a"
+    parentPath := LeaderRoot
+    if (pathKeys.Length > 1) {
+        parentKeys := []
+        Loop pathKeys.Length - 1 {
+            parentKeys.Push(pathKeys[A_Index])
+        }
+        parentPath := LeaderRoot . "." . JoinArray(parentKeys, ".")
+    }
+    
+    ; Asegurar que el padre existe
+    if (!KeymapRegistry.Has(parentPath)) {
+        KeymapRegistry[parentPath] := Map()
+    }
+    
+    ; Registrar en el padre
+    KeymapRegistry[parentPath][lastKey] := Map(
+        "key", lastKey,
+        "path", fullPath,
+        "desc", description,
+        "action", actionFunc,
+        "confirm", needsConfirm,
+        "order", order,
+        "isCategory", false
+    )
+}
+
+; ==============================
+; REGISTRO DE CATEGORÍAS JERÁRQUICAS
+; ==============================
+
+; RegisterCategoryKeymap(path..., title, [order])
+; Registra una categoría que lleva a otro nivel
+; Ejemplo: RegisterCategoryKeymap("c", "a", "ADB Tools", 1)
+RegisterCategoryKeymap(args*) {
+    global KeymapRegistry, LeaderRoot
+    
+    if (args.Length < 2) {
+        throw Error("RegisterCategoryKeymap requiere: path..., title, [order]")
+    }
+    
+    pathKeys := []
+    title := ""
+    order := 999
+    
+    ; Detectar si último es order
+    if (Type(args[args.Length]) = "Integer") {
+        order := args[args.Length]
+        title := args[args.Length - 1]
+        Loop args.Length - 2 {
+            pathKeys.Push(args[A_Index])
+        }
+    } else {
+        title := args[args.Length]
+        Loop args.Length - 1 {
+            pathKeys.Push(args[A_Index])
+        }
+    }
+    
+    fullPath := LeaderRoot . "." . JoinArray(pathKeys, ".")
+    lastKey := pathKeys[pathKeys.Length]
+    
+    ; Path del padre
+    parentPath := LeaderRoot
+    if (pathKeys.Length > 1) {
+        parentKeys := []
+        Loop pathKeys.Length - 1 {
+            parentKeys.Push(pathKeys[A_Index])
+        }
+        parentPath := LeaderRoot . "." . JoinArray(parentKeys, ".")
+    }
+    
+    ; Asegurar padre existe
+    if (!KeymapRegistry.Has(parentPath)) {
+        KeymapRegistry[parentPath] := Map()
+    }
+    
+    ; Registrar como categoría
+    KeymapRegistry[parentPath][lastKey] := Map(
+        "key", lastKey,
+        "path", fullPath,
+        "desc", title,
+        "isCategory", true,
         "order", order
     )
 }
 
 ; ==============================
-; CONSULTA DE KEYMAPS
+; FUNCIONES AUXILIARES
 ; ==============================
 
-; Obtener todos los keymaps de una categoría (sin ordenar)
+JoinArray(arr, separator := "") {
+    result := ""
+    Loop arr.Length {
+        result .= arr[A_Index]
+        if (A_Index < arr.Length) {
+            result .= separator
+        }
+    }
+    return result
+}
+
+; ==============================
+; CONSULTA DE KEYMAPS (DUAL MODE)
+; ==============================
+
+; GetCategoryKeymaps(category)
+; FLAT: category = "system"
 GetCategoryKeymaps(category) {
     global KeymapRegistry
     
@@ -132,30 +330,53 @@ GetCategoryKeymaps(category) {
     return KeymapRegistry[category]
 }
 
-; Obtener keymaps ordenados de una categoría
+; GetKeymapsForPath(path)
+; JERÁRQUICO: path = "leader.c.a"
+GetKeymapsForPath(path) {
+    global KeymapRegistry
+    
+    if (!KeymapRegistry.Has(path))
+        return Map()
+    
+    return KeymapRegistry[path]
+}
+
+; GetSortedCategoryKeymaps(category)
+; FLAT
 GetSortedCategoryKeymaps(category) {
     keymaps := GetCategoryKeymaps(category)
-    
-    if (keymaps.Count = 0)
+    return SortKeymaps(keymaps)
+}
+
+; GetSortedKeymapsForPath(path)
+; JERÁRQUICO
+GetSortedKeymapsForPath(path) {
+    keymaps := GetKeymapsForPath(path)
+    return SortKeymaps(keymaps)
+}
+
+; SortKeymaps(keymapsMap)
+; Convierte Map a array ordenado por 'order'
+SortKeymaps(keymapsMap) {
+    if (keymapsMap.Count = 0)
         return []
     
     ; Convertir a array
-    kmArray := []
-    for key, km in keymaps {
-        kmArray.Push(km)
+    items := []
+    for key, data in keymapsMap {
+        items.Push(data)
     }
     
-    ; Ordenar por campo 'order' usando bubble sort
-    n := kmArray.Length
+    ; Bubble sort por 'order'
+    n := items.Length
     Loop n - 1 {
         swapped := false
         Loop n - A_Index {
             i := A_Index
-            if (kmArray[i]["order"] > kmArray[i + 1]["order"]) {
-                ; Swap
-                temp := kmArray[i]
-                kmArray[i] := kmArray[i + 1]
-                kmArray[i + 1] := temp
+            if (items[i]["order"] > items[i + 1]["order"]) {
+                temp := items[i]
+                items[i] := items[i + 1]
+                items[i + 1] := temp
                 swapped := true
             }
         }
@@ -163,10 +384,11 @@ GetSortedCategoryKeymaps(category) {
             break
     }
     
-    return kmArray
+    return items
 }
 
-; ---- Función: Buscar keymap específico ----
+; FindKeymap(category, key)
+; FLAT
 FindKeymap(category, key) {
     global KeymapRegistry
     
@@ -179,22 +401,23 @@ FindKeymap(category, key) {
     return KeymapRegistry[category][key]
 }
 
-; ---- Función: Ejecutar keymap (con confirmación si necesita) ----
+; ==============================
+; EJECUCIÓN (DUAL MODE)
+; ==============================
+
+; ExecuteKeymap(category, key)
+; FLAT
 ExecuteKeymap(category, key) {
     km := FindKeymap(category, key)
     
-    if (!km) {
-        ; No encontrado → retornar false para que use fallback INI
+    if (!km)
         return false
-    }
     
-    ; Verificar confirmación
     if (km["confirm"]) {
         if (!ConfirmYN("Execute: " . km["desc"] . "?"))
-            return true  ; confirmación cancelada, pero keymap existe
+            return true
     }
     
-    ; Ejecutar acción
     try {
         km["action"].Call()
         return true
@@ -205,11 +428,38 @@ ExecuteKeymap(category, key) {
     }
 }
 
+; ExecuteKeymapAtPath(path, key)
+; JERÁRQUICO
+ExecuteKeymapAtPath(path, key) {
+    keymaps := GetKeymapsForPath(path)
+    
+    if (!keymaps.Has(key))
+        return false
+    
+    data := keymaps[key]
+    
+    ; Si es categoría, retornar el nuevo path
+    if (data["isCategory"]) {
+        return data["path"]
+    }
+    
+    ; Es acción, ejecutar
+    if (data["confirm"]) {
+        response := MsgBox("¿Ejecutar: " . data["desc"] . "?", "Confirmación", "YesNo")
+        if (response = "No")
+            return false
+    }
+    
+    data["action"]()
+    return true
+}
+
 ; ==============================
-; GENERACIÓN DE MENÚS DESDE REGISTRY
+; GENERACIÓN DE MENÚS
 ; ==============================
 
-; Generar texto de menú principal desde categorías registradas
+; BuildMainMenuFromRegistry()
+; FLAT (legacy)
 BuildMainMenuFromRegistry() {
     text := "COMMAND PALETTE`n`n"
     
@@ -228,10 +478,11 @@ BuildMainMenuFromRegistry() {
     return text
 }
 
-; Generar texto de submenú de categoría desde keymaps registrados
+; BuildCategoryMenuFromRegistry(categoryInternal)
+; FLAT (legacy)
 BuildCategoryMenuFromRegistry(categoryInternal) {
-    ; Obtener título de categoría
     global CategoryRegistry
+    
     title := categoryInternal
     for sym, cat in CategoryRegistry {
         if (cat["internal"] = categoryInternal) {
@@ -241,7 +492,6 @@ BuildCategoryMenuFromRegistry(categoryInternal) {
     }
     
     text := title . "`n`n"
-    
     keymaps := GetSortedCategoryKeymaps(categoryInternal)
     
     if (keymaps.Length = 0) {
@@ -256,16 +506,33 @@ BuildCategoryMenuFromRegistry(categoryInternal) {
     return text
 }
 
-; Generar string de items para tooltip C# desde keymaps
-; Formato: "k:descripción|R:otra descripción|..."
+; BuildMenuForPath(path, title := "")
+; JERÁRQUICO
+BuildMenuForPath(path, title := "") {
+    items := GetSortedKeymapsForPath(path)
+    
+    if (items.Length = 0)
+        return ""
+    
+    menuText := title != "" ? title . "`n`n" : ""
+    
+    for item in items {
+        icon := item["isCategory"] ? "→" : "-"
+        menuText .= item["key"] . " " . icon . " " . item["desc"] . "`n"
+    }
+    
+    return menuText
+}
+
+; GenerateCategoryItems(category)
+; FLAT (para tooltip C#)
 GenerateCategoryItems(category) {
     keymaps := GetSortedCategoryKeymaps(category)
     
     if (keymaps.Length = 0)
-        return ""  ; Sin keymaps, usar fallback INI
+        return ""
     
     items := ""
-    
     for km in keymaps {
         if (items != "")
             items .= "|"
@@ -275,14 +542,41 @@ GenerateCategoryItems(category) {
     return items
 }
 
-; ---- Función: Verificar si categoría tiene keymaps registrados ----
+; GenerateCategoryItemsForPath(path)
+; JERÁRQUICO (para tooltip C#)
+GenerateCategoryItemsForPath(path) {
+    items := GetSortedKeymapsForPath(path)
+    
+    if (items.Length = 0)
+        return ""
+    
+    result := ""
+    for item in items {
+        if (result != "")
+            result .= "|"
+        result .= item["key"] . ":" . item["desc"]
+    }
+    
+    return result
+}
+
+; HasKeymaps(category)
+; FLAT
 HasKeymaps(category) {
     global KeymapRegistry
     return KeymapRegistry.Has(category) && KeymapRegistry[category].Count > 0
 }
 
 ; ==============================
-; NOTA: Este sistema es híbrido
-; - Si existe keymap registrado → usar registry
-; - Si no existe → fallback a commands.ini (backward compatible)
+; EJEMPLOS DE USO:
 ; ==============================
+; FLAT (legacy):
+;   RegisterCategory("s", "system", "System Commands", 1)
+;   RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+;
+; JERÁRQUICO (nuevo):
+;   RegisterCategoryKeymap("c", "Commands", 1)
+;   RegisterCategoryKeymap("c", "a", "ADB Tools", 1)
+;   RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
+;
+; Ambas sintaxis funcionan simultáneamente en el mismo sistema.

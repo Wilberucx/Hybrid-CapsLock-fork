@@ -79,7 +79,7 @@ RegisterADBKeymaps() {
 
 ### 1. Registrar categoría (una vez)
 ```ahk
-; HybridCapsLock.ahk o archivo de init
+; init.ahk o archivo de init
 RegisterCategory("a", "adb", "ADB Tools", 7)
 ;                 │    │      │           └─ orden en menú principal
 ;                 │    │      └─ título mostrado

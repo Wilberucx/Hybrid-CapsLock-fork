@@ -78,7 +78,7 @@ Esta capa proporciona herramientas avanzadas para la gestión de ventanas, divis
 
 Para añadir nuevas funciones de ventana:
 
-1. Edita `HybridCapsLock.ahk`
+1. Edita `init.ahk`
 2. Busca la sección `if (_leaderKey = "w")`
 3. Añade la nueva tecla al `Input` statement
 4. Añade un nuevo `Case` en el `Switch _winAction`

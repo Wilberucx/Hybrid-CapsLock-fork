@@ -1,6 +1,6 @@
 # Pruebas Manuales de HybridCapsLock
 
-Esta guía cubre pruebas manuales esenciales para verificar el comportamiento actual del sistema. Ejecuta `HybridCapsLock.ahk` y usa los menús de Leader (`CapsLock + Space`). Al finalizar cada bloque, puedes recargar configuración o script desde Leader → c → h → r/R.
+Esta guía cubre pruebas manuales esenciales para verificar el comportamiento actual del sistema. Ejecuta `init.ahk` y usa los menús de Leader (`CapsLock + Space`). Al finalizar cada bloque, puedes recargar configuración o script desde Leader → c → h → r/R.
 
 ## 1. Timeouts jerárquicos
 - En `config/configuration.ini` ajusta:

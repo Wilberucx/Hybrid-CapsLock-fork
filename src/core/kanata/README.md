@@ -67,7 +67,7 @@ Hybrid-CapsLock-fork/
 │       │   ├── restart_kanata.vbs ← Reiniciar
 │       │   └── README.md          ← Este archivo
 │       └── kanata_launcher.ahk    ← Módulo AHK
-└── HybridCapsLock.ahk             ← Script principal
+└── init.ahk                       ← Script principal
 
 Usuario/
 └── kanata/
@@ -114,7 +114,7 @@ Para probar que funciona:
    - Busca `kanata.exe` en procesos
    - Debería estar corriendo
 
-3. **Test desde AHK**: Ejecuta `HybridCapsLock.ahk`
+3. **Test desde AHK**: Ejecuta `init.ahk`
    - Kanata debería iniciarse automáticamente
    - Prueba: Hold CapsLock + hjkl (navegación)
 

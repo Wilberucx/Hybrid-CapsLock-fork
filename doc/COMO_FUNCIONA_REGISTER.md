@@ -65,7 +65,7 @@ InitializeCommandSystem() {
 **Qué pasa internamente:**
 
 ```
-HybridCapsLock.ahk inicia
+init.ahk inicia
     ↓
 InitializeCommandSystem()
     ↓
@@ -281,7 +281,7 @@ RegisterDockerKeymaps() {
 }
 ```
 
-2. **Agregar includes** en `HybridCapsLock.ahk`:
+2. **Agregar includes** en `init.ahk`:
 ```ahk
 #Include src\actions\docker_actions.ahk
 ```

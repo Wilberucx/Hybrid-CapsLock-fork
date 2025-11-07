@@ -124,7 +124,7 @@ RegisterDockerKeymaps() {
 }
 ```
 
-#### **Paso 2: Include en HybridCapsLock.ahk**
+#### **Paso 2: Include en init.ahk**
 
 ```ahk
 #Include src\actions\docker_actions.ahk
@@ -408,7 +408,7 @@ RegisterKeymap("system", "r", "Registry Editor", ..., false, 8)  // Dangerous
 ✅ **Verificar:**
 1. ¿Registraste el keymap?
 2. ¿Llamaste `Register*Keymaps()` en `command_system_init.ahk`?
-3. ¿Incluiste el archivo en `HybridCapsLock.ahk`?
+3. ¿Incluiste el archivo en `init.ahk`?
 4. Reinicia el script
 
 ### **Orden incorrecto**

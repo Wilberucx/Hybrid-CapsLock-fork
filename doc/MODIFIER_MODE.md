@@ -148,7 +148,7 @@ El Modo Modificador convierte `CapsLock` en una tecla modificadora similar a `Ct
 
 Para modificar o añadir atajos:
 
-1. **Editar `HybridCapsLock.ahk`**
+1. **Editar `init.ahk`**
 2. **Buscar la sección "MODIFIER MODE"**
 3. **Añadir nuevas combinaciones:**
    ```autohotkey
