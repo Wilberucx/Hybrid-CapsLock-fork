@@ -1,11 +1,18 @@
 ; ==============================
-; Leader Router (leader -> w, p)
+; Leader Router - Sistema Jerárquico Universal
 ; ==============================
-; Activates leader and routes to Windows/Programs submenus.
+; Router genérico para navegación jerárquica en Leader Menu.
 ; Hotkey: F24 (sent by Kanata when CapsLock hold + Space)
 ;
-; Depends on: core/config (GetEffectiveTimeout), ui (tooltips),
-; windows_layer (ShowWindowMenu, ExecuteWindowAction)
+; ARQUITECTURA:
+; - Usa ExecuteKeymapAtPath() del keymap_registry
+; - Navegación multinivel con breadcrumb (back funcionando)
+; - Compatible con categorías registradas en command_system_init.ahk
+;
+; Depends on: 
+;   - core/keymap_registry (ExecuteKeymapAtPath, GetSortedKeymapsForPath)
+;   - core/config (GetEffectiveTimeout)
+;   - ui/tooltips
 
 #SuspendExempt
 #HotIf (leaderLayerEnabled)
@@ -17,11 +24,16 @@ F24:: {
 
 #SuspendExempt False
 
+; ==============================
+; NAVEGACIÓN JERÁRQUICA UNIVERSAL
+; ==============================
+
 TryActivateLeader() {
     global leaderActive, isNvimLayerActive, hybridPauseActive
-    ; If script is suspended, resume immediately on Leader
+    
+    ; Resume script if suspended
     if (A_IsSuspended) {
-        try SetTimer(HybridAutoResumeTimer, 0) ; cancel pending auto-resume if any
+        try SetTimer(HybridAutoResumeTimer, 0)
         Suspend(0)
         hybridPauseActive := false
         if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
@@ -30,231 +42,357 @@ TryActivateLeader() {
             ShowCenteredToolTip("RESUMED")
             SetTimer(() => RemoveToolTip(), -900)
         }
-        ; continue into Leader flow
     }
+    
     leaderActive := true
-    ; If NVIM layer is active, deactivate it before showing Leader to avoid keymap conflicts
+    
+    ; Deactivate NVIM layer to avoid conflicts
     if (isNvimLayerActive) {
         isNvimLayerActive := false
         try ShowNvimLayerToggleCS(false)
         try ShowNvimLayerStatus(false)
     }
+    
+    ; Start hierarchical navigation at root
+    NavigateHierarchical("leader")
+    
+    leaderActive := false
+}
 
+; ==============================
+; NAVEGADOR JERÁRQUICO GENÉRICO
+; ==============================
+
+NavigateHierarchical(currentPath) {
     Loop {
-        ShowLeaderMenu()
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled && tooltipConfig.handleInput) {
-            ; Let tooltip hotkeys handle input; wait for timeout/escape only
-            ih := InputHook("T" . GetEffectiveTimeout("leader"), "{Escape}")
-ih.KeyOpt("{Escape}", "S")
-            ih.Start()
-            ih.Wait()
-            if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
-                HideAllTooltips()
-                ih.Stop()
-                leaderActive := false
-                return
-            }
-            ; If timeout without selection, fall through to default continue
-            ih.Stop()
-            continue
-        }
-        ih := InputHook("L1 T" . GetEffectiveTimeout("leader"), "{Escape}")
-ih.KeyOpt("{Escape}", "S")
+        ; Mostrar menú del path actual
+        ShowMenuForCurrentPath(currentPath)
+        
+        ; Esperar input del usuario
+        timeout := GetTimeoutForPath(currentPath)
+        ih := InputHook("L1 T" . timeout, "{Escape}{Backspace}")
+        ih.KeyOpt("{Escape}", "S")
+        ih.KeyOpt("{Backspace}", "S")
         ih.Start()
         ih.Wait()
+        
+        ; Manejar Escape (salir completamente)
         if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
             HideAllTooltips()
             ih.Stop()
-            leaderActive := false
-            return
+            return "EXIT"
         }
+        
+        ; Manejar Backspace (volver atrás)
+        if (ih.EndReason = "EndKey" && ih.EndKey = "Backspace") {
+            ih.Stop()
+            ; Si estamos en root (leader), salir
+            if (currentPath = "leader") {
+                HideAllTooltips()
+                return "EXIT"
+            }
+            ; Si no, volver al padre
+            return "BACK"
+        }
+        
+        ; Manejar timeout
+        if (ih.EndReason = "Timeout") {
+            ih.Stop()
+            HideAllTooltips()
+            return "EXIT"
+        }
+        
+        ; Obtener tecla presionada
         key := ih.Input
         ih.Stop()
+        
+        ; Tecla vacía o inválida
         if (key = "" || key = Chr(0)) {
-            leaderActive := false
-            return
+            HideAllTooltips()
+            return "EXIT"
         }
-        if (key = "w" || key = "W") {
-            res := LeaderWindowsMenuLoop()
-            if (res = "BACK")
-                continue
-            leaderActive := false
-            return
-        } else if (key = "p" || key = "P") {
-            res := LeaderProgramsMenuLoop()
-            if (res = "BACK")
-                continue
-            leaderActive := false
-            return
-        } else if (key = "t" || key = "T") {
-            ; Timestamps menu with proper Back/Esc handling
-            ShowTimeMenu()
-            ihTs := InputHook("L1 T" . GetEffectiveTimeout("timestamps"), "{Escape}{Backspace}")
-ihTs.KeyOpt("{Escape}", "S")
-ihTs.KeyOpt("{Backspace}", "S")
-            ihTs.Start()
-            ihTs.Wait()
-            if (ihTs.EndReason = "EndKey") {
-                if (ihTs.EndKey = "Escape") {
-                    HideAllTooltips()
-                    ihTs.Stop()
-                    leaderActive := false
-                    return
-                }
-                if (ihTs.EndKey = "Backspace") {
-                    ihTs.Stop()
-                    ; Back to Leader menu
-                    continue
-                }
+        
+        ; Backslash como alternativa a Backspace
+        if (key = "\\") {
+            if (currentPath = "leader") {
+                HideAllTooltips()
+                return "EXIT"
             }
-            tsKey := ihTs.Input
-            ihTs.Stop()
-            if (tsKey = "\\")
-                continue
-            if (tsKey = "" || tsKey = Chr(0))
-                continue
-            HandleTimestampMode(tsKey)
+            return "BACK"
+        }
+        
+        ; ==============================
+        ; ACCIONES ESPECIALES (temporales - migrar después)
+        ; ==============================
+        
+        ; Toggle Scroll Layer (s en root)
+        if (currentPath = "leader" && (key = "s" || key = "S")) {
+            HandleScrollLayerToggle()
             HideAllTooltips()
-            leaderActive := false
-            return
-        } else if (key = "i" || key = "I") {
-            ; Information menu with proper Back/Esc handling
-            ShowInformationMenu()
-            ihInfo := InputHook("L1 T" . GetEffectiveTimeout("information"), "{Escape}{Backspace}")
-ihInfo.KeyOpt("{Escape}", "S")
-ihInfo.KeyOpt("{Backspace}", "S")
-            ihInfo.Start()
-            ihInfo.Wait()
-            if (ihInfo.EndReason = "EndKey") {
-                if (ihInfo.EndKey = "Escape") {
-                    HideAllTooltips()
-                    ihInfo.Stop()
-                    leaderActive := false
-                    return
-                }
-                if (ihInfo.EndKey = "Backspace") {
-                    ihInfo.Stop()
-                    ; Back to Leader menu
-                    continue
-                }
-            }
-            infoKey := ihInfo.Input
-            ihInfo.Stop()
-            if (infoKey = "\\")
-                continue
-            if (infoKey = "" || infoKey = Chr(0))
-                continue
-            InsertInformationFromKey(infoKey)
+            return "EXIT"
+        }
+        
+        ; Toggle Excel Layer (n en root)
+        if (currentPath = "leader" && (key = "n" || key = "N")) {
+            HandleExcelLayerToggle()
             HideAllTooltips()
-            leaderActive := false
-            return
-        } else if (key = "s" || key = "S") {
-            global scrollLayerEnabled, scrollLayerActive
-            if (!IsSet(scrollLayerEnabled))
-                scrollLayerEnabled := true
-            if (!IsSet(scrollLayerActive))
-                scrollLayerActive := false
-            scrollLayerActive := !scrollLayerActive
-            try HideAllTooltips()
-            try HideCSharpTooltip()
-            Sleep 30
-            ShowScrollLayerStatus(scrollLayerActive)
-            SetTempStatus(scrollLayerActive ? "SCROLL LAYER ON" : "SCROLL LAYER OFF", 1500)
-            ; Exit Leader to avoid re-showing its menu on next iteration
-            leaderActive := false
-            return
-        } else if (key = "n" || key = "N") {
-            ; Toggle Excel layer on/off
-            global excelLayerEnabled, excelLayerActive
-            if (!excelLayerEnabled) {
-                ShowCenteredToolTip("EXCEL LAYER DISABLED")
-                SetTimer(() => RemoveToolTip(), -1000)
-                continue
-            }
-            excelLayerActive := !excelLayerActive
-            ; Hide Leader tooltip to avoid overlap before showing Excel status
-            try HideAllTooltips()
-            try HideCSharpTooltip()
-            Sleep 30
-            ShowExcelLayerStatus(excelLayerActive)
-            SetTempStatus(excelLayerActive ? "EXCEL LAYER ON" : "EXCEL LAYER OFF", 1500)
-            ; Exit Leader to avoid re-showing its menu on next loop iteration
-            leaderActive := false
-            return
-        } else if (key = "c" || key = "C") {
-            res := LeaderCommandsMenuLoop()
+            return "EXIT"
+        }
+        
+        ; Timestamps (t en root) - TODO: migrar a sistema declarativo
+        if (currentPath = "leader" && (key = "t" || key = "T")) {
+            HandleTimestampsLayer()
+            HideAllTooltips()
+            return "EXIT"
+        }
+        
+        ; Information (i en root) - TODO: migrar a sistema declarativo
+        if (currentPath = "leader" && (key = "i" || key = "I")) {
+            HandleInformationLayer()
+            HideAllTooltips()
+            return "EXIT"
+        }
+        
+        ; Programs (p en root) - TODO: migrar a sistema declarativo
+        if (currentPath = "leader" && (key = "p" || key = "P")) {
+            HandleProgramsLayer()
+            HideAllTooltips()
+            return "EXIT"
+        }
+        
+        ; ==============================
+        ; NAVEGACIÓN JERÁRQUICA (sistema nuevo)
+        ; ==============================
+        
+        ; Ejecutar keymap en el path actual
+        result := ExecuteKeymapAtPath(currentPath, key)
+        
+        if (Type(result) = "String") {
+            ; Es una categoría, navegar más profundo
+            res := NavigateHierarchical(result)
             if (res = "EXIT") {
                 HideAllTooltips()
-                leaderActive := false
-                return
+                return "EXIT"
             }
-            ; BACK or finished -> return to Leader loop
+            ; Si es "BACK", continuar en este nivel
             continue
-        } else {
-            ShowCenteredToolTip("Unknown: " . key)
+        } else if (result = true) {
+            ; Acción ejecutada exitosamente
+            HideAllTooltips()
+            return "EXIT"
+        } else if (result = false) {
+            ; Keymap no encontrado
+            ShowCenteredToolTip("Unknown key: " . key)
             SetTimer(() => RemoveToolTip(), -800)
             continue
         }
     }
 }
 
-ShowLeaderMenu() {
+; ==============================
+; MOSTRAR MENÚ DEL PATH ACTUAL
+; ==============================
+
+ShowMenuForCurrentPath(path) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        ShowLeaderModeMenuCS()
+        ShowMenuForPathCS(path)
     } else {
+        ; Fallback a tooltip nativo
+        menuText := BuildMenuForPath(path, GetTitleForPath(path))
+        if (menuText = "") {
+            menuText := "NO ITEMS IN MENU"
+        }
+        
         ToolTipX := A_ScreenWidth // 2 - 110
         ToolTipY := A_ScreenHeight // 2 - 100
-        menuText := "LEADER MENU`n`n"
-        menuText .= "w - Windows`n"
-        menuText .= "p - Programs`n"
-        menuText .= "c - Commands`n"
-        menuText .= "t - Timestamps`n"
-        menuText .= "i - Information`n"
-        menuText .= "n - Excel/Numbers`n"
-        menuText .= "`n[Esc: Exit]"
         ToolTip(menuText, ToolTipX, ToolTipY, 2)
     }
 }
 
-LeaderWindowsMenuLoop() {
-    global isNvimLayerActive
-    if (isNvimLayerActive) {
-        isNvimLayerActive := false
-        ShowNvimLayerStatus(false)
-        SetTimer(() => RemoveToolTip(), -800)
-    }
+; ==============================
+; OBTENER TÍTULO PARA PATH
+; ==============================
 
-    Loop {
-        ShowWindowMenu()
-        ih := InputHook("L1 T" . GetEffectiveTimeout("windows"), "{Escape}{Backspace}")
-ih.KeyOpt("{Escape}", "S")
-ih.KeyOpt("{Backspace}", "S")
-        ih.Start()
-        ih.Wait()
-        if (ih.EndReason = "EndKey") {
-            if (ih.EndKey = "Escape") {
-                HideAllTooltips()
-                ih.Stop()
-                return "EXIT"
-            }
-            if (ih.EndKey = "Backspace") {
-                ih.Stop()
-                return "BACK"
-            }
-        }
-        key := ih.Input
-        ih.Stop()
-        if (key = "\\")
-            return "BACK"
-        if (key = "" || key = Chr(0))
-            return
-        ExecuteWindowAction(key)
-        HideAllTooltips()
+GetTitleForPath(path) {
+    if (path = "leader")
+        return "LEADER MENU"
+    else if (path = "leader.w")
+        return "WINDOWS"
+    else if (path = "leader.c")
+        return "COMMANDS"
+    else if (path = "leader.c.s")
+        return "SYSTEM COMMANDS"
+    else if (path = "leader.c.a")
+        return "ADB TOOLS"
+    else
+        return StrUpper(SubStr(path, InStr(path, ".", , -1) + 1))
+}
+
+; ==============================
+; OBTENER TIMEOUT PARA PATH
+; ==============================
+
+GetTimeoutForPath(path) {
+    ; Mapear path a categoría de timeout
+    if (path = "leader")
+        return GetEffectiveTimeout("leader")
+    else if (InStr(path, "leader.w"))
+        return GetEffectiveTimeout("windows")
+    else if (InStr(path, "leader.c"))
+        return GetEffectiveTimeout("commands")
+    else if (InStr(path, "leader.p"))
+        return GetEffectiveTimeout("programs")
+    else
+        return GetEffectiveTimeout("leader")
+}
+
+; ==============================
+; ACCIONES ESPECIALES (temporales)
+; ==============================
+
+HandleScrollLayerToggle() {
+    global scrollLayerEnabled, scrollLayerActive
+    if (!IsSet(scrollLayerEnabled))
+        scrollLayerEnabled := true
+    if (!IsSet(scrollLayerActive))
+        scrollLayerActive := false
+    
+    scrollLayerActive := !scrollLayerActive
+    try HideAllTooltips()
+    try HideCSharpTooltip()
+    Sleep 30
+    ShowScrollLayerStatus(scrollLayerActive)
+    SetTempStatus(scrollLayerActive ? "SCROLL LAYER ON" : "SCROLL LAYER OFF", 1500)
+}
+
+HandleExcelLayerToggle() {
+    global excelLayerEnabled, excelLayerActive
+    if (!excelLayerEnabled) {
+        ShowCenteredToolTip("EXCEL LAYER DISABLED")
+        SetTimer(() => RemoveToolTip(), -1000)
         return
+    }
+    
+    excelLayerActive := !excelLayerActive
+    try HideAllTooltips()
+    try HideCSharpTooltip()
+    Sleep 30
+    ShowExcelLayerStatus(excelLayerActive)
+    SetTempStatus(excelLayerActive ? "EXCEL LAYER ON" : "EXCEL LAYER OFF", 1500)
+}
+
+HandleTimestampsLayer() {
+    ; Timestamps menu with proper Back/Esc handling
+    ShowTimeMenu()
+    ihTs := InputHook("L1 T" . GetEffectiveTimeout("timestamps"), "{Escape}{Backspace}")
+    ihTs.KeyOpt("{Escape}", "S")
+    ihTs.KeyOpt("{Backspace}", "S")
+    ihTs.Start()
+    ihTs.Wait()
+    
+    if (ihTs.EndReason = "EndKey" && ihTs.EndKey = "Escape") {
+        ihTs.Stop()
+        return
+    }
+    if (ihTs.EndReason = "EndKey" && ihTs.EndKey = "Backspace") {
+        ihTs.Stop()
+        ; TODO: volver a leader menu (necesita refactor)
+        return
+    }
+    
+    tsKey := ihTs.Input
+    ihTs.Stop()
+    
+    if (tsKey = "\\" || tsKey = "" || tsKey = Chr(0))
+        return
+    
+    HandleTimestampMode(tsKey)
+}
+
+HandleInformationLayer() {
+    ; Information menu with proper Back/Esc handling
+    ShowInformationMenu()
+    ihInfo := InputHook("L1 T" . GetEffectiveTimeout("information"), "{Escape}{Backspace}")
+    ihInfo.KeyOpt("{Escape}", "S")
+    ihInfo.KeyOpt("{Backspace}", "S")
+    ihInfo.Start()
+    ihInfo.Wait()
+    
+    if (ihInfo.EndReason = "EndKey" && ihInfo.EndKey = "Escape") {
+        ihInfo.Stop()
+        return
+    }
+    if (ihInfo.EndReason = "EndKey" && ihInfo.EndKey = "Backspace") {
+        ihInfo.Stop()
+        ; TODO: volver a leader menu (necesita refactor)
+        return
+    }
+    
+    infoKey := ihInfo.Input
+    ihInfo.Stop()
+    
+    if (infoKey = "\\" || infoKey = "" || infoKey = Chr(0))
+        return
+    
+    InsertInformationFromKey(infoKey)
+}
+
+HandleProgramsLayer() {
+    global ProgramsIni
+    ShowProgramMenu()
+    ih := InputHook("L1 T" . GetEffectiveTimeout("programs"), "{Escape}{Backspace}")
+    ih.KeyOpt("{Escape}", "S")
+    ih.KeyOpt("{Backspace}", "S")
+    ih.Start()
+    ih.Wait()
+    
+    if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
+        ih.Stop()
+        return
+    }
+    if (ih.EndReason = "EndKey" && ih.EndKey = "Backspace") {
+        ih.Stop()
+        ; TODO: volver a leader menu (necesita refactor)
+        return
+    }
+    
+    key := ih.Input
+    ih.Stop()
+    
+    if (key = "\\" || key = "" || key = Chr(0))
+        return
+    
+    autoLaunch := CleanIniBool(IniRead(ProgramsIni, "Settings", "auto_launch", "true"), true)
+    if (!autoLaunch) {
+        ShowProgramDetails(key)
+    } else {
+        LaunchProgramFromKey(key)
     }
 }
 
-; Emergency resume hotkey (Ctrl+Alt+Win+R)
+; ==============================
+; MENÚ C# (si está habilitado)
+; ==============================
+
+ShowMenuForPathCS(path) {
+    ; Generar items del path
+    items := GenerateCategoryItemsForPath(path)
+    
+    if (items = "") {
+        items := "[No items registered]"
+    }
+    
+    title := GetTitleForPath(path)
+    footer := "\\: Back|ESC: Exit"
+    
+    ; Mostrar tooltip C#
+    ShowCSharpOptionsMenu(title, items, footer)
+}
+
+; ==============================
+; EMERGENCY RESUME HOTKEY
+; ==============================
+
 #SuspendExempt
 #HotIf (enableEmergencyResumeHotkey)
 ^!#r:: {
@@ -274,74 +412,13 @@ ih.KeyOpt("{Backspace}", "S")
 #HotIf
 #SuspendExempt False
 
-LeaderCommandsMenuLoop() {
-    ; Loop that keeps user inside Commands main and subcategories
-    Loop {
-        ShowCommandsMenu()
-        ihCmd := InputHook("L1 T" . GetEffectiveTimeout("commands"), "{Escape}{Backspace}")
-ihCmd.KeyOpt("{Escape}", "S")
-ihCmd.KeyOpt("{Backspace}", "S")
-        ihCmd.Start()
-        ihCmd.Wait()
-        if (ihCmd.EndReason = "EndKey") {
-            if (ihCmd.EndKey = "Escape") {
-                ihCmd.Stop()
-                return "EXIT"
-            }
-            if (ihCmd.EndKey = "Backspace") {
-                ihCmd.Stop()
-                return "BACK"
-            }
-        }
-        catKey := ihCmd.Input
-        ihCmd.Stop()
-        if (catKey = "\\")
-            return "BACK"
-        if (catKey = "" || catKey = Chr(0))
-            return "BACK"
-        res := HandleCommandCategory(catKey)
-        if (res = "EXIT")
-            return "EXIT"
-        if (res = "BACK")
-            continue
-        ; After executing a command or closing submenu, leave Commands entirely
-        return "EXIT"
-    }
-}
-
-LeaderProgramsMenuLoop() {
-    global ProgramsIni
-    Loop {
-        ShowProgramMenu()
-        ih := InputHook("L1 T" . GetEffectiveTimeout("programs"), "{Escape}{Backspace}")
-ih.KeyOpt("{Escape}", "S")
-ih.KeyOpt("{Backspace}", "S")
-        ih.Start()
-        ih.Wait()
-        if (ih.EndReason = "EndKey") {
-            if (ih.EndKey = "Escape") {
-                HideAllTooltips()
-                ih.Stop()
-                return "EXIT"
-            }
-            if (ih.EndKey = "Backspace") {
-                ih.Stop()
-                return "BACK"
-            }
-        }
-        key := ih.Input
-        ih.Stop()
-        if (key = "\\")
-            return "BACK"
-        if (key = "" || key = Chr(0))
-            return
-        autoLaunch := CleanIniBool(IniRead(ProgramsIni, "Settings", "auto_launch", "true"), true)
-        if (!autoLaunch) {
-            ShowProgramDetails(key)
-            return
-        }
-        LaunchProgramFromKey(key)
-        HideAllTooltips()
-        return
-    }
-}
+; ==============================
+; NOTAS DE MIGRACIÓN:
+; ==============================
+; TODO: Migrar a sistema declarativo:
+; - Programs Layer → programs_actions.ahk + RegisterProgramsKeymaps()
+; - Timestamps Layer → timestamps_actions.ahk + RegisterTimestampsKeymaps()
+; - Information Layer → information_actions.ahk + RegisterInformationKeymaps()
+; - Scroll/Excel toggles → Considerar si deben ser keymaps o manejarse aparte
+;
+; DESPUÉS de migrar, eliminar Handle*Layer() y usar solo NavigateHierarchical()

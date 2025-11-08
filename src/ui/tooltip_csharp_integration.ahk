@@ -2,7 +2,7 @@
 ; INTEGRACIÓN C# TOOLTIP PARA HYBRIDCAPSLOCK v2
 ; ===================================================================
 ; Archivo de integración para reemplazar tooltips básicos con C# + WPF
-; Incluir este archivo en init.ahk con: #Include tooltip_csharp_integration.ahk
+; Incluir este archivo en HybridCapsLock.ahk con: #Include tooltip_csharp_integration.ahk
 
 ; ===================================================================
 ; VARIABLES GLOBALES NECESARIAS
@@ -1370,18 +1370,6 @@ ShowFolderCommandsMenuCS() {
     }
     
     ShowCSharpOptionsMenu("FOLDER ACCESS", items, "\\: Back|ESC: Exit")
-}
-
-; Submenú Windows Commands (leader → c → w)
-ShowWindowsCommandsMenuCS() {
-    TooltipNavPush("CMD_w")
-    items := BuildCommandItemsFromCategoryKey("w")
-    if (items = "") {
-        BuildCommandItemsFromCategoryKey("w")
-        if (items = "")
-            items := "h:Toggle Hidden Files|r:Registry Editor|e:Environment Variables"
-    }
-    ShowCSharpOptionsMenu("WINDOWS COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Power Options (leader → c → o)

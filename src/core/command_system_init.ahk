@@ -1,36 +1,47 @@
 ; ==============================
-; Command System Initialization
+; Command System Initialization - JERÁRQUICO
 ; ==============================
-; Sistema declarativo centralizado estilo lazy.nvim
-; Inicializa TODAS las categorías y keymaps del sistema
+; Sistema declarativo jerárquico estilo which-key de Neovim
+; Inicializa TODAS las categorías y keymaps con rutas completas
 ; LLAMAR ESTA FUNCIÓN UNA SOLA VEZ al inicio
 
 InitializeCommandSystem() {
     ; ==============================
-    ; 1. REGISTRAR TODAS LAS CATEGORÍAS
+    ; 1. CATEGORÍAS PRINCIPALES EN LEADER
     ; ==============================
-    ; RegisterCategory(symbol, internal, title, order)
-    ; symbol: tecla para activar (ej: "s", "h", "g")
-    ; internal: nombre interno para keymaps (ej: "system", "hybrid")
-    ; title: título mostrado en menú
-    ; order: posición en menú principal (menor = primero)
+    ; Leader → w (Windows)
+    RegisterCategoryKeymap("w", "Windows", 1)
     
-    RegisterCategory("s", "system", "System Commands", 1)
-    RegisterCategory("h", "hybrid", "Hybrid Management", 2)
-    RegisterCategory("g", "git", "Git Commands", 3)
-    RegisterCategory("m", "monitoring", "Monitoring Commands", 4)
-    RegisterCategory("n", "network", "Network Commands", 5)
-    RegisterCategory("f", "folder", "Folder Access", 6)
-    RegisterCategory("o", "power", "Power Options", 7)
-    RegisterCategory("a", "adb", "ADB Tools", 8)
-    RegisterCategory("v", "vaultflow", "VaultFlow", 9)
+    ; Leader → c (Commands)
+    RegisterCategoryKeymap("c", "Commands", 3)
     
     ; ==============================
-    ; 2. REGISTRAR TODOS LOS KEYMAPS
+    ; 2. SUBCATEGORÍAS EN COMMANDS
     ; ==============================
-    ; Llamar a todas las funciones Register*Keymaps()
-    ; definidas en src/actions/*.ahk
+    ; Leader → c → s (System)
+    ; Leader → c → h (Hybrid)
+    ; etc.
     
+    RegisterCategoryKeymap("c", "s", "System Commands", 1)
+    RegisterCategoryKeymap("c", "h", "Hybrid Management", 2)
+    RegisterCategoryKeymap("c", "g", "Git Commands", 3)
+    RegisterCategoryKeymap("c", "m", "Monitoring Commands", 4)
+    RegisterCategoryKeymap("c", "n", "Network Commands", 5)
+    RegisterCategoryKeymap("c", "f", "Folder Access", 6)
+    RegisterCategoryKeymap("c", "o", "Power Options", 7)
+    RegisterCategoryKeymap("c", "a", "ADB Tools", 8)
+    RegisterCategoryKeymap("c", "v", "VaultFlow", 9)
+    
+    ; ==============================
+    ; 3. REGISTRAR TODOS LOS KEYMAPS
+    ; ==============================
+    ; Cada función Register*Keymaps() usa sintaxis jerárquica:
+    ; RegisterKeymap("leader_key", "category_key", "action_key", "desc", action, confirm, order)
+    
+    ; Windows Layer
+    RegisterWindowsKeymaps()
+    
+    ; Commands Layer (subcategorías)
     RegisterSystemKeymaps()
     RegisterHybridKeymaps()
     RegisterGitKeymaps()
@@ -44,9 +55,20 @@ InitializeCommandSystem() {
     ; ==============================
     ; SISTEMA LISTO
     ; ==============================
-    ; Ahora todas las categorías y comandos están registrados
-    ; Los menús se generan automáticamente desde el registry
-    ; No se necesita configurar nada más en INI
+    ; Estructura resultante:
+    ; Leader
+    ;   ├── w (Windows)
+    ;   │   ├── 2 - Split 50/50
+    ;   │   ├── m - Maximize
+    ;   │   └── ...
+    ;   └── c (Commands)
+    ;       ├── s (System)
+    ;       │   ├── s - System Info
+    ;       │   └── t - Task Manager
+    ;       ├── a (ADB)
+    ;       │   ├── d - List Devices
+    ;       │   └── s - Shell
+    ;       └── ...
 }
 
 ; ==============================
