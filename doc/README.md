@@ -51,6 +51,12 @@ Cada capa tiene un propósito específico. Aprende a usarlas y configurarlas en 
   - **[example_browser_layer.ahk](templates/example_browser_layer.ahk)**: Ejemplo funcional de una capa para navegadores web.
   - **[📖 Documentación Completa](develop/PERSISTENT_LAYER_TEMPLATE.md)**: Guía detallada para crear capas personalizadas.
 
+- **[🔄 Auto-Loader System](develop/AUTO_LOADER_SYSTEM.md)**: Sistema de detección automática de actions y layers.
+  - Escaneo automático de `src/actions/` y `src/layer/` en cada inicio
+  - Auto-include en `init.ahk` de nuevos archivos
+  - Carpetas `no_include/` para archivos en desarrollo o desactivados temporalmente
+  - Memoria JSON para rastrear cambios
+
 ## 🔗 Enlaces Globales
 
 - **[README Principal](../README.md)**: Volver a la página principal del proyecto.

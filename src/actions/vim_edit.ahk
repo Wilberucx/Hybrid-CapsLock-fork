@@ -234,6 +234,45 @@ VimDuplicateLine() {
 }
 
 ; ==============================
+; OPERACIONES SOBRE OBJETOS DE TEXTO
+; ==============================
+
+; Delete Current Word (diw en Vim)
+VimDeleteCurrentWord() {
+    Send("^{Right}^+{Left}{Delete}")
+}
+
+; Delete Current Line (dd en Vim, ya existe pero esta es más directa)
+VimDeleteCurrentLineDirect() {
+    Send("{Home}+{End}{Delete}")
+}
+
+; Delete All (dG o ggdG en Vim)
+VimDeleteAll() {
+    Send("^a{Delete}")
+}
+
+; Copy Current Line (yy en Vim, ya existe pero esta es más directa)
+VimCopyCurrentLineDirect() {
+    Send("{Home}+{End}^c")
+}
+
+; Copy Current Word (yiw en Vim)
+VimCopyCurrentWord() {
+    Send("^{Right}^+{Left}^c")
+}
+
+; Copy Current Paragraph (yap en Vim - aproximación)
+VimCopyCurrentParagraph() {
+    Send("^{Up}^+{Down}^c")
+}
+
+; Paste Plain Text (sin formato)
+VimPastePlain() {
+    Send("^+v")
+}
+
+; ==============================
 ; ARCHIVOS RELACIONADOS:
 ; ==============================
 ; - vim_nav.ahk    → Navegación sin selección
