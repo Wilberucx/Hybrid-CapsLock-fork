@@ -1,15 +1,15 @@
 ; ==============================
-; Leader Router - Sistema Jerárquico Universal
+; Leader Router - Universal Hierarchical System
 ; ==============================
-; Router genérico para navegación jerárquica en Leader Menu.
+; Generic router for hierarchical navigation in Leader Menu.
 ; Hotkey: F24 (sent by Kanata when CapsLock hold + Space)
 ;
-; ARQUITECTURA:
-; - Usa ExecuteKeymapAtPath() del keymap_registry
-; - Navegación multinivel con breadcrumb (back funcionando)
-; - Compatible con categorías registradas en command_system_init.ahk
+; ARCHITECTURE:
+; - Uses ExecuteKeymapAtPath() from keymap_registry
+; - Multi-level navigation with breadcrumb (back working)
+; - Compatible with categories registered in command_system_init.ahk
 ;
-; Depends on: 
+; Dependencies: 
 ;   - core/keymap_registry (ExecuteKeymapAtPath, GetSortedKeymapsForPath)
 ;   - core/config (GetEffectiveTimeout)
 ;   - ui/tooltips
@@ -25,7 +25,7 @@ F24:: {
 #SuspendExempt False
 
 ; ==============================
-; NAVEGACIÓN JERÁRQUICA UNIVERSAL
+; UNIVERSAL HIERARCHICAL NAVIGATION
 ; ==============================
 
 TryActivateLeader() {
@@ -60,15 +60,15 @@ TryActivateLeader() {
 }
 
 ; ==============================
-; NAVEGADOR JERÁRQUICO GENÉRICO
+; GENERIC HIERARCHICAL NAVIGATOR
 ; ==============================
 
 NavigateHierarchical(currentPath) {
     Loop {
-        ; Mostrar menú del path actual
+        ; Show menu for current path
         ShowMenuForCurrentPath(currentPath)
         
-        ; Esperar input del usuario
+        ; Wait for user input
         timeout := GetTimeoutForPath(currentPath)
         ih := InputHook("L1 T" . timeout, "{Escape}{Backspace}")
         ih.KeyOpt("{Escape}", "S")
@@ -76,43 +76,43 @@ NavigateHierarchical(currentPath) {
         ih.Start()
         ih.Wait()
         
-        ; Manejar Escape (salir completamente)
+        ; Handle Escape (exit completely)
         if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
             HideAllTooltips()
             ih.Stop()
             return "EXIT"
         }
         
-        ; Manejar Backspace (volver atrás)
+        ; Handle Backspace (go back)
         if (ih.EndReason = "EndKey" && ih.EndKey = "Backspace") {
             ih.Stop()
-            ; Si estamos en root (leader), salir
+            ; If we're at root (leader), exit
             if (currentPath = "leader") {
                 HideAllTooltips()
                 return "EXIT"
             }
-            ; Si no, volver al padre
+            ; Otherwise, return to parent
             return "BACK"
         }
         
-        ; Manejar timeout
+        ; Handle timeout
         if (ih.EndReason = "Timeout") {
             ih.Stop()
             HideAllTooltips()
             return "EXIT"
         }
         
-        ; Obtener tecla presionada
+        ; Get pressed key
         key := ih.Input
         ih.Stop()
         
-        ; Tecla vacía o inválida
+        ; Empty or invalid key
         if (key = "" || key = Chr(0)) {
             HideAllTooltips()
             return "EXIT"
         }
         
-        ; Backslash como alternativa a Backspace
+        ; Backslash as alternative to Backspace
         if (key = "\\") {
             if (currentPath = "leader") {
                 HideAllTooltips()
@@ -122,29 +122,29 @@ NavigateHierarchical(currentPath) {
         }
         
         ; ==============================
-        ; NAVEGACIÓN JERÁRQUICA UNIVERSAL
+        ; UNIVERSAL HIERARCHICAL NAVIGATION
         ; ==============================
-        ; TODO lo maneja ExecuteKeymapAtPath() del registry
-        ; NO hay código hardcoded para categorías específicas
+        ; Everything is handled by ExecuteKeymapAtPath() from registry
+        ; NO hardcoded logic for specific categories
         
-        ; Ejecutar keymap en el path actual
+        ; Execute keymap at current path
         result := ExecuteKeymapAtPath(currentPath, key)
         
         if (Type(result) = "String") {
-            ; Es una categoría, navegar más profundo
+            ; It's a category, navigate deeper
             res := NavigateHierarchical(result)
             if (res = "EXIT") {
                 HideAllTooltips()
                 return "EXIT"
             }
-            ; Si es "BACK", continuar en este nivel
+            ; If "BACK", continue at this level
             continue
         } else if (result = true) {
-            ; Acción ejecutada exitosamente
+            ; Action executed successfully
             HideAllTooltips()
             return "EXIT"
         } else if (result = false) {
-            ; Keymap no encontrado
+            ; Keymap not found
             ShowCenteredToolTip("Unknown key: " . key)
             SetTimer(() => RemoveToolTip(), -800)
             continue
@@ -153,14 +153,14 @@ NavigateHierarchical(currentPath) {
 }
 
 ; ==============================
-; MOSTRAR MENÚ DEL PATH ACTUAL
+; SHOW MENU FOR CURRENT PATH
 ; ==============================
 
 ShowMenuForCurrentPath(path) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         ShowMenuForPathCS(path)
     } else {
-        ; Fallback a tooltip nativo
+        ; Fallback to native tooltip
         menuText := BuildMenuForPath(path, GetTitleForPath(path))
         if (menuText = "") {
             menuText := "NO ITEMS IN MENU"
@@ -173,18 +173,18 @@ ShowMenuForCurrentPath(path) {
 }
 
 ; ==============================
-; OBTENER TÍTULO PARA PATH (genérico)
+; GET TITLE FOR PATH (generic)
 ; ==============================
 
 GetTitleForPath(path) {
     global KeymapRegistry
     
-    ; Root especial
+    ; Special case for root
     if (path = "leader")
         return "LEADER MENU"
     
-    ; Buscar título en el registry
-    ; path = "leader.w" -> buscar en KeymapRegistry["leader"]["w"]["desc"]
+    ; Search for title in registry
+    ; path = "leader.w" -> search in KeymapRegistry["leader"]["w"]["desc"]
     parts := StrSplit(path, ".")
     if (parts.Length < 2)
         return "MENU"
@@ -195,49 +195,49 @@ GetTitleForPath(path) {
     }
     key := parts[parts.Length]
     
-    ; Intentar obtener desc del registry
+    ; Try to get desc from registry
     if (KeymapRegistry.Has(parentPath)) {
         if (KeymapRegistry[parentPath].Has(key)) {
             return KeymapRegistry[parentPath][key]["desc"]
         }
     }
     
-    ; Fallback: última parte del path en mayúsculas
+    ; Fallback: last part of path in uppercase
     return StrUpper(key)
 }
 
 ; ==============================
-; OBTENER TIMEOUT PARA PATH (genérico)
+; GET TIMEOUT FOR PATH (generic)
 ; ==============================
 
 GetTimeoutForPath(path) {
-    ; Usar timeout genérico de leader
-    ; Todos los mini-layers usan el mismo timeout
+    ; Use generic leader timeout
+    ; All mini-layers use the same timeout
     return GetEffectiveTimeout("leader")
 }
 
 ; ==============================
-; NOTAS:
+; NOTES:
 ; ==============================
-; Este router es COMPLETAMENTE GENÉRICO
-; NO necesitas editar este archivo para agregar nuevas categorías
+; This router is COMPLETELY GENERIC
+; You do NOT need to edit this file to add new categories
 ; 
-; Para agregar una nueva categoría/comando:
-; 1. Crea src/actions/NUEVA_actions.ahk con las funciones
-; 2. Define Register[NUEVA]Keymaps() con RegisterKeymap() o RegisterKeymapFlat()
-; 3. Registra la categoría en command_system_init.ahk:
-;    RegisterCategoryKeymap("tecla", "Título", orden)
-; 4. Llama Register[NUEVA]Keymaps() en command_system_init.ahk
-; 5. ¡Listo! El router lo detecta automáticamente
+; To add a new category/command:
+; 1. Create src/actions/NEW_actions.ahk with functions
+; 2. Define Register[NEW]Keymaps() with RegisterKeymap() or RegisterKeymapFlat()
+; 3. Register the category in command_system_init.ahk:
+;    RegisterCategoryKeymap("key", "Title", order)
+; 4. Call Register[NEW]Keymaps() in command_system_init.ahk
+; 5. Done! The router detects it automatically
 ;
-; Estilo which-key de Neovim: Todo declarativo, nada hardcoded
+; which-key style from Neovim: Everything declarative, nothing hardcoded
 
 ; ==============================
-; MENÚ C# (si está habilitado)
+; C# MENU (if enabled)
 ; ==============================
 
 ShowMenuForPathCS(path) {
-    ; Generar items del path
+    ; Generate items for path
     items := GenerateCategoryItemsForPath(path)
     
     if (items = "") {
@@ -247,7 +247,7 @@ ShowMenuForPathCS(path) {
     title := GetTitleForPath(path)
     footer := "\\: Back|ESC: Exit"
     
-    ; Mostrar tooltip C#
+    ; Show C# tooltip
     ShowCSharpOptionsMenu(title, items, footer)
 }
 

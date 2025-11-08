@@ -58,7 +58,7 @@
 
 ;; Capa de navegación vim (caps)
 (deflayer vim-nav
-  _    f13  _    _   end   _    _    _    _    _   home  _    _    _
+  _    f13  f20  _   end   _    _    _    _    _   home  _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    left down up   rght _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _

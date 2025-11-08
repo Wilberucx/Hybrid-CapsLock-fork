@@ -44,6 +44,13 @@ Cada capa tiene un propósito específico. Aprende a usarlas y configurarlas en 
 - **[Integración de Tooltips (C#)](../tooltip_csharp/README.md)**: Detalles técnicos sobre el sistema de notificaciones visuales.
 - **[Pruebas Manuales](MANUAL_TESTS.md)**: Checklist para verificar que todo funciona correctamente.
 
+## 🛠️ Plantillas y Desarrollo
+
+- **[📦 Layer Templates](templates/)**: Plantillas reutilizables para crear nuevas capas persistentes.
+  - **[layer_template.ahk](templates/layer_template.ahk)**: Plantilla base con exit key configurable, sistema de ayuda, y soporte para sub-modos.
+  - **[example_browser_layer.ahk](templates/example_browser_layer.ahk)**: Ejemplo funcional de una capa para navegadores web.
+  - **[📖 Documentación Completa](develop/PERSISTENT_LAYER_TEMPLATE.md)**: Guía detallada para crear capas personalizadas.
+
 ## 🔗 Enlaces Globales
 
 - **[README Principal](../README.md)**: Volver a la página principal del proyecto.

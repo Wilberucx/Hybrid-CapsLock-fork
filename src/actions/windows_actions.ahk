@@ -1,13 +1,13 @@
 ; ==============================
-; Windows Actions - Funciones Específicas de Window Management
+; Windows Actions - Window Management Specific Functions
 ; ==============================
-; Acciones específicas para gestión de ventanas en Windows.
-; Estas funciones SON ESPECÍFICAS y NO son reutilizables en otras capas.
+; Specific actions for Windows window management.
+; These functions are SPECIFIC and NOT reusable in other layers.
 ;
-; USADAS EN: windows_layer.ahk
+; USED IN: windows_layer.ahk
 
 ; ==============================
-; WINDOW MANAGEMENT BÁSICO
+; BASIC WINDOW MANAGEMENT
 ; ==============================
 
 ; Maximize Window
@@ -37,13 +37,13 @@ RestoreWindow() {
 }
 
 ; ==============================
-; WINDOW SPLITS (Específico de Windows Snap)
+; WINDOW SPLITS (Windows Snap specific)
 ; ==============================
 
 ; Split 50/50 (Left + Right)
 Split5050() {
     Send("#{Left}")
-    Sleep(100)  ; Timing crítico para que Windows Snap funcione
+    Sleep(100)  ; Critical timing for Windows Snap to work
     Send("#{Right}")
     ShowCommandExecuted("Windows", "Split 50/50")
 }
@@ -249,13 +249,13 @@ ShakeWindow() {
 }
 
 ; ==============================
-; REGISTRO DECLARATIVO JERÁRQUICO
+; DECLARATIVE HIERARCHICAL REGISTRATION
 ; ==============================
-; Ruta: Leader → w (Windows) → key
+; Path: Leader → w (Windows) → key
 
 RegisterWindowsKeymaps() {
-    ; NOTA: Windows es FLAT bajo leader (2 niveles)
-    ; Usamos RegisterKeymapFlat() directamente en "leader.w"
+    ; NOTE: Windows is FLAT under leader (2 levels)
+    ; We use RegisterKeymapFlat() directly on "leader.w"
     
     ; Splits
     RegisterKeymapFlat("leader.w", "2", "Split 50/50", Split5050, false, 1)

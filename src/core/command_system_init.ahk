@@ -71,17 +71,3 @@ InitializeCommandSystem() {
     ;       └── ...
 }
 
-; ==============================
-; BENEFICIOS DEL SISTEMA:
-; ==============================
-; ✓ Todo declarado en código (no INI duplicado)
-; ✓ Una función de init centralizada
-; ✓ Menús auto-generados
-; ✓ Fácil agregar nuevas categorías:
-;   1. Crear archivo src/actions/NUEVA_actions.ahk
-;   2. Definir funciones + Register[NUEVA]Keymaps()
-;   3. Agregar RegisterCategory() aquí
-;   4. Agregar Register[NUEVA]Keymaps() aquí
-; ✓ Orden explícito y controlado
-; ✓ Confirmaciones por comando
-; ==============================
