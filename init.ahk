@@ -23,6 +23,12 @@
 ; --------------------
 ; Actions (funciones reutilizables - sistema declarativo)
 ; --------------------
+; Core actions (reutilizables en múltiples capas)
+#Include src\actions\vim_nav.ahk
+#Include src\actions\vim_visual.ahk
+#Include src\actions\vim_edit.ahk
+
+; Actions específicas por dominio
 #Include src\actions\hybrid_actions.ahk
 #Include src\actions\system_actions.ahk
 #Include src\actions\network_actions.ahk
@@ -32,6 +38,7 @@
 #Include src\actions\power_actions.ahk
 #Include src\actions\adb_actions.ahk
 #Include src\actions\vaultflow_actions.ahk
+#Include src\actions\windows_actions.ahk
 
 ; Command System Init (DEBE ir después de actions)
 #Include src\core\command_system_init.ahk
