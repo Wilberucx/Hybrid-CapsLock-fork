@@ -103,40 +103,7 @@ ExecuteWindowAction(action) {
     }
 }
 
-StartPersistentBlindSwitch() {
-    ShowCenteredToolTip("BLIND SWITCH MODE`nj: Next | k: Previous | Enter: Exit | Esc: Cancel")
-
-    ; Persistent loop for blind switching
-    Loop {
-        ih := InputHook("L1 T" . GetEffectiveTimeout("windows"))
-        ih.Start()
-        ih.Wait()
-
-        if (ih.EndReason = "Timeout") {
-            ih.Stop()
-            ShowCenteredToolTip("BLIND SWITCH TIMEOUT")
-            SetTimer(() => RemoveToolTip(), -1000)
-            break
-        }
-
-        key := ih.Input
-        ih.Stop()
-
-        if (key = "j") {
-            Send("!{Tab}")
-            ShowCenteredToolTip("BLIND SWITCH MODE`nj: Next | k: Previous | Enter: Exit | Esc: Cancel")
-        } else if (key = "k") {
-            Send("!+{Tab}")
-            ShowCenteredToolTip("BLIND SWITCH MODE`nj: Next | k: Previous | Enter: Exit | Esc: Cancel")
-        } else if (key = Chr(13) || key = Chr(10)) {
-            ShowCenteredToolTip("BLIND SWITCH ENDED")
-            SetTimer(() => RemoveToolTip(), -1000)
-            break
-        } else if (key = Chr(27)) {
-            ShowCenteredToolTip("BLIND SWITCH CANCELLED")
-            SetTimer(() => RemoveToolTip(), -1000)
-            break
-        }
-        ; Any other key -> continue loop
-    }
-}
+; ==============================
+; NOTA: StartPersistentBlindSwitch() movida a src/actions/windows_actions.ahk
+; Esta función ahora es parte del sistema declarativo jerárquico
+; ==============================
