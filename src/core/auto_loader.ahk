@@ -738,13 +738,18 @@ SwitchToLayer(targetLayer, originLayer := "") {
         return false
     }
     
-    ; Deactivate current layer
+    ; CRITICAL: Deactivate origin layer explicitly to avoid #HotIf conflicts
+    if (originLayer != "") {
+        DeactivateOriginLayer(originLayer)
+    }
+    
+    ; Deactivate current layer (if switching from intermediate state)
     if (CurrentActiveLayer != "") {
         DeactivateLayer(CurrentActiveLayer)
     }
     
     ; Set state
-    PreviousLayer := (originLayer != "") ? originLayer : CurrentActiveLayer
+    PreviousLayer := originLayer
     CurrentActiveLayer := targetLayer
     
     ; Activate new layer
@@ -766,9 +771,16 @@ ReturnToPreviousLayer() {
         PreviousLayer := ""
         OutputDebug("[LayerSwitcher] Returned to base state")
     } else {
-        ; Return to previous layer
-        SwitchToLayer(PreviousLayer, "")
-        OutputDebug("[LayerSwitcher] Returned to previous layer: " . PreviousLayer)
+        ; Return to previous layer - reactivate it
+        if (CurrentActiveLayer != "") {
+            DeactivateLayer(CurrentActiveLayer)
+        }
+        
+        ; Reactivate the previous layer
+        ReactivateOriginLayer(PreviousLayer)
+        CurrentActiveLayer := PreviousLayer
+        PreviousLayer := ""
+        OutputDebug("[LayerSwitcher] Returned to previous layer: " . CurrentActiveLayer)
     }
 }
 
@@ -817,5 +829,79 @@ DeactivateLayer(layerName) {
         OutputDebug("[LayerSwitcher] Set state variable: " . layerStateVar . " = false")
     } catch {
         OutputDebug("[LayerSwitcher] Could not unset state variable: " . layerStateVar)
+    }
+}
+
+DeactivateOriginLayer(layerName) {
+    OutputDebug("[LayerSwitcher] Deactivating origin layer to avoid conflicts: " . layerName)
+    
+    ; Handle specific layer deactivation logic
+    switch layerName {
+        case "nvim":
+            ; Temporarily deactivate nvim layer to avoid hotkey conflicts
+            try {
+                global isNvimLayerActive
+                isNvimLayerActive := false
+                OutputDebug("[LayerSwitcher] Temporarily deactivated nvim layer")
+            } catch as err {
+                OutputDebug("[LayerSwitcher] Error deactivating nvim layer: " . err.Message)
+            }
+        
+        case "excel":
+            ; Handle excel layer deactivation if needed
+            try {
+                global excelLayerActive
+                excelLayerActive := false
+                OutputDebug("[LayerSwitcher] Temporarily deactivated excel layer")
+            } catch as err {
+                OutputDebug("[LayerSwitcher] Error deactivating excel layer: " . err.Message)
+            }
+        
+        default:
+            ; Generic layer deactivation
+            layerStateVar := StrTitle(layerName) . "LayerActive"
+            try {
+                %layerStateVar% := false
+                OutputDebug("[LayerSwitcher] Temporarily deactivated generic layer: " . layerName)
+            } catch {
+                OutputDebug("[LayerSwitcher] Could not deactivate generic layer: " . layerName)
+            }
+    }
+}
+
+ReactivateOriginLayer(layerName) {
+    OutputDebug("[LayerSwitcher] Reactivating origin layer: " . layerName)
+    
+    ; Handle specific layer reactivation logic
+    switch layerName {
+        case "nvim":
+            ; Reactivate nvim layer
+            try {
+                global isNvimLayerActive
+                isNvimLayerActive := true
+                OutputDebug("[LayerSwitcher] Reactivated nvim layer")
+            } catch as err {
+                OutputDebug("[LayerSwitcher] Error reactivating nvim layer: " . err.Message)
+            }
+        
+        case "excel":
+            ; Reactivate excel layer if needed
+            try {
+                global excelLayerActive
+                excelLayerActive := true
+                OutputDebug("[LayerSwitcher] Reactivated excel layer")
+            } catch as err {
+                OutputDebug("[LayerSwitcher] Error reactivating excel layer: " . err.Message)
+            }
+        
+        default:
+            ; Generic layer reactivation
+            layerStateVar := StrTitle(layerName) . "LayerActive"
+            try {
+                %layerStateVar% := true
+                OutputDebug("[LayerSwitcher] Reactivated generic layer: " . layerName)
+            } catch {
+                OutputDebug("[LayerSwitcher] Could not reactivate generic layer: " . layerName)
+            }
     }
 }

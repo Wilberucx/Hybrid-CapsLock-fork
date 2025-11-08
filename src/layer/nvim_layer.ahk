@@ -29,7 +29,6 @@
 global nvimLayerEnabled := true      ; Feature flag
 global nvimStaticEnabled := true     ; Static vs dynamic hotkeys
 global isNvimLayerActive := false    ; Layer state
-global VisualMode := false           ; Visual mode state
 global _tempEditMode := false        ; Insert mode state
 
 ; ==============================
@@ -37,7 +36,7 @@ global _tempEditMode := false        ; Insert mode state
 ; ==============================
 
 *F23:: {
-    global nvimLayerEnabled, isNvimLayerActive, VisualMode, debug_mode
+    global nvimLayerEnabled, isNvimLayerActive, debug_mode
     if (!nvimLayerEnabled)
         return
     
@@ -55,7 +54,6 @@ global _tempEditMode := false        ; Insert mode state
             SetTempStatus("NVIM LAYER ON", 1500)
         }
     } else {
-        VisualMode := false
         if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
             ShowNvimLayerToggleCS(false)
         } else {
@@ -79,14 +77,14 @@ try {
 } catch {
 }
 
-; Visual mode mappings
-try {
-    global nvimVisualMappings
-    nvimVisualMappings := LoadSimpleMappings(A_ScriptDir . "\\config\\nvim_layer.ini", "Visual", "order")
-    if (nvimVisualMappings.Count > 0)
-        ApplyGenericMappings("nvim_visual", nvimVisualMappings, (*) => (isNvimLayerActive && VisualMode && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()))
-} catch {
-}
+; Visual mode mappings - DISABLED: Now handled by visual_layer.ahk
+; try {
+;     global nvimVisualMappings
+;     nvimVisualMappings := LoadSimpleMappings(A_ScriptDir . "\\config\\nvim_layer.ini", "Visual", "order")
+;     if (nvimVisualMappings.Count > 0)
+;         ApplyGenericMappings("nvim_visual", nvimVisualMappings, (*) => (isNvimLayerActive && VisualMode && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()))
+; } catch {
+; }
 
 ; Insert mode mappings
 try {
@@ -114,14 +112,14 @@ v::SwitchToLayer("visual", "nvim")
 ; gg handled by GLogic (see below)
 #HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed() && !GLogicActive) : false)
 g::GLogicStart()
-+g::NvimGoToDocEdge(false)  ; G = bottom (uses helper for VisualMode support)
++g::NvimGoToDocEdge(false)  ; G = bottom
 #HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
 
 ; === BASIC NAVIGATION (hjkl) ===
 ; NOTA: Duplicación intencional con Kanata
 ; Kanata: Hold CapsLock + hjkl = instant navigation (no persistent)
 ; AHK: Nvim Layer active + hjkl = persistent with Visual Mode logic
-*h::NvimDirectionalSend("Left")    ; Uses helper for VisualMode support
+*h::NvimDirectionalSend("Left")
 *j::NvimDirectionalSend("Down")
 *k::NvimDirectionalSend("Up")
 *l::NvimDirectionalSend("Right")
@@ -139,31 +137,17 @@ w:: {
         ColonLogicHandleW()
         return
     }
-    NvimWordJumpHelper("Right")  ; Uses helper for VisualMode support
+    NvimWordJumpHelper("Right")
 }
 b::NvimWordJumpHelper("Left")
 e::VimEndOfWord()
 
 ; === EDIT OPERATIONS ===
-d:: {
-    global VisualMode
-    Send("{Delete}")
-    if (VisualMode) {
-        VisualMode := false
-        ShowVisualModeStatus(false)
-        SetTimer(() => RemoveToolTip(), -500)
-    }
-}
+d::Send("{Delete}")
 
 y:: {
-    global VisualMode
     VimYank()  ; From vim_edit.ahk
     ShowCopyNotification()
-    if (VisualMode) {
-        VisualMode := false
-        ShowVisualModeStatus(false)
-        SetTimer(() => RemoveToolTip(), -500)
-    }
 }
 
 p::VimPaste()        ; From vim_edit.ahk
@@ -172,28 +156,8 @@ x::Send("^x")        ; Cut
 u::VimUndo()         ; From vim_edit.ahk
 r::VimRedo()         ; From vim_edit.ahk
 
-; === CHANGE (Visual only) ===
-c:: {
-    global VisualMode, isNvimLayerActive, _tempEditMode
-    if (VisualMode) {
-        Send("{Delete}")
-        VisualMode := false
-        ShowVisualModeStatus(false)
-        isNvimLayerActive := false
-        _tempEditMode := true
-        ShowNvimLayerStatus(false)
-        SetTempStatus("INSERT MODE (Esc para volver)", 1500)
-    }
-}
-
-; === SELECT ALL (Visual only) ===
-a:: {
-    global VisualMode
-    if (VisualMode) {
-        Send("^a")
-        ShowVisualModeStatus(true)
-    }
-}
+; === CHANGE - REMOVED: Now handled by visual_layer.ahk ===
+; === SELECT ALL - REMOVED: Now handled by visual_layer.ahk ===
 
 ; === SCROLL ===
 ^u::Send("{WheelUp 6}")
@@ -227,19 +191,13 @@ i:: {
 
 ; === ESCAPE (multi-purpose) ===
 Esc:: {
-    global _tempEditMode, VisualMode, ColonLogicActive
+    global _tempEditMode, ColonLogicActive
     if (ColonLogicActive) {
         ColonLogicCancel()
         return
     }
     if (_tempEditMode) {
         ReactivateNvimAfterInsert()
-        return
-    }
-    if (VisualMode) {
-        VisualMode := false
-        ShowVisualModeStatus(false)
-        SetTimer(() => RemoveToolTip(), -500)
         return
     }
     Send("{Escape}")
@@ -258,9 +216,9 @@ f:: {
 }
 
 ; === HELP SYSTEM ===
-+vkBF:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
-+SC035:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
-?:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
++vkBF:: (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp())
++SC035:: (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp())
+?:: (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp())
 
 ; === COLON COMMANDS (:w/:q/:wq) ===
 *SC027::ColonMaybeStart()
@@ -300,12 +258,22 @@ f:: {
 ; 2. Funciones de vim_edit.ahk: VimYank, VimPaste, VimPastePlain, VimUndo, VimRedo
 ; 3. Funciones de nvim_layer_helpers.ahk: Todo lo específico de nvim
 ; 4. Eliminadas funciones duplicadas: DeleteCurrentWord, CopyCurrentLine, etc.
-; 5. Estructura más limpia y modular
+; 5. VISUAL MODE EXTRAÍDO: Ahora en src/layer/visual_layer.ahk independiente
+; 6. Layer switching: v::SwitchToLayer("visual", "nvim") - composabilidad real
+; 7. Estructura más limpia y modular
 ;
 ; Funciones que permanecen inline (son simples wrappers):
-; - ShowNvimLayerStatus, ShowVisualModeStatus
+; - ShowNvimLayerStatus
 ;
 ; Funciones movidas a helpers (lógica compleja específica):
 ; - NvimDirectionalSend, NvimWordJumpHelper, NvimGoToDocEdge
 ; - ReactivateNvimAfterInsert, NvimLayerAppAllowed
 ; - Todo el sistema ColonLogic, GLogic, Help
+;
+; ELIMINADO COMPLETAMENTE DE ESTE LAYER:
+; - VisualMode global variable
+; - Visual mode hotkeys (d/y/c/a con visual logic)
+; - ShowVisualModeStatus calls
+; - Visual help system
+; - ESC visual mode handling
+; - Todo el manejo de selección visual

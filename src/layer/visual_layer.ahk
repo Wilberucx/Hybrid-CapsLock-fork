@@ -17,9 +17,10 @@
 ; - All edit operations exit visual and return to origin
 ;
 ; DEPENDENCIES:
+; - vim_visual.ahk: Proper visual selection functions 
 ; - Auto-loaded by auto_loader.ahk system
-; - Uses existing global functions from actions (if available)
-; - Self-contained where functions don't exist
+; - Uses vim-style selection behavior
+
 
 ; ==============================
 ; CONFIGURATION
@@ -36,29 +37,29 @@ global VisualHelpActive := false     ; Help menu state
 #HotIf (VisualLayerActive)
 
 ; === BASIC NAVIGATION (with selection) ===
-*h::VisualMove("Left")
-*j::VisualMove("Down") 
-*k::VisualMove("Up")
-*l::VisualMove("Right")
+*h::VimVisualMoveLeft()
+*j::VimVisualMoveDown() 
+*k::VimVisualMoveUp()
+*l::VimVisualMoveRight()
 
 ; Alt-modified combos (avoid menu conflicts)
-*!h::VisualMove("Left")
-*!j::VisualMove("Down")
-*!k::VisualMove("Up") 
-*!l::VisualMove("Right")
+*!h::VimVisualMoveLeft()
+*!j::VimVisualMoveDown()
+*!k::VimVisualMoveUp() 
+*!l::VimVisualMoveRight()
 
 ; === LINE NAVIGATION ===
-0::VisualMove("Home")        ; Start of line
-+4::VisualMove("End")        ; End of line (Shift+4 = $)
+0::VimVisualStartOfLine()    ; Start of line
++4::VimVisualEndOfLine()     ; End of line (Shift+4 = $)
 
 ; === WORD NAVIGATION ===
-w::VisualMove("^Right")      ; Next word
-b::VisualMove("^Left")       ; Previous word  
-e::VisualMoveEndOfWord()     ; End of current word
+w::VimVisualWordForward()    ; Next word
+b::VimVisualWordBackward()   ; Previous word  
+e::VimVisualEndOfWord()      ; End of current word
 
 ; === DOCUMENT NAVIGATION ===
-g::VisualMove("^Home")       ; Top of document
-+g::VisualMove("^End")       ; Bottom of document (Shift+G)
+g::VimVisualTopOfFile()      ; Top of document
++g::VimVisualBottomOfFile()  ; Bottom of document (Shift+G)
 
 ; === EDIT OPERATIONS (exit visual after operation) ===
 d:: {
@@ -93,12 +94,7 @@ p:: {
 }
 
 ; === SELECT ALL ===
-a:: {
-    global VisualSelection
-    Send("^a")
-    VisualSelection := true
-    ShowVisualModeStatus(true)
-}
+a::Send("^a")
 
 ; === EXIT VISUAL MODE ===
 Esc::ExitVisualLayer()
@@ -122,12 +118,10 @@ ActivateVisualLayer() {
     global VisualLayerActive, VisualSelection
     
     VisualLayerActive := true
-    VisualSelection := false
-    
-    ; Start selection at current position
-    Send("+{Right}")    ; Start selection
-    Send("{Left}")      ; Reset to original position but keep selection active
     VisualSelection := true
+    
+    ; Visual mode starts immediately - user navigation will extend selection
+    ; No initial selection needed - first movement will start it
     
     ShowVisualModeStatus(true)
     OutputDebug("[VisualLayer] Visual mode activated")
@@ -179,50 +173,10 @@ ExitToBase() {
 }
 
 ; ==============================
-; VISUAL MOVEMENT FUNCTIONS
+; VISUAL SELECTION HELPERS
 ; ==============================
-
-VisualMove(direction) {
-    global VisualSelection
-    
-    if (!VisualSelection) {
-        ; Start selection
-        VisualSelection := true
-        Send("+" . GetMovementKey(direction))
-    } else {
-        ; Continue selection
-        Send("+" . GetMovementKey(direction))
-    }
-}
-
-VisualMoveEndOfWord() {
-    global VisualSelection
-    
-    if (!VisualSelection) {
-        VisualSelection := true
-        Send("+^{Right}")
-        Send("+{Left}")  ; Adjust for end of word
-    } else {
-        Send("+^{Right}")
-        Send("+{Left}")
-    }
-}
-
-GetMovementKey(direction) {
-    switch direction {
-        case "Left": return "{Left}"
-        case "Right": return "{Right}"
-        case "Up": return "{Up}"
-        case "Down": return "{Down}"
-        case "Home": return "{Home}"
-        case "End": return "{End}"
-        case "^Left": return "^{Left}"
-        case "^Right": return "^{Right}" 
-        case "^Home": return "^{Home}"
-        case "^End": return "^{End}"
-        default: return "{Right}"
-    }
-}
+; All movement functions are now handled by vim_visual.ahk
+; This layer only manages the layer state and integration
 
 ; ==============================
 ; UI FUNCTIONS
@@ -232,24 +186,25 @@ GetMovementKey(direction) {
 
 ShowVisualHelp() {
     helpText := "VISUAL MODE HELP`n`n"
-    helpText .= "NAVIGATION:`n"
+    helpText .= "SELECTION NAVIGATION (vim-style):`n"
     helpText .= "h/j/k/l - Move with selection`n"
-    helpText .= "w/b/e - Word navigation`n" 
-    helpText .= "0/$ - Line start/end`n"
-    helpText .= "g/G - Document start/end`n`n"
+    helpText .= "w/b/e - Word-based selection`n" 
+    helpText .= "0/$ - Line start/end selection`n"
+    helpText .= "g/G - Document start/end selection`n`n"
     helpText .= "OPERATIONS:`n"
-    helpText .= "d - Delete selection`n"
-    helpText .= "y - Copy selection`n"
+    helpText .= "d - Delete selection & exit`n"
+    helpText .= "y - Copy selection & exit`n"
     helpText .= "c - Change (delete + insert)`n"
-    helpText .= "x - Cut selection`n"
-    helpText .= "p/P - Paste`n"
+    helpText .= "x - Cut selection & exit`n"
+    helpText .= "p/P - Paste & exit`n"
     helpText .= "a - Select all`n`n"
     helpText .= "EXIT:`n"
     helpText .= "Esc - Return to previous layer`n"
-    helpText .= "f - Emergency exit to base"
+    helpText .= "f - Emergency exit to base`n`n"
+    helpText .= "Uses vim_visual.ahk for proper selection behavior"
     
     ShowCenteredToolTip(helpText)
-    SetTimer(() => RemoveToolTip(), -8000)
+    SetTimer(() => RemoveToolTip(), -10000)
 }
 
 ; ==============================
