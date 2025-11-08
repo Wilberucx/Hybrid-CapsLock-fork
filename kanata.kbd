@@ -31,10 +31,10 @@
   f (tap-hold 200 200 f lsft)
   
   ;; Homerow mods - mano derecha (prioridad tap para vim)
-  j (tap-hold-press 350 150 j lsft)
-  k (tap-hold-press 350 150 k lmet)
-  l (tap-hold-press 350 150 l lalt)
-  ; (tap-hold-press 200 150 ; lctl)
+  j (tap-hold-press 350 250 j lsft)
+  k (tap-hold-press 350 250 k lmet)
+  l (tap-hold-press 350 250 l lalt)
+  ; (tap-hold-press 200 250 ; lctl)
   
   ;; Otras teclas especiales
   q (tap-hold 200 200 q esc)
