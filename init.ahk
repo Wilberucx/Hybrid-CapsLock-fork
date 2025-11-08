@@ -19,6 +19,7 @@
 #Include src\core\confirmations.ahk
 #Include src\core\keymap_registry.ahk
 #Include src\core\mappings.ahk
+#Include src\core\auto_loader.ahk
 
 ; --------------------
 ; Actions (funciones reutilizables - sistema declarativo)
@@ -39,6 +40,10 @@
 #Include src\actions\adb_actions.ahk
 #Include src\actions\vaultflow_actions.ahk
 #Include src\actions\windows_actions.ahk
+
+; ===== AUTO-LOADED ACTIONS START =====
+#Include src\actions\nvim_layer_helpers.ahk
+; ===== AUTO-LOADED ACTIONS END =====
 
 ; Command System Init (DEBE ir después de actions)
 #Include src\core\command_system_init.ahk
@@ -65,10 +70,17 @@
 ; #Include src\layer\modifier_mode.ahk  ; DESACTIVADO - Delegado a Kanata
 #Include src\layer\scroll_layer.ahk
 
+; ===== AUTO-LOADED LAYERS START =====
+; (No auto-loaded files)
+; ===== AUTO-LOADED LAYERS END =====
+
 ; --------------------
 ; Startup logic
 ; --------------------
 try {
+    ; Run auto-loader to detect new files (before anything else)
+    AutoLoaderInit()
+    
     ; Iniciar Kanata primero (si existe)
     StartKanataIfNeeded()
     

@@ -1,14 +1,41 @@
 ; ==============================
-; Nvim Layer (toggle on F23 from Kanata)
+; NVIM LAYER - Refactored with Reusable Actions
 ; ==============================
-; Provides a lightweight Vim-like navigation layer toggled by F23 key.
-; - Toggle: F23 sent by Kanata when CapsLock is tapped
-; - Context: Active when isNvimLayerActive is true
-; - Visual Mode: simple ON/OFF indicator
-; Depends on: core/globals (isNvimLayerActive, VisualMode),
-;             core/persistence (SaveLayerState), ui/tooltips_native_wrapper (status)
+; Vim-like navigation layer toggled by F23 (CapsLock tap from Kanata)
+;
+; FEATURES:
+; - Toggle ON/OFF con F23 (tap CapsLock)
+; - Visual Mode (v) para selección
+; - Insert Mode (i/I) temporal
+; - Colon Commands (:w, :q, :wq)
+; - G Logic (gg para top)
+; - Help system (?)
+;
+; DEPENDENCIES:
+; - vim_nav.ahk: Navegación básica reutilizable
+; - vim_visual.ahk: Navegación con selección
+; - vim_edit.ahk: Operaciones de edición
+; - nvim_layer_helpers.ahk: Funciones específicas de este layer
+;
+; ARCHITECTURE:
+; - Usa funciones reut ilizables de actions/ donde sea posible
+; - Mantiene lógica específica en helpers
+; - Sigue patrón similar al template pero con toggle en lugar de activación manual
 
-; ---- Toggle via F23 (sent by Kanata on CapsLock tap) ----
+; ==============================
+; CONFIGURATION
+; ==============================
+
+global nvimLayerEnabled := true      ; Feature flag
+global nvimStaticEnabled := true     ; Static vs dynamic hotkeys
+global isNvimLayerActive := false    ; Layer state
+global VisualMode := false           ; Visual mode state
+global _tempEditMode := false        ; Insert mode state
+
+; ==============================
+; TOGGLE ACTIVATION (F23 from Kanata)
+; ==============================
+
 *F23:: {
     global nvimLayerEnabled, isNvimLayerActive, VisualMode, debug_mode
     if (!nvimLayerEnabled)
@@ -17,8 +44,9 @@
     if (debug_mode)
         OutputDebug "[NVIM] F23 received, toggling layer\n"
     
-    ; Toggle
+    ; Toggle layer
     isNvimLayerActive := !isNvimLayerActive
+    
     if (isNvimLayerActive) {
         if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
             ShowNvimLayerToggleCS(true)
@@ -38,9 +66,11 @@
     try SaveLayerState()
 }
 
+; ==============================
+; DYNAMIC MAPPINGS (Optional)
+; ==============================
 
-
-; Try dynamic mappings if available (Normal mode)
+; Normal mode mappings
 try {
     global nvimMappings
     nvimMappings := LoadSimpleMappings(A_ScriptDir . "\\config\\nvim_layer.ini", "Normal", "order")
@@ -49,7 +79,7 @@ try {
 } catch {
 }
 
-; Try dynamic mappings for Visual mode
+; Visual mode mappings
 try {
     global nvimVisualMappings
     nvimVisualMappings := LoadSimpleMappings(A_ScriptDir . "\\config\\nvim_layer.ini", "Visual", "order")
@@ -58,7 +88,7 @@ try {
 } catch {
 }
 
-; Try dynamic mappings for Insert mode
+; Insert mode mappings
 try {
     global nvimInsertMappings
     nvimInsertMappings := LoadSimpleMappings(A_ScriptDir . "\\config\\nvim_layer.ini", "Insert", "order")
@@ -67,17 +97,13 @@ try {
 } catch {
 }
 
-global ColonLogicActive := false
-global ColonStage := ""
+; ==============================
+; LAYER HOTKEYS - NORMAL MODE
+; ==============================
 
-; Estado para mini-capa de 'g'
-global GLogicActive := false
-
-
-; ---- Context hotkeys ----
 #HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
 
-; Visual Mode toggle
+; === VISUAL MODE TOGGLE ===
 v:: {
     global VisualMode
     VisualMode := !VisualMode
@@ -85,40 +111,45 @@ v:: {
     SetTimer(() => RemoveToolTip(), -1000)
 }
 
-; Line navigation (0: start, $: end)
-0::Send("{Home}")
-+4::Send("{End}")
+; === LINE NAVIGATION ===
+0::VimStartOfLine()       ; Home
++4::VimEndOfLine()        ; End (Shift+4 = $)
 
-; Ir a inicio/fin de documento (gg / G)
-; gg -> Top (Ctrl+Home), G (Shift+g) -> Bottom (Ctrl+End)
-; En VisualMode, añadir Shift para extender selección
-
-#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock","P") && NvimLayerAppAllowed() && !GLogicActive) : false)
+; === DOCUMENT NAVIGATION ===
+; gg handled by GLogic (see below)
+#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed() && !GLogicActive) : false)
 g::GLogicStart()
-+g::NvimGoToDocEdge(false)
-#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock","P") && NvimLayerAppAllowed()) : false)
++g::NvimGoToDocEdge(false)  ; G = bottom (uses helper for VisualMode support)
+#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
 
-; Basic navigation (hjkl) - DUPLICACIÓN INTENCIONAL con Kanata
-; Kanata maneja: Hold CapsLock + hjkl = navegación instantánea (no persistente)
-; AHK maneja: Nvim Layer activa (tap CapsLock) + hjkl = navegación persistente con lógica avanzada
-; 
-; Los wildcards (*h, *j, *k, *l) permiten combinar con modificadores:
-; - Shift+j → Shift+Down (seleccionar hacia abajo en Visual Mode)
-; - Ctrl+l → Ctrl+Right (navegar por palabras)
-; - Alt+h → Alt+Left (retroceder en navegador)
-; Kanata hace esto a nivel hardware, pero cuando Nvim Layer está activo, AHK toma control
-; para integrar con Visual Mode y otras funcionalidades context-aware
-*h::NvimDirectionalSend("Left")
+; === BASIC NAVIGATION (hjkl) ===
+; NOTA: Duplicación intencional con Kanata
+; Kanata: Hold CapsLock + hjkl = instant navigation (no persistent)
+; AHK: Nvim Layer active + hjkl = persistent with Visual Mode logic
+*h::NvimDirectionalSend("Left")    ; Uses helper for VisualMode support
 *j::NvimDirectionalSend("Down")
 *k::NvimDirectionalSend("Up")
 *l::NvimDirectionalSend("Right")
-; Ensure Alt-modified combos also fire (avoid menu-steal)
+
+; Alt-modified combos (avoid menu steal)
 *!h::NvimDirectionalSend("Left")
 *!j::NvimDirectionalSend("Down")
 *!k::NvimDirectionalSend("Up")
 *!l::NvimDirectionalSend("Right")
 
-; Delete simple (d) — borra la selección si está en Visual y sale de Visual; en Normal envía Delete
+; === WORD NAVIGATION ===
+w:: {
+    global ColonLogicActive
+    if (ColonLogicActive) {
+        ColonLogicHandleW()
+        return
+    }
+    NvimWordJumpHelper("Right")  ; Uses helper for VisualMode support
+}
+b::NvimWordJumpHelper("Left")
+e::VimEndOfWord()
+
+; === EDIT OPERATIONS ===
 d:: {
     global VisualMode
     Send("{Delete}")
@@ -129,12 +160,9 @@ d:: {
     }
 }
 
-; Yank simple (y) — copia con Ctrl+C; si estaba en Visual, sale de Visual
-; Nota: al hacer acciones Visual, mostramos un tooltip nativo del modo Visual
-;y:: {
-y:: { 
+y:: {
     global VisualMode
-    Send("^c")
+    VimYank()  ; From vim_edit.ahk
     ShowCopyNotification()
     if (VisualMode) {
         VisualMode := false
@@ -143,21 +171,66 @@ y:: {
     }
 }
 
-; Paste
-p::Send("^v")
-+p::PastePlain()
+p::VimPaste()        ; From vim_edit.ahk
++p::VimPastePlain()  ; From vim_edit.ahk
+x::Send("^x")        ; Cut
+u::VimUndo()         ; From vim_edit.ahk
+r::VimRedo()         ; From vim_edit.ahk
 
-; Cut (x)
-x::Send("^x")
+; === CHANGE (Visual only) ===
+c:: {
+    global VisualMode, isNvimLayerActive, _tempEditMode
+    if (VisualMode) {
+        Send("{Delete}")
+        VisualMode := false
+        ShowVisualModeStatus(false)
+        isNvimLayerActive := false
+        _tempEditMode := true
+        ShowNvimLayerStatus(false)
+        SetTempStatus("INSERT MODE (Esc para volver)", 1500)
+    }
+}
 
-; Undo (u) / Redo (r arriba)
-u::Send("^z")
+; === SELECT ALL (Visual only) ===
+a:: {
+    global VisualMode
+    if (VisualMode) {
+        Send("^a")
+        ShowVisualModeStatus(true)
+    }
+}
 
-; Scroll Ctrl+U / Ctrl+D
+; === SCROLL ===
 ^u::Send("{WheelUp 6}")
 ^d::Send("{WheelDown 6}")
 
-; Exit Insert mode (if mapped dynamically)
+; === INSERT MODE ===
+i:: {
+    global isNvimLayerActive, _tempEditMode, tooltipConfig
+    isNvimLayerActive := false
+    _tempEditMode := true
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowNvimLayerToggleCS(false)
+    } else {
+        ShowNvimLayerStatus(false)
+    }
+    SetTempStatus("INSERT MODE (Esc para volver)", 1500)
+}
+
++i:: {
+    global isNvimLayerActive, _tempEditMode, tooltipConfig
+    isNvimLayerActive := false
+    _tempEditMode := true
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowNvimLayerToggleCS(false)
+    } else {
+        ShowNvimLayerStatus(false)
+    }
+    SetTempStatus("INSERT MODE (Esc para volver)", 1500)
+    Send("^!+i")
+}
+
+; === ESCAPE (multi-purpose) ===
 Esc:: {
     global _tempEditMode, VisualMode, ColonLogicActive
     if (ColonLogicActive) {
@@ -177,150 +250,7 @@ Esc:: {
     Send("{Escape}")
 }
 
-; End of word (e)
-e::Send("^{Right}{Left}")
-
-; Smooth scrolling
-; Removed Shift+e and Shift+y smooth scroll bindings per user request
-; +e::Send("{WheelDown 3}")
-; +y::Send("{WheelUp 3}")
-
-; Insert mode (temporary disable layer) - manual return with Esc
-; i: solo desactiva NVIM layer (no envía combinación)
-; Shift+i: desactiva NVIM layer y envía Ctrl+Alt+Shift+I (hereda el comportamiento anterior)
-i:: {
-    global isNvimLayerActive, _tempEditMode, tooltipConfig
-    isNvimLayerActive := false
-    _tempEditMode := true
-    ; Ocultar/eliminar tooltip persistente según el backend activo
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowNvimLayerToggleCS(false) ; oculta el tooltip C# si estaba mostrado
-    } else {
-        ShowNvimLayerStatus(false) ; tooltip nativo breve
-    }
-    SetTempStatus("INSERT MODE (Esc para volver)", 1500)
-    ; Sin envío de combinación aquí
-    ; Retorno manual con Esc
-}
-
-+i:: {
-    global isNvimLayerActive, _tempEditMode, tooltipConfig
-    isNvimLayerActive := false
-    _tempEditMode := true
-    ; Ocultar/eliminar tooltip persistente según el backend activo
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowNvimLayerToggleCS(false)
-    } else {
-        ShowNvimLayerStatus(false)
-    }
-    SetTempStatus("INSERT MODE (Esc para volver)", 1500)
-    Send("^!+i")
-    ; Retorno manual con Esc
-}
-
-; Redo (r)
-r::Send("^y")
-
-; Help: NVIM or VISUAL (toggle with '?')
-+vkBF:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
-+SC035:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
-?:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
-
-; (moved function definition to global scope below)
-
-global NvimHelpActive := false
-global VisualHelpActive := false
-
-VisualShowHelp() {
-    global tooltipConfig, VisualHelpActive
-    ; Hide persistent Visual status to avoid overlap
-    try HideCSharpTooltip()
-    Sleep 30
-    VisualHelpActive := true
-    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
-    try SetTimer(VisualHelpAutoClose, -to)
-    try ShowVisualHelpCS()
-}
-
-VisualHelpAutoClose() {
-    global VisualHelpActive
-    if (VisualHelpActive)
-        VisualCloseHelp()
-}
-
-VisualCloseHelp() {
-    global isNvimLayerActive, VisualMode, tooltipConfig, VisualHelpActive
-    try SetTimer(VisualHelpAutoClose, 0)
-    try HideCSharpTooltip()
-    VisualHelpActive := false
-    if (VisualMode) {
-        ; Restore persistent Visual status
-        try ShowVisualLayerToggleCS(true)
-    } else if (isNvimLayerActive) {
-        ; Fall back to NVIM persistent if visual off but layer active
-        try ShowNvimLayerToggleCS(true)
-    } else {
-        try RemoveToolTip()
-    }
-}
-
-
-NvimShowHelp() {
-    global isNvimLayerActive, tooltipConfig, NvimHelpActive
-    ; If C# is enabled, hide current persistent NVIM ON tooltip first to avoid overlap
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try HideCSharpTooltip()
-        Sleep 30
-    }
-    NvimHelpActive := true
-    ; Auto-close timer using configured optionsTimeout (fallback 5000)
-    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 5000
-    try SetTimer(NvimHelpAutoClose, -to)
-    ; Show help (C# or native)
-    try {
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-            ShowNvimHelpCS()
-        } else {
-            ShowCenteredToolTip("NVIM HELP: hjkl move | gg/G top/bottom | v visual | y copy | p paste | u undo | x cut | i insert (no combo) | I insert+^!+i | f find")
-        }
-    } catch {
-        ShowCenteredToolTip("NVIM HELP: hjkl move | gg/G top/bottom | v visual | y copy | p paste | u undo | x cut | i insert (no combo) | I insert+^!+i | f find")
-    }
-}
-
-NvimHelpAutoClose() {
-    global NvimHelpActive
-    if (NvimHelpActive)
-        NvimCloseHelp()
-}
-
-NvimCloseHelp() {
-    ; if Visual opened its help, ignore closing here
-    if (VisualHelpActive)
-        return
-    global isNvimLayerActive, tooltipConfig, NvimHelpActive
-    ; Cancel any pending auto-close timer
-    try SetTimer(NvimHelpAutoClose, 0)
-    ; Hide help tooltip (C#) if present
-    try HideCSharpTooltip()
-    NvimHelpActive := false
-    if (isNvimLayerActive) {
-        try {
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled)
-                ShowNvimLayerToggleCS(true)
-            else
-                ShowNvimLayerStatus(true)
-        } catch {
-            ShowNvimLayerStatus(true)
-        }
-    } else {
-        ; Ensure native tooltip is removed if we used it
-        try RemoveToolTip()
-    }
-}
-
-; Quick exit
-; Send Ctrl+Alt+Shift+2 with f and then deactivate NVIM layer
+; === QUICK EXIT (f key) ===
 f:: {
     global isNvimLayerActive, tooltipConfig
     isNvimLayerActive := false
@@ -329,105 +259,25 @@ f:: {
     } else {
         ShowNvimLayerStatus(false)
     }
-    ; Enviar la combinación después de desactivar la capa
     Send("^!+2")
 }
+
+; === HELP SYSTEM ===
++vkBF:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
++SC035:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
+?:: (VisualMode ? (VisualHelpActive ? VisualCloseHelp() : VisualShowHelp()) : (NvimHelpActive ? NvimCloseHelp() : NvimShowHelp()))
+
+; === COLON COMMANDS (:w/:q/:wq) ===
+*SC027::ColonMaybeStart()
+*vkBA::ColonMaybeStart()
 
 ^!+i::Send("^!+i")
 
 #HotIf
 
-; Ctrl/Alt/Shift + hjkl sent to arrows with modifiers, honoring VisualMode
-; - Shift => selección (mantiene Shift)
-; - Ctrl  => navega por palabras/elementos (Ctrl+Arrow)
-; - Alt   => deja Alt+Arrow (útil en IDEs/editores con comportamiento propio)
-; Combinaciones (ej. Ctrl+Shift+h) se respetan
-NvimDirectionalSend(dir) {
-    global VisualMode
-   mods := ""
-   if GetKeyState("Ctrl", "P")
-       mods .= "^"
-   if GetKeyState("Alt", "P")
-       mods .= "!"
-   if GetKeyState("Shift", "P")
-       mods .= "+"
-   ; En VisualMode, asegurar que Shift esté presente para extender selección
-   if (VisualMode && !InStr(mods, "+"))
-       mods .= "+"
-   Send(mods . "{" . dir . "}")
-}
-
-; ---- App filter for Nvim layer ----
-
-#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
-#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
-
-NvimLayerAppAllowed() {
-   try {
-       ini := A_ScriptDir . "\\config\\nvim_layer.ini"
-       wl := IniRead(ini, "Settings", "whitelist", "")
-       bl := IniRead(ini, "Settings", "blacklist", "")
-       proc := WinGetProcessName("A")
-       if (bl != "" && InStr("," . StrLower(bl) . ",", "," . StrLower(proc) . ","))
-           return false
-       if (wl = "")
-           return true
-       return InStr("," . StrLower(wl) . ",", "," . StrLower(proc) . ",")
-   } catch {
-       return true
-   }
-}
-
-#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
-; Word jumps like NVIM (w/b)
-w:: {
-    global ColonLogicActive
-    if (ColonLogicActive) {
-        ColonLogicHandleW()
-        return
-    }
-    NvimWordJumpHelper("Right")
-}
-b::NvimWordJumpHelper("Left")
-
-; Save
-
-; Change (visual only): delete selection and enter insert (disable NVIM layer)
-c:: {
-    global VisualMode, isNvimLayerActive, _tempEditMode
-    if (VisualMode) {
-        Send("{Delete}")
-        VisualMode := false
-        ShowVisualModeStatus(false)
-        isNvimLayerActive := false
-        _tempEditMode := true
-        ShowNvimLayerStatus(false)
-        SetTempStatus("INSERT MODE (Esc para volver)", 1500)
-    }
-}
-
-; Select All (visual only)
-a:: {
-    global VisualMode
-    if (VisualMode) {
-        Send("^a")
-        ShowVisualModeStatus(true)
-    }
-}
-
-; ---- Colon command logic-only mode (triggered by Shift+; or :) ----
-; Entry: Shift+; (:) opens a temporary logical mode that waits for w or q, then Enter.
-; Stages:
-;   ""  -> awaiting w or q
-;   "w" -> awaiting q or Enter
-;   "q" -> awaiting Enter
-;   "wq"-> awaiting Enter
-; Tooltip: fixed text to emulate :w/:q/:wq waiting (does not change with stage).
-
-#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
-*SC027::ColonMaybeStart()   ; Semicolon/OEM_1 scancode, decide by Shift state
-*vkBA::ColonMaybeStart()    ; OEM_1 by virtual key, decide by Shift state
-#HotIf
+; ==============================
+; COLON LOGIC SUB-MODE (InputLevel 2)
+; ==============================
 
 #InputLevel 2
 #HotIf (nvimStaticEnabled ? (isNvimLayerActive && ColonLogicActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
@@ -437,216 +287,30 @@ a:: {
 *Esc::ColonLogicCancel()
 #HotIf
 
-; --- Mini capa para 'g' (gg) ---
+; ==============================
+; G LOGIC SUB-MODE (gg for top) (InputLevel 2)
+; ==============================
+
 #HotIf (nvimStaticEnabled ? (isNvimLayerActive && GLogicActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
 *g::GLogicHandleG()
 *Esc::GLogicCancel()
 #HotIf
 #InputLevel 1
-#HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
-#HotIf
 
-ColonMaybeStart() {
-    ; Only start colon logic when Shift is physically held (i.e., we intend ':')
-    if GetKeyState("Shift", "P") {
-        ColonLogicStart()
-        ; Block the ':' character from being sent
-        return
-    }
-    ; Otherwise it's a bare semicolon ';' — pass it through
-    Send(";")
-}
-
-ColonLogicStart() {
-    global ColonLogicActive, ColonStage
-    ColonLogicActive := true
-    ColonStage := ""
-    ColonLogicShowTip()
-}
-
-ColonLogicCancel() {
-    global ColonLogicActive, ColonStage
-    ColonLogicActive := false
-    ColonStage := ""
-    try HideCSharpTooltip()
-    try ShowCenteredToolTipCS("Cmd: cancelled", 800)
-    SetTimer(() => RemoveToolTip(), -600)
-}
-
-ColonLogicShowTip() {
-    ; Mostrar tooltip tipo lista en esquina inferior derecha usando C#
-    ; Persistente (timeout 0) hasta Enter o Esc
-    items := "w:Save|q:Quit|wq:Save + Quit"
-    ShowBottomRightListTooltip("CMD", items, "Enter: Execute|Esc: Cancel", 0)
-}
-
-ColonLogicHandleW() {
-    global ColonStage
-    if (ColonStage = "") {
-        ColonStage := "w"
-    } else if (ColonStage = "w") {
-        ColonStage := "wq"
-    } else if (ColonStage = "q") {
-        ColonStage := "q" ; stays waiting only Enter
-    }
-    ColonLogicShowTip()
-}
-
-ColonLogicHandleQ() {
-    global ColonStage
-    if (ColonStage = "") {
-        ColonStage := "q"
-    } else if (ColonStage = "w") {
-        ColonStage := "wq"
-    } else if (ColonStage = "q") {
-        ColonStage := "q"
-    }
-    ColonLogicShowTip()
-}
-
-ColonLogicEnter() {
-    global ColonStage
-    if (ColonStage = "w") {
-        Send("^s")
-    } else if (ColonStage = "q") {
-        Send("!{F4}")
-    } else if (ColonStage = "wq") {
-        Send("^s")
-        Sleep(80)
-        Send("!{F4}")
-    }
-    ColonLogicCancel()
-}
-
-; Jump by word like NVIM (used by w/b)
-NvimWordJumpHelper(dir) {
-   global VisualMode
-   mods := "^" ; Ctrl for word movement
-   if (VisualMode)
-       mods .= "+" ; add Shift to extend selection in Visual
-   arrow := (dir = "Right") ? "Right" : "Left"
-   Send(mods . "{" . arrow . "}")
-}
-
-; Go to document edge (top/bottom) with gg/G
-NvimGoToDocEdge(goTop := true) {
-    global VisualMode
-    mods := "^" ; Ctrl for document edge
-    if (VisualMode)
-        mods .= "+" ; Shift to extend selection
-    Send(mods . "{" . (goTop ? "Home" : "End") . "}")
-}
-
-
-DeleteCurrentWord() {
-    Send("^{Right}^+{Left}{Delete}")
-    ShowCenteredToolTip("WORD DELETED")
-    SetTimer(() => RemoveToolTip(), -800)
-}
-DeleteCurrentLine() {
-    Send("{Home}+{End}{Delete}")
-    ShowCenteredToolTip("LINE DELETED")
-    SetTimer(() => RemoveToolTip(), -800)
-}
-DeleteAll() {
-    Send("^a{Delete}")
-    ShowCenteredToolTip("ALL DELETED")
-    SetTimer(() => RemoveToolTip(), -800)
-}
-CopyCurrentLine() {
-    Send("{Home}+{End}^c")
-    ShowCenteredToolTip("LINE COPIED")
-    SetTimer(() => RemoveToolTip(), -800)
-}
-CopyCurrentWord() {
-    Send("^{Right}^+{Left}^c")
-    ShowCopyNotification()
-}
-CopyCurrentParagraph() {
-    Send("^{Up}^+{Down}^c")
-    ShowCenteredToolTip("PARAGRAPH COPIED")
-    SetTimer(() => RemoveToolTip(), -800)
-}
-PastePlain() {
-    Send("^+v")
-}
-ReactivateNvimAfterInsert() {
-    global isNvimLayerActive, _tempEditMode
-    if (_tempEditMode) {
-        isNvimLayerActive := true
-        _tempEditMode := false
-        ShowNvimLayerStatus(true)
-        SetTimer(() => RemoveToolTip(), -1000)
-    }
-}
-
-NvimHandleDeleteMenu() {
-    global VisualMode
-    if (VisualMode) {
-        Send("{Delete}")
-        return
-    }
-    ShowDeleteMenu()
-    ih := InputHook("L1 T" . GetEffectiveTimeout("nvim"), "{Escape}")
-    ih.Start()
-    ih.Wait()
-    if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
-        try HideCSharpTooltip()
-        return
-    }
-    key := ih.Input
-    try HideCSharpTooltip()
-    switch key {
-        case "w": DeleteCurrentWord()
-        case "d": DeleteCurrentLine()
-        case "a": DeleteAll()
-    }
-}
-
-NvimHandleYankMenu() {
-    global VisualMode
-    if (VisualMode) {
-        Send("^c")
-        ShowCopyNotification()
-        return
-    }
-    ShowYankMenu()
-    ih := InputHook("L1 T" . GetEffectiveTimeout("nvim"), "{Escape}")
-    ih.Start()
-    ih.Wait()
-    if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
-        try HideCSharpTooltip()
-        return
-    }
-    key := ih.Input
-    try HideCSharpTooltip()
-    switch key {
-        case "y": CopyCurrentLine()
-        case "w": CopyCurrentWord()
-        case "a": Send("^a^c"), ShowCopyNotification()
-        case "p": CopyCurrentParagraph()
-    }
-}
-
-; --- Lógica mini-capa 'g' (gg) ---
-GLogicStart() {
-    global GLogicActive
-    GLogicActive := true
-    to := GetEffectiveTimeout("nvim")
-    ; GetEffectiveTimeout returns seconds; SetTimer expects ms when negative
-    try SetTimer(GLogicTimeout, -to*1000)
-}
-
-GLogicHandleG() {
-    GLogicCancel()
-    NvimGoToDocEdge(true) ; top
-}
-
-GLogicCancel() {
-    global GLogicActive
-    GLogicActive := false
-}
-
-GLogicTimeout() {
-    GLogicCancel()
-}
+; ==============================
+; NOTAS DE REFACTORING
+; ==============================
+; Cambios principales:
+; 1. Funciones de vim_nav.ahk: VimStartOfLine, VimEndOfLine, VimEndOfWord
+; 2. Funciones de vim_edit.ahk: VimYank, VimPaste, VimPastePlain, VimUndo, VimRedo
+; 3. Funciones de nvim_layer_helpers.ahk: Todo lo específico de nvim
+; 4. Eliminadas funciones duplicadas: DeleteCurrentWord, CopyCurrentLine, etc.
+; 5. Estructura más limpia y modular
+;
+; Funciones que permanecen inline (son simples wrappers):
+; - ShowNvimLayerStatus, ShowVisualModeStatus
+;
+; Funciones movidas a helpers (lógica compleja específica):
+; - NvimDirectionalSend, NvimWordJumpHelper, NvimGoToDocEdge
+; - ReactivateNvimAfterInsert, NvimLayerAppAllowed
+; - Todo el sistema ColonLogic, GLogic, Help

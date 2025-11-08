@@ -62,16 +62,37 @@ AutoLoaderInit() {
     currentActions := ScanDirectory(AUTO_LOADER_ACTIONS_DIR, AUTO_LOADER_ACTIONS_NO_INCLUDE)
     currentLayers := ScanDirectory(AUTO_LOADER_LAYERS_DIR, AUTO_LOADER_LAYERS_NO_INCLUDE)
     
+    ; Get hardcoded includes (needed for filtering)
+    hardcoded := GetHardcodedIncludes()
+    hardcodedActions := hardcoded["actions"]
+    hardcodedLayers := hardcoded["layers"]
+    
     ; Detect changes
     changes := DetectChanges(memory, currentActions, currentLayers)
     
     ; Apply changes if any
     if (changes["hasChanges"]) {
         OutputDebug("[AutoLoader] Changes detected, updating init.ahk...")
-        ApplyChanges(changes, currentActions, currentLayers)
         
-        ; Save new memory
-        SaveAutoLoaderMemory(currentActions, currentLayers)
+        ; Filter out hardcoded files before applying changes
+        filteredActions := []
+        for action in currentActions {
+            if (!hardcodedActions.Has(action["name"])) {
+                filteredActions.Push(action)
+            }
+        }
+        
+        filteredLayers := []
+        for layer in currentLayers {
+            if (!hardcodedLayers.Has(layer["name"])) {
+                filteredLayers.Push(layer)
+            }
+        }
+        
+        ApplyChanges(changes, filteredActions, filteredLayers)
+        
+        ; Save new memory (with filtered lists)
+        SaveAutoLoaderMemory(filteredActions, filteredLayers)
         
         OutputDebug("[AutoLoader] Changes applied successfully")
         
@@ -185,10 +206,98 @@ ScanDirectory(dirPath, excludePath) {
 }
 
 ; ===================================================================
+; DETECT HARDCODED INCLUDES
+; ===================================================================
+
+GetHardcodedIncludes() {
+    global AUTO_LOADER_INIT_FILE, AUTO_LOADER_ACTIONS_MARKER_START, AUTO_LOADER_LAYERS_MARKER_START
+    
+    hardcodedActions := Map()
+    hardcodedLayers := Map()
+    
+    if (!FileExist(AUTO_LOADER_INIT_FILE))
+        return Map("actions", hardcodedActions, "layers", hardcodedLayers)
+    
+    content := FileRead(AUTO_LOADER_INIT_FILE)
+    lines := StrSplit(content, "`n")
+    
+    inActionsSection := false
+    inLayersSection := false
+    inAutoLoadedSection := false
+    
+    for line in lines {
+        trimmed := Trim(line)
+        
+        ; Detect sections
+        if (InStr(trimmed, "Actions (funciones reutilizables")) {
+            inActionsSection := true
+            inLayersSection := false
+            continue
+        }
+        if (InStr(trimmed, AUTO_LOADER_ACTIONS_MARKER_START)) {
+            inAutoLoadedSection := true
+            inActionsSection := false
+            continue
+        }
+        if (InStr(trimmed, "Layers & Leader")) {
+            inLayersSection := true
+            inActionsSection := false
+            inAutoLoadedSection := false
+            continue
+        }
+        if (InStr(trimmed, AUTO_LOADER_LAYERS_MARKER_START)) {
+            inAutoLoadedSection := true
+            inLayersSection := false
+            continue
+        }
+        if (InStr(trimmed, "===== AUTO-LOADED") && InStr(trimmed, "END =====")) {
+            inAutoLoadedSection := false
+            continue
+        }
+        
+        ; Skip auto-loaded sections
+        if (inAutoLoadedSection)
+            continue
+        
+        ; Extract hardcoded includes
+        if (InStr(trimmed, "#Include") && !InStr(trimmed, ";")) {
+            if (RegExMatch(trimmed, "#Include\s+(.+)", &match)) {
+                path := Trim(match[1])
+                filename := ""
+                
+                ; Extract filename from path
+                if (InStr(path, "\")) {
+                    parts := StrSplit(path, "\")
+                    filename := parts[parts.Length]
+                } else {
+                    filename := path
+                }
+                
+                ; Categorize by section
+                if (inActionsSection && InStr(path, "actions")) {
+                    hardcodedActions[filename] := true
+                    OutputDebug("[AutoLoader] Hardcoded action detected: " . filename)
+                } else if (inLayersSection && InStr(path, "layer")) {
+                    hardcodedLayers[filename] := true
+                    OutputDebug("[AutoLoader] Hardcoded layer detected: " . filename)
+                }
+            }
+        }
+    }
+    
+    return Map("actions", hardcodedActions, "layers", hardcodedLayers)
+}
+
+; ===================================================================
 ; CHANGE DETECTION
 ; ===================================================================
 
 DetectChanges(memory, currentActions, currentLayers) {
+    ; Get hardcoded includes to exclude from auto-loading
+    hardcoded := GetHardcodedIncludes()
+    hardcodedActions := hardcoded["actions"]
+    hardcodedLayers := hardcoded["layers"]
+    
     changes := Map(
         "hasChanges", false,
         "newActions", [],
@@ -212,8 +321,14 @@ DetectChanges(memory, currentActions, currentLayers) {
         }
     }
     
-    ; Detect new actions
+    ; Detect new actions (exclude hardcoded)
     for action in currentActions {
+        ; Skip if hardcoded manually in init.ahk
+        if (hardcodedActions.Has(action["name"])) {
+            OutputDebug("[AutoLoader] Skipping hardcoded action: " . action["name"])
+            continue
+        }
+        
         if (!memoryActionsMap.Has(action["name"])) {
             changes["newActions"].Push(action)
             changes["hasChanges"] := true
@@ -235,8 +350,14 @@ DetectChanges(memory, currentActions, currentLayers) {
         }
     }
     
-    ; Detect new layers
+    ; Detect new layers (exclude hardcoded)
     for layer in currentLayers {
+        ; Skip if hardcoded manually in init.ahk
+        if (hardcodedLayers.Has(layer["name"])) {
+            OutputDebug("[AutoLoader] Skipping hardcoded layer: " . layer["name"])
+            continue
+        }
+        
         if (!memoryLayersMap.Has(layer["name"])) {
             changes["newLayers"].Push(layer)
             changes["hasChanges"] := true
