@@ -122,47 +122,10 @@ NavigateHierarchical(currentPath) {
         }
         
         ; ==============================
-        ; ACCIONES ESPECIALES (temporales - migrar después)
+        ; NAVEGACIÓN JERÁRQUICA UNIVERSAL
         ; ==============================
-        
-        ; Toggle Scroll Layer (s en root)
-        if (currentPath = "leader" && (key = "s" || key = "S")) {
-            HandleScrollLayerToggle()
-            HideAllTooltips()
-            return "EXIT"
-        }
-        
-        ; Toggle Excel Layer (n en root)
-        if (currentPath = "leader" && (key = "n" || key = "N")) {
-            HandleExcelLayerToggle()
-            HideAllTooltips()
-            return "EXIT"
-        }
-        
-        ; Timestamps (t en root) - TODO: migrar a sistema declarativo
-        if (currentPath = "leader" && (key = "t" || key = "T")) {
-            HandleTimestampsLayer()
-            HideAllTooltips()
-            return "EXIT"
-        }
-        
-        ; Information (i en root) - TODO: migrar a sistema declarativo
-        if (currentPath = "leader" && (key = "i" || key = "I")) {
-            HandleInformationLayer()
-            HideAllTooltips()
-            return "EXIT"
-        }
-        
-        ; Programs (p en root) - TODO: migrar a sistema declarativo
-        if (currentPath = "leader" && (key = "p" || key = "P")) {
-            HandleProgramsLayer()
-            HideAllTooltips()
-            return "EXIT"
-        }
-        
-        ; ==============================
-        ; NAVEGACIÓN JERÁRQUICA (sistema nuevo)
-        ; ==============================
+        ; TODO lo maneja ExecuteKeymapAtPath() del registry
+        ; NO hay código hardcoded para categorías específicas
         
         ; Ejecutar keymap en el path actual
         result := ExecuteKeymapAtPath(currentPath, key)
@@ -210,165 +173,64 @@ ShowMenuForCurrentPath(path) {
 }
 
 ; ==============================
-; OBTENER TÍTULO PARA PATH
+; OBTENER TÍTULO PARA PATH (genérico)
 ; ==============================
 
 GetTitleForPath(path) {
+    global KeymapRegistry
+    
+    ; Root especial
     if (path = "leader")
         return "LEADER MENU"
-    else if (path = "leader.w")
-        return "WINDOWS"
-    else if (path = "leader.c")
-        return "COMMANDS"
-    else if (path = "leader.c.s")
-        return "SYSTEM COMMANDS"
-    else if (path = "leader.c.a")
-        return "ADB TOOLS"
-    else
-        return StrUpper(SubStr(path, InStr(path, ".", , -1) + 1))
+    
+    ; Buscar título en el registry
+    ; path = "leader.w" -> buscar en KeymapRegistry["leader"]["w"]["desc"]
+    parts := StrSplit(path, ".")
+    if (parts.Length < 2)
+        return "MENU"
+    
+    parentPath := parts[1]
+    Loop parts.Length - 2 {
+        parentPath .= "." . parts[A_Index + 1]
+    }
+    key := parts[parts.Length]
+    
+    ; Intentar obtener desc del registry
+    if (KeymapRegistry.Has(parentPath)) {
+        if (KeymapRegistry[parentPath].Has(key)) {
+            return KeymapRegistry[parentPath][key]["desc"]
+        }
+    }
+    
+    ; Fallback: última parte del path en mayúsculas
+    return StrUpper(key)
 }
 
 ; ==============================
-; OBTENER TIMEOUT PARA PATH
+; OBTENER TIMEOUT PARA PATH (genérico)
 ; ==============================
 
 GetTimeoutForPath(path) {
-    ; Mapear path a categoría de timeout
-    if (path = "leader")
-        return GetEffectiveTimeout("leader")
-    else if (InStr(path, "leader.w"))
-        return GetEffectiveTimeout("windows")
-    else if (InStr(path, "leader.c"))
-        return GetEffectiveTimeout("commands")
-    else if (InStr(path, "leader.p"))
-        return GetEffectiveTimeout("programs")
-    else
-        return GetEffectiveTimeout("leader")
+    ; Usar timeout genérico de leader
+    ; Todos los mini-layers usan el mismo timeout
+    return GetEffectiveTimeout("leader")
 }
 
 ; ==============================
-; ACCIONES ESPECIALES (temporales)
+; NOTAS:
 ; ==============================
-
-HandleScrollLayerToggle() {
-    global scrollLayerEnabled, scrollLayerActive
-    if (!IsSet(scrollLayerEnabled))
-        scrollLayerEnabled := true
-    if (!IsSet(scrollLayerActive))
-        scrollLayerActive := false
-    
-    scrollLayerActive := !scrollLayerActive
-    try HideAllTooltips()
-    try HideCSharpTooltip()
-    Sleep 30
-    ShowScrollLayerStatus(scrollLayerActive)
-    SetTempStatus(scrollLayerActive ? "SCROLL LAYER ON" : "SCROLL LAYER OFF", 1500)
-}
-
-HandleExcelLayerToggle() {
-    global excelLayerEnabled, excelLayerActive
-    if (!excelLayerEnabled) {
-        ShowCenteredToolTip("EXCEL LAYER DISABLED")
-        SetTimer(() => RemoveToolTip(), -1000)
-        return
-    }
-    
-    excelLayerActive := !excelLayerActive
-    try HideAllTooltips()
-    try HideCSharpTooltip()
-    Sleep 30
-    ShowExcelLayerStatus(excelLayerActive)
-    SetTempStatus(excelLayerActive ? "EXCEL LAYER ON" : "EXCEL LAYER OFF", 1500)
-}
-
-HandleTimestampsLayer() {
-    ; Timestamps menu with proper Back/Esc handling
-    ShowTimeMenu()
-    ihTs := InputHook("L1 T" . GetEffectiveTimeout("timestamps"), "{Escape}{Backspace}")
-    ihTs.KeyOpt("{Escape}", "S")
-    ihTs.KeyOpt("{Backspace}", "S")
-    ihTs.Start()
-    ihTs.Wait()
-    
-    if (ihTs.EndReason = "EndKey" && ihTs.EndKey = "Escape") {
-        ihTs.Stop()
-        return
-    }
-    if (ihTs.EndReason = "EndKey" && ihTs.EndKey = "Backspace") {
-        ihTs.Stop()
-        ; TODO: volver a leader menu (necesita refactor)
-        return
-    }
-    
-    tsKey := ihTs.Input
-    ihTs.Stop()
-    
-    if (tsKey = "\\" || tsKey = "" || tsKey = Chr(0))
-        return
-    
-    HandleTimestampMode(tsKey)
-}
-
-HandleInformationLayer() {
-    ; Information menu with proper Back/Esc handling
-    ShowInformationMenu()
-    ihInfo := InputHook("L1 T" . GetEffectiveTimeout("information"), "{Escape}{Backspace}")
-    ihInfo.KeyOpt("{Escape}", "S")
-    ihInfo.KeyOpt("{Backspace}", "S")
-    ihInfo.Start()
-    ihInfo.Wait()
-    
-    if (ihInfo.EndReason = "EndKey" && ihInfo.EndKey = "Escape") {
-        ihInfo.Stop()
-        return
-    }
-    if (ihInfo.EndReason = "EndKey" && ihInfo.EndKey = "Backspace") {
-        ihInfo.Stop()
-        ; TODO: volver a leader menu (necesita refactor)
-        return
-    }
-    
-    infoKey := ihInfo.Input
-    ihInfo.Stop()
-    
-    if (infoKey = "\\" || infoKey = "" || infoKey = Chr(0))
-        return
-    
-    InsertInformationFromKey(infoKey)
-}
-
-HandleProgramsLayer() {
-    global ProgramsIni
-    ShowProgramMenu()
-    ih := InputHook("L1 T" . GetEffectiveTimeout("programs"), "{Escape}{Backspace}")
-    ih.KeyOpt("{Escape}", "S")
-    ih.KeyOpt("{Backspace}", "S")
-    ih.Start()
-    ih.Wait()
-    
-    if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
-        ih.Stop()
-        return
-    }
-    if (ih.EndReason = "EndKey" && ih.EndKey = "Backspace") {
-        ih.Stop()
-        ; TODO: volver a leader menu (necesita refactor)
-        return
-    }
-    
-    key := ih.Input
-    ih.Stop()
-    
-    if (key = "\\" || key = "" || key = Chr(0))
-        return
-    
-    autoLaunch := CleanIniBool(IniRead(ProgramsIni, "Settings", "auto_launch", "true"), true)
-    if (!autoLaunch) {
-        ShowProgramDetails(key)
-    } else {
-        LaunchProgramFromKey(key)
-    }
-}
+; Este router es COMPLETAMENTE GENÉRICO
+; NO necesitas editar este archivo para agregar nuevas categorías
+; 
+; Para agregar una nueva categoría/comando:
+; 1. Crea src/actions/NUEVA_actions.ahk con las funciones
+; 2. Define Register[NUEVA]Keymaps() con RegisterKeymap() o RegisterKeymapFlat()
+; 3. Registra la categoría en command_system_init.ahk:
+;    RegisterCategoryKeymap("tecla", "Título", orden)
+; 4. Llama Register[NUEVA]Keymaps() en command_system_init.ahk
+; 5. ¡Listo! El router lo detecta automáticamente
+;
+; Estilo which-key de Neovim: Todo declarativo, nada hardcoded
 
 ; ==============================
 ; MENÚ C# (si está habilitado)
@@ -411,14 +273,3 @@ ShowMenuForPathCS(path) {
 }
 #HotIf
 #SuspendExempt False
-
-; ==============================
-; NOTAS DE MIGRACIÓN:
-; ==============================
-; TODO: Migrar a sistema declarativo:
-; - Programs Layer → programs_actions.ahk + RegisterProgramsKeymaps()
-; - Timestamps Layer → timestamps_actions.ahk + RegisterTimestampsKeymaps()
-; - Information Layer → information_actions.ahk + RegisterInformationKeymaps()
-; - Scroll/Excel toggles → Considerar si deben ser keymaps o manejarse aparte
-;
-; DESPUÉS de migrar, eliminar Handle*Layer() y usar solo NavigateHierarchical()
