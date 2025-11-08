@@ -104,12 +104,7 @@ try {
 #HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
 
 ; === VISUAL MODE TOGGLE ===
-v:: {
-    global VisualMode
-    VisualMode := !VisualMode
-    ShowVisualModeStatus(VisualMode)
-    SetTimer(() => RemoveToolTip(), -1000)
-}
+v::SwitchToLayer("visual", "nvim")
 
 ; === LINE NAVIGATION ===
 0::VimStartOfLine()       ; Home

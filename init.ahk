@@ -71,7 +71,7 @@
 #Include src\layer\scroll_layer.ahk
 
 ; ===== AUTO-LOADED LAYERS START =====
-; (No auto-loaded files)
+#Include src\layer\visual_layer.ahk
 ; ===== AUTO-LOADED LAYERS END =====
 
 ; --------------------

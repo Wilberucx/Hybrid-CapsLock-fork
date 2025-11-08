@@ -107,15 +107,46 @@ ShowVersionInfo() {
 
 ; ---- Show System Status ----
 ShowSystemStatus() {
-    global isNvimLayerActive, excelLayerActive
+    global isNvimLayerActive, excelLayerActive, LayerRegistry
     
     status := "HYBRID STATUS`n`n"
     status .= "Kanata: " . (IsKanataRunning() ? "Running" : "Stopped") . "`n"
     status .= "Nvim Layer: " . (isNvimLayerActive ? "ON" : "OFF") . "`n"
     status .= "Excel Layer: " . (excelLayerActive ? "ON" : "OFF") . "`n"
+    status .= "Layers Registered: " . LayerRegistry.Count . "`n"
     
     ShowCenteredToolTip(status)
     SetTimer(() => RemoveToolTip(), -3000)
+}
+
+; ---- Scan Layers (Manual) ----
+ScanLayersManual() {
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowCSharpStatusNotification("AUTO-LOADER", "Scanning layers...")
+    } else {
+        ShowCenteredToolTip("SCANNING LAYERS...")
+        SetTimer(() => RemoveToolTip(), -800)
+    }
+    
+    ; Run auto-loader to regenerate registry
+    try {
+        AutoLoaderInit()
+        
+        Sleep(500)
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            try ShowCSharpStatusNotification("AUTO-LOADER", "Scan complete - Registry updated")
+        } else {
+            ShowCenteredToolTip("LAYERS SCANNED`nRegistry updated")
+            SetTimer(() => RemoveToolTip(), -1500)
+        }
+    } catch as err {
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            try ShowCSharpStatusNotification("AUTO-LOADER", "Error: " . err.Message)
+        } else {
+            ShowCenteredToolTip("SCAN ERROR`n" . err.Message)
+            SetTimer(() => RemoveToolTip(), -2000)
+        }
+    }
 }
 
 ; ==============================
@@ -129,6 +160,7 @@ RegisterHybridKeymaps() {
     RegisterKeymap("c", "h", "l", "View Log File", ViewLogFile, false, 4)
     RegisterKeymap("c", "h", "c", "Open Config Folder", OpenConfigFolder, false, 5)
     RegisterKeymap("c", "h", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
-    RegisterKeymap("c", "h", "R", "Reload Script", ReloadHybridScript, true, 7)
-    RegisterKeymap("c", "h", "e", "Exit Script", ExitHybridScript, true, 8)
+    RegisterKeymap("c", "h", "S", "Scan Layers", ScanLayersManual, false, 7)
+    RegisterKeymap("c", "h", "R", "Reload Script", ReloadHybridScript, true, 8)
+    RegisterKeymap("c", "h", "e", "Exit Script", ExitHybridScript, true, 9)
 }
