@@ -607,6 +607,9 @@ GenerateLayerRegistry(allLayers) {
     registryContent .= "; ===================================================================`n`n"
     registryContent .= "[Layers]`n"
     
+    ; Create a Map to avoid duplicates
+    layerMap := Map()
+    
     ; Get hardcoded layers to include them in registry
     hardcoded := GetHardcodedIncludes()
     hardcodedLayers := hardcoded["layers"]
@@ -617,21 +620,28 @@ GenerateLayerRegistry(allLayers) {
             layerName := ExtractLayerNameFromFile(layerFile)
             if (layerName != "") {
                 relativePath := "src\\layer\\" . layerFile
-                registryContent .= layerName . "=" . relativePath . "`n"
+                layerMap[layerName] := relativePath
                 OutputDebug("[LayerRegistry] Added hardcoded layer: " . layerName . " -> " . relativePath)
             }
         }
     }
     
-    ; Process auto-discovered layers
+    ; Process auto-discovered layers (only if not already in map from hardcoded)
     for layer in allLayers {
         if (InStr(layer["name"], "_layer.ahk")) {
             layerName := ExtractLayerNameFromFile(layer["name"])
-            if (layerName != "") {
-                registryContent .= layerName . "=" . layer["path"] . "`n"
+            if (layerName != "" && !layerMap.Has(layerName)) {
+                layerMap[layerName] := layer["path"]
                 OutputDebug("[LayerRegistry] Added auto-discovered layer: " . layerName . " -> " . layer["path"])
+            } else if (layerName != "" && layerMap.Has(layerName)) {
+                OutputDebug("[LayerRegistry] Skipped duplicate layer: " . layerName . " (already exists)")
             }
         }
+    }
+    
+    ; Write all unique layers to registry
+    for layerName, layerPath in layerMap {
+        registryContent .= layerName . "=" . layerPath . "`n"
     }
     
     ; Write registry file
