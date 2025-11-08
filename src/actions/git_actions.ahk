@@ -38,13 +38,14 @@ GitPull() {
 }
 
 ; ==============================
-; REGISTRO DECLARATIVO (Estilo lazy.nvim)
+; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
+; Ruta: Leader → c (Commands) → g (Git) → key
 RegisterGitKeymaps() {
-    RegisterKeymap("git", "s", "Status", GitStatus, false, 1)
-    RegisterKeymap("git", "l", "Log (last 10)", GitLog, false, 2)
-    RegisterKeymap("git", "b", "Branches", GitBranches, false, 3)
-    RegisterKeymap("git", "d", "Diff", GitDiff, false, 4)
-    RegisterKeymap("git", "a", "Add All", GitAddAll, true, 5)
-    RegisterKeymap("git", "p", "Pull", GitPull, true, 6)
+    RegisterKeymap("c", "g", "s", "Status", GitStatus, false, 1)
+    RegisterKeymap("c", "g", "l", "Log (last 10)", GitLog, false, 2)
+    RegisterKeymap("c", "g", "b", "Branches", GitBranches, false, 3)
+    RegisterKeymap("c", "g", "d", "Diff", GitDiff, false, 4)
+    RegisterKeymap("c", "g", "a", "Add All", GitAddAll, true, 5)
+    RegisterKeymap("c", "g", "p", "Pull", GitPull, true, 6)
 }

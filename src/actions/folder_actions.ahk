@@ -38,13 +38,14 @@ OpenSystem32Folder() {
 }
 
 ; ==============================
-; REGISTRO DECLARATIVO (Estilo lazy.nvim)
+; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
+; Ruta: Leader → c (Commands) → f (Folder) → key
 RegisterFolderKeymaps() {
-    RegisterKeymap("folder", "t", "Temp Folder", OpenTempFolder, false, 1)
-    RegisterKeymap("folder", "a", "AppData", OpenAppDataFolder, false, 2)
-    RegisterKeymap("folder", "p", "Program Files", OpenProgramFilesFolder, false, 3)
-    RegisterKeymap("folder", "u", "User Profile", OpenUserProfileFolder, false, 4)
-    RegisterKeymap("folder", "d", "Desktop", OpenDesktopFolder, false, 5)
-    RegisterKeymap("folder", "s", "System32", OpenSystem32Folder, false, 6)
+    RegisterKeymap("c", "f", "t", "Temp Folder", OpenTempFolder, false, 1)
+    RegisterKeymap("c", "f", "a", "AppData", OpenAppDataFolder, false, 2)
+    RegisterKeymap("c", "f", "p", "Program Files", OpenProgramFilesFolder, false, 3)
+    RegisterKeymap("c", "f", "u", "User Profile", OpenUserProfileFolder, false, 4)
+    RegisterKeymap("c", "f", "d", "Desktop", OpenDesktopFolder, false, 5)
+    RegisterKeymap("c", "f", "s", "System32", OpenSystem32Folder, false, 6)
 }

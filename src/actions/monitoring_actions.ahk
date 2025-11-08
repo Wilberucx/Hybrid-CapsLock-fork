@@ -33,12 +33,13 @@ ShowCPUUsage() {
 }
 
 ; ==============================
-; REGISTRO DECLARATIVO (Estilo lazy.nvim)
+; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
+; Ruta: Leader → c (Commands) → m (Monitoring) → key
 RegisterMonitoringKeymaps() {
-    RegisterKeymap("monitoring", "p", "Top Processes", ShowTopProcesses, false, 1)
-    RegisterKeymap("monitoring", "s", "Services Status", ShowServicesStatus, false, 2)
-    RegisterKeymap("monitoring", "d", "Disk Space", ShowDiskSpace, false, 3)
-    RegisterKeymap("monitoring", "m", "Memory Usage", ShowMemoryUsage, false, 4)
-    RegisterKeymap("monitoring", "c", "CPU Usage", ShowCPUUsage, false, 5)
+    RegisterKeymap("c", "m", "p", "Top Processes", ShowTopProcesses, false, 1)
+    RegisterKeymap("c", "m", "s", "Services Status", ShowServicesStatus, false, 2)
+    RegisterKeymap("c", "m", "d", "Disk Space", ShowDiskSpace, false, 3)
+    RegisterKeymap("c", "m", "m", "Memory Usage", ShowMemoryUsage, false, 4)
+    RegisterKeymap("c", "m", "c", "CPU Usage", ShowCPUUsage, false, 5)
 }

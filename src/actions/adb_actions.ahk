@@ -49,26 +49,28 @@ ADBDisconnect() {
 }
 
 ; ==============================
-; REGISTRO DECLARATIVO (Estilo lazy.nvim)
+; REGISTRO DECLARATIVO JERÁRQUICO (Estilo which-key)
 ; ==============================
-; UNA LÍNEA = UNA FUNCIÓN con toda su configuración
+; Sintaxis jerárquica: RegisterKeymap(path..., desc, action, confirm, order)
+; Ruta completa: Leader → c (Commands) → a (ADB) → key
+; 
 ; Parámetros:
-;   1. category: nombre interno ("adb")
-;   2. key: tecla asignada
-;   3. description: texto del menú
-;   4. action: FunctionName (referencia directa, sin Func())
-;   5. confirm: mostrar confirmación (opcional, default false)
-;   6. order: posición en menú (opcional, default 999)
+;   1-3. path: "c", "a", "d" (Leader.Commands.ADB.ListDevices)
+;   4. description: texto del menú
+;   5. action: FunctionName (referencia directa, sin Func())
+;   6. confirm: mostrar confirmación (opcional, default false)
+;   7. order: posición en menú (opcional, default 999)
 
 RegisterADBKeymaps() {
+    ; Ruta completa: Leader → c → a → key
     ; Orden lógico: Conexión → Info → Shell → Logs → Reinicio
-    RegisterKeymap("adb", "d", "List Devices", ADBListDevices, false, 1)
-    RegisterKeymap("adb", "x", "Disconnect", ADBDisconnect, false, 2)
-    RegisterKeymap("adb", "s", "Shell", ADBShell, false, 3)
-    RegisterKeymap("adb", "l", "Logcat", ADBLogcat, false, 4)
-    RegisterKeymap("adb", "i", "Install APK", ADBInstallAPK, false, 5)
-    RegisterKeymap("adb", "u", "Uninstall Package", ADBUninstallPackage, false, 6)
-    RegisterKeymap("adb", "c", "Clear App Data", ADBClearAppData, false, 7)
-    RegisterKeymap("adb", "r", "Reboot Device", ADBRebootDevice, false, 8)
+    RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
+    RegisterKeymap("c", "a", "x", "Disconnect", ADBDisconnect, false, 2)
+    RegisterKeymap("c", "a", "s", "Shell", ADBShell, false, 3)
+    RegisterKeymap("c", "a", "l", "Logcat", ADBLogcat, false, 4)
+    RegisterKeymap("c", "a", "i", "Install APK", ADBInstallAPK, false, 5)
+    RegisterKeymap("c", "a", "u", "Uninstall Package", ADBUninstallPackage, false, 6)
+    RegisterKeymap("c", "a", "c", "Clear App Data", ADBClearAppData, false, 7)
+    RegisterKeymap("c", "a", "r", "Reboot Device", ADBRebootDevice, false, 8)
 }
 

@@ -119,15 +119,16 @@ ShowSystemStatus() {
 }
 
 ; ==============================
-; REGISTRO DECLARATIVO (Estilo lazy.nvim)
+; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
+; Ruta: Leader → c (Commands) → h (Hybrid) → key
 RegisterHybridKeymaps() {
-    RegisterKeymap("hybrid", "p", "Pause Hybrid", PauseHybridScript, false, 1)
-    RegisterKeymap("hybrid", "s", "Show System Status", ShowSystemStatus, false, 2)
-    RegisterKeymap("hybrid", "v", "Show Version Info", ShowVersionInfo, false, 3)
-    RegisterKeymap("hybrid", "l", "View Log File", ViewLogFile, false, 4)
-    RegisterKeymap("hybrid", "c", "Open Config Folder", OpenConfigFolder, false, 5)
-    RegisterKeymap("hybrid", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
-    RegisterKeymap("hybrid", "R", "Reload Script", ReloadHybridScript, true, 7)
-    RegisterKeymap("hybrid", "e", "Exit Script", ExitHybridScript, true, 8)
+    RegisterKeymap("c", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
+    RegisterKeymap("c", "h", "s", "Show System Status", ShowSystemStatus, false, 2)
+    RegisterKeymap("c", "h", "v", "Show Version Info", ShowVersionInfo, false, 3)
+    RegisterKeymap("c", "h", "l", "View Log File", ViewLogFile, false, 4)
+    RegisterKeymap("c", "h", "c", "Open Config Folder", OpenConfigFolder, false, 5)
+    RegisterKeymap("c", "h", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
+    RegisterKeymap("c", "h", "R", "Reload Script", ReloadHybridScript, true, 7)
+    RegisterKeymap("c", "h", "e", "Exit Script", ExitHybridScript, true, 8)
 }

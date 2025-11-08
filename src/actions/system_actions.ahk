@@ -71,17 +71,18 @@ ShowWindowsVersion() {
     ShowCommandExecuted("System", "Windows Version")
 }
 ; ==============================
-; REGISTRO DECLARATIVO (Estilo lazy.nvim)
+; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
+; Ruta: Leader → c (Commands) → s (System) → key
 RegisterSystemKeymaps() {
-    RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
-    RegisterKeymap("system", "t", "Task Manager", ShowTaskManager, false, 2)
-    RegisterKeymap("system", "v", "Services Manager", ShowServicesManager, false, 3)
-    RegisterKeymap("system", "e", "Event Viewer", ShowEventViewer, false, 4)
-    RegisterKeymap("system", "d", "Device Manager", ShowDeviceManager, false, 5)
-    RegisterKeymap("system", "c", "Disk Cleanup", ShowDiskCleanup, false, 6)
-    RegisterKeymap("system", "h", "Toggle Hidden Files", ToggleHiddenFiles, false, 7)
-    RegisterKeymap("system", "r", "Registry Editor", ShowRegistryEditor, false, 8)
-    RegisterKeymap("system", "E", "Environment Variables", ShowEnvironmentVariables, false, 9)
-    RegisterKeymap("system", "w", "Windows Version", ShowWindowsVersion, false, 10)
+    RegisterKeymap("c", "s", "s", "System Info", ShowSystemInfo, false, 1)
+    RegisterKeymap("c", "s", "t", "Task Manager", ShowTaskManager, false, 2)
+    RegisterKeymap("c", "s", "v", "Services Manager", ShowServicesManager, false, 3)
+    RegisterKeymap("c", "s", "e", "Event Viewer", ShowEventViewer, false, 4)
+    RegisterKeymap("c", "s", "d", "Device Manager", ShowDeviceManager, false, 5)
+    RegisterKeymap("c", "s", "c", "Disk Cleanup", ShowDiskCleanup, false, 6)
+    RegisterKeymap("c", "s", "h", "Toggle Hidden Files", ToggleHiddenFiles, false, 7)
+    RegisterKeymap("c", "s", "r", "Registry Editor", ShowRegistryEditor, false, 8)
+    RegisterKeymap("c", "s", "E", "Environment Variables", ShowEnvironmentVariables, false, 9)
+    RegisterKeymap("c", "s", "w", "Windows Version", ShowWindowsVersion, false, 10)
 }

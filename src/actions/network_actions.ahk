@@ -23,10 +23,11 @@ ShowNetstat() {
 }
 
 ; ==============================
-; REGISTRO DECLARATIVO (Estilo lazy.nvim)
+; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
+; Ruta: Leader → c (Commands) → n (Network) → key
 RegisterNetworkKeymaps() {
-    RegisterKeymap("network", "i", "IP Config", ShowIPConfig, false, 1)
-    RegisterKeymap("network", "p", "Ping Google", PingGoogle, false, 2)
-    RegisterKeymap("network", "n", "Netstat", ShowNetstat, false, 3)
+    RegisterKeymap("c", "n", "i", "IP Config", ShowIPConfig, false, 1)
+    RegisterKeymap("c", "n", "p", "Ping Google", PingGoogle, false, 2)
+    RegisterKeymap("c", "n", "n", "Netstat", ShowNetstat, false, 3)
 }

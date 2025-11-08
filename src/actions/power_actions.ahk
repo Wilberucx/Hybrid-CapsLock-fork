@@ -38,13 +38,14 @@ SignOutUser() {
 }
 
 ; ==============================
-; REGISTRO DECLARATIVO (Estilo lazy.nvim)
+; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
+; Ruta: Leader → c (Commands) → o (Power) → key
 RegisterPowerKeymaps() {
-    RegisterKeymap("power", "l", "Lock Screen", LockWorkstation, false, 1)
-    RegisterKeymap("power", "s", "Sleep", SuspendSystem, false, 2)
-    RegisterKeymap("power", "h", "Hibernate", HibernateSystem, false, 3)
-    RegisterKeymap("power", "o", "Sign Out", SignOutUser, true, 4)
-    RegisterKeymap("power", "r", "Restart", RestartSystem, true, 5)
-    RegisterKeymap("power", "S", "Shutdown", ShutdownSystem, true, 6)
+    RegisterKeymap("c", "o", "l", "Lock Screen", LockWorkstation, false, 1)
+    RegisterKeymap("c", "o", "s", "Sleep", SuspendSystem, false, 2)
+    RegisterKeymap("c", "o", "h", "Hibernate", HibernateSystem, false, 3)
+    RegisterKeymap("c", "o", "o", "Sign Out", SignOutUser, true, 4)
+    RegisterKeymap("c", "o", "r", "Restart", RestartSystem, true, 5)
+    RegisterKeymap("c", "o", "S", "Shutdown", ShutdownSystem, true, 6)
 }
