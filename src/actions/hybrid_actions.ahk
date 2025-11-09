@@ -79,6 +79,47 @@ PauseHybridScript() {
     ToggleHybridPause()
 }
 
+; ---- Hybrid Pause Helper Functions ----
+ToggleHybridPause() {
+    global hybridPauseActive, hybridPauseMinutes
+    if (!hybridPauseActive && !A_IsSuspended) {
+        ; Start hybrid pause
+        Suspend(1)
+        hybridPauseActive := true
+        mins := (IsSet(hybridPauseMinutes) && hybridPauseMinutes > 0) ? hybridPauseMinutes : 10
+        try SetTimer(HybridAutoResumeTimer, -(mins * 60000))
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            try ShowCSharpStatusNotification("HYBRID", "SUSPENDED " . mins . "m — press Leader to resume")
+        } else {
+            ShowCenteredToolTip("SUSPENDED " . mins . "m — press Leader to resume")
+            SetTimer(() => RemoveToolTip(), -1500)
+        }
+    } else {
+        ; Already suspended -> resume now
+        try SetTimer(HybridAutoResumeTimer, 0)
+        Suspend(0)
+        hybridPauseActive := false
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            try ShowCSharpStatusNotification("HYBRID", "RESUMED")
+        } else {
+            ShowCenteredToolTip("RESUMED")
+            SetTimer(() => RemoveToolTip(), -900)
+        }
+    }
+}
+
+HybridAutoResumeTimer() {
+    global hybridPauseActive
+    Suspend(0)
+    hybridPauseActive := false
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowCSharpStatusNotification("HYBRID", "RESUMED (auto)")
+    } else {
+        ShowCenteredToolTip("RESUMED (auto)")
+        SetTimer(() => RemoveToolTip(), -900)
+    }
+}
+
 ; ---- Open Config Folder ----
 OpenConfigFolder() {
     Run('explorer.exe "' . A_ScriptDir . '\\config"')
