@@ -39,6 +39,7 @@
 #Include src\actions\power_actions.ahk
 #Include src\actions\adb_actions.ahk
 #Include src\actions\vaultflow_actions.ahk
+#Include src\actions\timestamp_actions.ahk
 #Include src\actions\windows_actions.ahk
 
 ; ===== AUTO-LOADED ACTIONS START =====
@@ -95,6 +96,7 @@ try {
     RegisterPowerKeymaps()
     RegisterADBKeymaps()
     RegisterVaultFlowKeymaps()
+    RegisterTimestampKeymaps()
     
     ; Luego cargar configuración de AHK
     LoadLayerFlags()

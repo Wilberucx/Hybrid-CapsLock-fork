@@ -12,11 +12,14 @@ InitializeCommandSystem() {
     ; Leader → w (Windows)
     RegisterCategoryKeymap("w", "Windows", 1)
     
+    ; Leader → t (Timestamps)
+    RegisterCategoryKeymap("t", "Timestamps", 2)
+    
     ; Leader → c (Commands)
     RegisterCategoryKeymap("c", "Commands", 3)
     
     ; ==============================
-    ; 2. SUBCATEGORÍAS EN COMMANDS
+    ; 2. SUBCATEGORÍAS EN COMMANDS Y TIMESTAMPS
     ; ==============================
     ; Leader → c → s (System)
     ; Leader → c → h (Hybrid)
@@ -31,6 +34,11 @@ InitializeCommandSystem() {
     RegisterCategoryKeymap("c", "o", "Power Options", 7)
     RegisterCategoryKeymap("c", "a", "ADB Tools", 8)
     RegisterCategoryKeymap("c", "v", "VaultFlow", 9)
+    
+    ; Leader → t → d/t/h (Date/Time/DateTime)
+    RegisterCategoryKeymap("t", "d", "Date Formats", 1)
+    RegisterCategoryKeymap("t", "t", "Time Formats", 2)
+    RegisterCategoryKeymap("t", "h", "Date+Time Formats", 3)
     
     ; ==============================
     ; 3. REGISTRAR TODOS LOS KEYMAPS
@@ -51,6 +59,9 @@ InitializeCommandSystem() {
     RegisterPowerKeymaps()
     RegisterADBKeymaps()
     RegisterVaultFlowKeymaps()
+    
+    ; Timestamps Layer
+    RegisterTimestampKeymaps()
     
     ; ==============================
     ; SISTEMA LISTO

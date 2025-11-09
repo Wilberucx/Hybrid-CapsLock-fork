@@ -139,29 +139,6 @@ DebouncedTooltipWrite() {
 ; FUNCIONES PRINCIPALES DE TOOLTIP C#
 
 
-; New helpers: build items from new schema ([Categories] / [<key>_category])
-BuildCommandsMainItemsFromCategories() {
-    global CommandsIni
-    items := ""
-    order := IniRead(CommandsIni, "Categories", "order", "")
-    if (order != "" && order != "ERROR") {
-        keys := StrSplit(order, [",", " ", "`t"])
-        for _, k in keys {
-            k := Trim(k)
-            if (k = "")
-                continue
-            title := IniRead(CommandsIni, k . "_category", "title", "")
-            if (title = "" || title = "ERROR")
-                title := IniRead(CommandsIni, "Categories", k, "")
-            if (title != "" && title != "ERROR") {
-                if (items != "")
-                    items .= "|"
-                items .= k . ":" . title
-            }
-        }
-    }
-    return items
-}
 
 
 ; ===================================================================
