@@ -46,8 +46,8 @@
 #Include src\actions\nvim_layer_helpers.ahk
 ; ===== AUTO-LOADED ACTIONS END =====
 
-; Category Registry (DEBE ir después de actions)
-#Include src\core\category_registry.ahk
+; Category Keymaps Configuration (DEBE ir después de actions)
+#Include config\keymap.ahk
 
 ; --------------------
 ; UI
@@ -115,8 +115,8 @@ try {
 ;     ; Ignorar si no se puede ajustar el estado de CapsLock en este entorno
 ; }
 
-; Initialize Category Registry (Sistema de categorías jerárquico)
-InitializeCategoryRegistry()
+; Initialize Category Keymaps (Sistema de categorías jerárquico)
+InitializeCategoryKeymaps()
 
 ; Startup welcome (C# only)
 try {
