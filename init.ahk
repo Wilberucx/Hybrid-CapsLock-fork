@@ -71,6 +71,7 @@
 #Include src\layer\scroll_layer.ahk
 
 ; ===== AUTO-LOADED LAYERS START =====
+#Include src\layer\insert_layer.ahk
 #Include src\layer\visual_layer.ahk
 ; ===== AUTO-LOADED LAYERS END =====
 
