@@ -46,8 +46,8 @@
 #Include src\actions\nvim_layer_helpers.ahk
 ; ===== AUTO-LOADED ACTIONS END =====
 
-; Command System Init (DEBE ir después de actions)
-#Include src\core\command_system_init.ahk
+; Category Registry (DEBE ir después de actions)
+#Include src\core\category_registry.ahk
 
 ; --------------------
 ; UI
@@ -115,8 +115,8 @@ try {
 ;     ; Ignorar si no se puede ajustar el estado de CapsLock en este entorno
 ; }
 
-; Initialize Command System (Declarativo completo)
-InitializeCommandSystem()
+; Initialize Category Registry (Sistema de categorías jerárquico)
+InitializeCategoryRegistry()
 
 ; Startup welcome (C# only)
 try {

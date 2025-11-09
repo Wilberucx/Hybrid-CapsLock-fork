@@ -1,11 +1,12 @@
 ; ==============================
-; Command System Initialization - JERÁRQUICO
+; Category Registry - Sistema de Categorías Jerárquico
 ; ==============================
 ; Sistema declarativo jerárquico estilo which-key de Neovim
-; Inicializa TODAS las categorías y keymaps con rutas completas
+; Registra TODAS las categorías y subcategorías del sistema de navegación
+; Define la estructura de navegación: leader → categoría → subcategoría → acción
 ; LLAMAR ESTA FUNCIÓN UNA SOLA VEZ al inicio
 
-InitializeCommandSystem() {
+InitializeCategoryRegistry() {
     ; ==============================
     ; 1. CATEGORÍAS PRINCIPALES EN LEADER
     ; ==============================
