@@ -9,32 +9,26 @@
 
 SuspendSystem() {
     DllCall("PowrProf\SetSuspendState", "int", 0, "int", 0, "int", 0)
-    ShowCommandExecuted("Power", "Sleep")
 }
 
 HibernateSystem() {
     DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
-    ShowCommandExecuted("Power", "Hibernate")
 }
 
 RestartSystem() {
     Run("shutdown.exe /r /t 0")
-    ShowCommandExecuted("Power", "Restart")
 }
 
 ShutdownSystem() {
     Run("shutdown.exe /s /t 0")
-    ShowCommandExecuted("Power", "Shutdown")
 }
 
 LockWorkstation() {
     DllCall("user32\LockWorkStation")
-    ShowCommandExecuted("Power", "Lock Screen")
 }
 
 SignOutUser() {
     Run("shutdown.exe /l")
-    ShowCommandExecuted("Power", "Sign Out")
 }
 
 ; ==============================

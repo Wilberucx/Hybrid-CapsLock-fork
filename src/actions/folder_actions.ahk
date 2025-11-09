@@ -9,32 +9,26 @@
 
 OpenTempFolder() {
     Run('explorer.exe "' . EnvGet("TEMP") . '"')
-    ShowCommandExecuted("Folder", "Temp Folder")
 }
 
 OpenAppDataFolder() {
     Run('explorer.exe "' . EnvGet("APPDATA") . '"')
-    ShowCommandExecuted("Folder", "AppData")
 }
 
 OpenProgramFilesFolder() {
     Run('explorer.exe "C:\\Program Files"')
-    ShowCommandExecuted("Folder", "Program Files")
 }
 
 OpenUserProfileFolder() {
     Run('explorer.exe "' . EnvGet("USERPROFILE") . '"')
-    ShowCommandExecuted("Folder", "User Profile")
 }
 
 OpenDesktopFolder() {
     Run('explorer.exe "' . EnvGet("USERPROFILE") . '\\Desktop"')
-    ShowCommandExecuted("Folder", "Desktop")
 }
 
 OpenSystem32Folder() {
     Run('explorer.exe "C:\\Windows\\System32"')
-    ShowCommandExecuted("Folder", "System32")
 }
 
 ; ==============================

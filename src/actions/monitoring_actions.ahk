@@ -9,27 +9,22 @@
 
 ShowTopProcesses() {
     Run("powershell.exe -Command `"Get-Process | Sort-Object CPU -Descending | Select-Object -First 20 | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
-    ShowCommandExecuted("Monitoring", "Top Processes")
 }
 
 ShowServicesStatus() {
     Run("powershell.exe -Command `"Get-Service | Sort-Object Status,Name | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
-    ShowCommandExecuted("Monitoring", "Services Status")
 }
 
 ShowDiskSpace() {
     Run("powershell.exe -Command `"Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID,Size,FreeSpace | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
-    ShowCommandExecuted("Monitoring", "Disk Space")
 }
 
 ShowMemoryUsage() {
     Run("powershell.exe -Command `"Get-WmiObject -Class Win32_OperatingSystem | Select-Object TotalVisibleMemorySize,FreePhysicalMemory | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
-    ShowCommandExecuted("Monitoring", "Memory Usage")
 }
 
 ShowCPUUsage() {
     Run("powershell.exe -Command `"Get-WmiObject -Class Win32_Processor | Select-Object Name,LoadPercentage | Format-Table -AutoSize; Read-Host 'Press Enter to exit'`"")
-    ShowCommandExecuted("Monitoring", "CPU Usage")
 }
 
 ; ==============================

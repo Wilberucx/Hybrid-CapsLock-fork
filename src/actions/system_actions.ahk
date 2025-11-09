@@ -9,27 +9,22 @@
 
 ShowSystemInfo() {
     Run("cmd.exe /k systeminfo")
-    ShowCommandExecuted("System", "System Info")
 }
 
 ShowTaskManager() {
     Run("taskmgr.exe")
-    ShowCommandExecuted("System", "Task Manager")
 }
 
 ShowServicesManager() {
     Run("services.msc")
-    ShowCommandExecuted("System", "Services Manager")
 }
 
 ShowDeviceManager() {
     Run("devmgmt.msc")
-    ShowCommandExecuted("System", "Device Manager")
 }
 
 ShowDiskCleanup() {
     Run("cleanmgr.exe")
-    ShowCommandExecuted("System", "Disk Cleanup")
 }
 
 ToggleHiddenFiles() {
@@ -49,12 +44,10 @@ ToggleHiddenFiles() {
 
 ShowRegistryEditor() {
     Run("regedit.exe")
-    ShowCommandExecuted("System", "Registry Editor")
 }
 
 ShowEnvironmentVariables() {
     Run("rundll32.exe sysdm.cpl,EditEnvironmentVariables")
-    ShowCommandExecuted("System", "Environment Variables")
 }
 
 ShowEventViewer() {
@@ -63,12 +56,10 @@ ShowEventViewer() {
     } catch {
         try Run("eventvwr.msc")
     }
-    ShowCommandExecuted("System", "Event Viewer")
 }
 
 ShowWindowsVersion() {
     Run("cmd.exe /k ver")
-    ShowCommandExecuted("System", "Windows Version")
 }
 ; ==============================
 ; REGISTRO DECLARATIVO JERÁRQUICO

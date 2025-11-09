@@ -9,22 +9,18 @@
 
 RunVaultFlow() {
     Run("powershell.exe -Command `"vaultflow`"")
-    ShowCommandExecuted("VaultFlow", "Run")
 }
 
 VaultFlowStatus() {
     Run("cmd.exe /k vaultflow status")
-    ShowCommandExecuted("VaultFlow", "Status")
 }
 
 VaultFlowList() {
     Run("cmd.exe /k vaultflow list")
-    ShowCommandExecuted("VaultFlow", "List")
 }
 
 VaultFlowHelp() {
     Run("cmd.exe /k vaultflow --help")
-    ShowCommandExecuted("VaultFlow", "Help")
 }
 
 ; ==============================

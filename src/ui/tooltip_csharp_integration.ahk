@@ -461,10 +461,22 @@ HandleTooltipSelection(key) {
                 ShowADBCommandsMenuCS()
             case "v":
                 ShowVaultFlowCommandsMenuCS()
+            default:
+                OutputDebug("[TOOLTIP] Unknown key in COMMAND PALETTE: " key "`n")
+        }
+        return
+    }
+
+    if (tooltipCurrentTitle = "LEADER MODE") {
+        switch key {
+            case "\\":
+                HideCSharpTooltip()
+                tooltipMenuActive := false
+                return
             case "h":
                 ShowHybridManagementMenuCS()
             default:
-                OutputDebug("[TOOLTIP] Unknown key in COMMAND PALETTE: " key "`n")
+                OutputDebug("[TOOLTIP] Unknown key in LEADER MODE: " key "`n")
         }
         return
     }
@@ -510,6 +522,7 @@ c::HandleTooltipSelection("c")
 
 i::HandleTooltipSelection("i")
 n::HandleTooltipSelection("n")
+h::HandleTooltipSelection("h")
 \::HandleTooltipSelection("\\")
 Esc::HandleTooltipSelection("ESC")
 #HotIf
@@ -525,7 +538,6 @@ w::HandleTooltipSelection("w")
 o::HandleTooltipSelection("o")
 a::HandleTooltipSelection("a")
 v::HandleTooltipSelection("v")
-h::HandleTooltipSelection("h")
 \::HandleTooltipSelection("\\")
 Esc::HandleTooltipSelection("ESC")
 #HotIf
@@ -538,7 +550,7 @@ Esc::HandleTooltipSelection("ESC")
 ShowLeaderModeMenuCS() {
     TooltipNavReset()
     TooltipNavPush("LEADER")
-    items := "p:Programs|t:Timestamps|c:Commands|i:Information|w:Windows|n:Excel layer|s:Scroll layer"
+    items := "p:Programs|t:Timestamps|c:Commands|i:Information|w:Windows|n:Excel layer|s:Scroll layer|h:Hybrid Management"
     ShowCSharpOptionsMenu("LEADER MODE", items, "ESC: Exit")
 }
 
@@ -1403,13 +1415,13 @@ ShowADBCommandsMenuCS() {
     ShowCSharpOptionsMenu("ADB TOOLS", items, "\\: Back|ESC: Exit")
 }
 
-; Submenú Hybrid Management (leader → c → h)
+; Submenú Hybrid Management (leader → h)
 ; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowHybridManagementMenuCS() {
-    TooltipNavPush("CMD_h")
+    TooltipNavPush("HYBRID")
     
     ; Generar items desde keymap registry (DINÁMICO)
-    items := GenerateCategoryItems("hybrid")
+    items := GenerateCategoryItemsForPath("leader.h")
     
     ; Fallback solo si el registry está vacío
     if (items = "") {

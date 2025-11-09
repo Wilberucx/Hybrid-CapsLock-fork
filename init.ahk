@@ -64,7 +64,7 @@
 #Include src\layer\programs_layer.ahk
 #Include src\layer\timestamps_layer.ahk
 #Include src\layer\information_layer.ahk
-#Include src\layer\commands_layer.ahk
+; #Include src\layer\commands_layer.ahk  ; OBSOLETO - Sistema declarativo con RegisterKeymap()
 #Include src\layer\excel_layer.ahk
 #Include src\layer\nvim_layer.ahk
 ; #Include src\layer\modifier_mode.ahk  ; DESACTIVADO - Delegado a Kanata

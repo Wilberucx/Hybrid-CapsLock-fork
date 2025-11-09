@@ -82,7 +82,6 @@ PauseHybridScript() {
 ; ---- Open Config Folder ----
 OpenConfigFolder() {
     Run('explorer.exe "' . A_ScriptDir . '\\config"')
-    ShowCommandExecuted("Hybrid", "Config Folder")
 }
 
 ; ---- View Log File ----
@@ -90,7 +89,6 @@ ViewLogFile() {
     logFile := A_ScriptDir . "\\hybrid_log.txt"
     if (FileExist(logFile)) {
         Run('notepad.exe "' . logFile . '"')
-        ShowCommandExecuted("Hybrid", "Log File")
     } else {
         ShowCenteredToolTip("No log file found")
         SetTimer(() => RemoveToolTip(), -1500)
@@ -152,15 +150,15 @@ ScanLayersManual() {
 ; ==============================
 ; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
-; Ruta: Leader → c (Commands) → h (Hybrid) → key
+; Ruta: Leader → h (Hybrid) → key
 RegisterHybridKeymaps() {
-    RegisterKeymap("c", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
-    RegisterKeymap("c", "h", "s", "Show System Status", ShowSystemStatus, false, 2)
-    RegisterKeymap("c", "h", "v", "Show Version Info", ShowVersionInfo, false, 3)
-    RegisterKeymap("c", "h", "l", "View Log File", ViewLogFile, false, 4)
-    RegisterKeymap("c", "h", "c", "Open Config Folder", OpenConfigFolder, false, 5)
-    RegisterKeymap("c", "h", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
-    RegisterKeymap("c", "h", "S", "Scan Layers", ScanLayersManual, false, 7)
-    RegisterKeymap("c", "h", "R", "Reload Script", ReloadHybridScript, true, 8)
-    RegisterKeymap("c", "h", "e", "Exit Script", ExitHybridScript, true, 9)
+    RegisterKeymap("leader", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
+    RegisterKeymap("leader", "h", "s", "Show System Status", ShowSystemStatus, false, 2)
+    RegisterKeymap("leader", "h", "v", "Show Version Info", ShowVersionInfo, false, 3)
+    RegisterKeymap("leader", "h", "l", "View Log File", ViewLogFile, false, 4)
+    RegisterKeymap("leader", "h", "c", "Open Config Folder", OpenConfigFolder, false, 5)
+    RegisterKeymap("leader", "h", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
+    RegisterKeymap("leader", "h", "S", "Scan Layers", ScanLayersManual, false, 7)
+    RegisterKeymap("leader", "h", "R", "Reload Script", ReloadHybridScript, true, 8)
+    RegisterKeymap("leader", "h", "e", "Exit Script", ExitHybridScript, true, 9)
 }

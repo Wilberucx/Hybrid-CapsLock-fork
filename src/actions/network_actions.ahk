@@ -9,17 +9,14 @@
 
 ShowIPConfig() {
     Run("cmd.exe /k ipconfig /all")
-    ShowCommandExecuted("Network", "IP Config")
 }
 
 PingGoogle() {
     Run("cmd.exe /k ping google.com")
-    ShowCommandExecuted("Network", "Ping Test")
 }
 
 ShowNetstat() {
     Run("cmd.exe /k netstat -an")
-    ShowCommandExecuted("Network", "Netstat")
 }
 
 ; ==============================

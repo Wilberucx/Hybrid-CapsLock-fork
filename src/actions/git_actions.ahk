@@ -9,32 +9,26 @@
 
 GitStatus() {
     Run("cmd.exe /k git status")
-    ShowCommandExecuted("Git", "Status")
 }
 
 GitLog() {
     Run("cmd.exe /k git log --oneline -10")
-    ShowCommandExecuted("Git", "Log")
 }
 
 GitBranches() {
     Run("cmd.exe /k git branch -a")
-    ShowCommandExecuted("Git", "Branches")
 }
 
 GitDiff() {
     Run("cmd.exe /k git diff")
-    ShowCommandExecuted("Git", "Diff")
 }
 
 GitAddAll() {
     Run("cmd.exe /k git add .")
-    ShowCommandExecuted("Git", "Add All")
 }
 
 GitPull() {
     Run("cmd.exe /k git pull")
-    ShowCommandExecuted("Git", "Pull")
 }
 
 ; ==============================

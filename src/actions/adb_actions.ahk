@@ -10,42 +10,34 @@
 
 ADBListDevices() {
     Run("cmd.exe /k adb devices")
-    ShowCommandExecuted("ADB", "List Devices")
 }
 
 ADBInstallAPK() {
     Run("cmd.exe /k echo Select APK file to install && pause && adb install")
-    ShowCommandExecuted("ADB", "Install APK")
 }
 
 ADBUninstallPackage() {
     Run("cmd.exe /k echo Enter package name to uninstall && pause && adb uninstall")
-    ShowCommandExecuted("ADB", "Uninstall Package")
 }
 
 ADBLogcat() {
     Run("cmd.exe /k adb logcat")
-    ShowCommandExecuted("ADB", "Logcat")
 }
 
 ADBShell() {
     Run("cmd.exe /k adb shell")
-    ShowCommandExecuted("ADB", "Shell")
 }
 
 ADBRebootDevice() {
     Run("cmd.exe /k adb reboot")
-    ShowCommandExecuted("ADB", "Reboot Device")
 }
 
 ADBClearAppData() {
     Run("cmd.exe /k echo Enter package name to clear data && pause && adb shell pm clear")
-    ShowCommandExecuted("ADB", "Clear App Data")
 }
 
 ADBDisconnect() {
     Run("cmd.exe /k adb disconnect")
-    ShowCommandExecuted("ADB", "Disconnect")
 }
 
 ; ==============================

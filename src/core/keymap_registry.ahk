@@ -209,16 +209,28 @@ RegisterKeymapFlat(category, key, description, actionFunc, needsConfirm, order) 
 RegisterKeymapHierarchical(pathKeys, description, actionFunc, needsConfirm, order) {
     global KeymapRegistry, LeaderRoot
     
-    ; Construir path completo: "leader.c.a.d"
-    fullPath := LeaderRoot . "." . JoinArray(pathKeys, ".")
-    lastKey := pathKeys[pathKeys.Length]
-    
-    ; Construir path del padre: "leader.c.a"
-    parentPath := LeaderRoot
-    if (pathKeys.Length > 1) {
-        parentKeys := []
+    ; Detectar si ya comienza con "leader"
+    adjustedPathKeys := []
+    if (pathKeys[1] = LeaderRoot) {
+        ; Si ya comienza con "leader", usar sin duplicar
         Loop pathKeys.Length - 1 {
-            parentKeys.Push(pathKeys[A_Index])
+            adjustedPathKeys.Push(pathKeys[A_Index + 1])
+        }
+        fullPath := LeaderRoot . "." . JoinArray(adjustedPathKeys, ".")
+        lastKey := pathKeys[pathKeys.Length]
+    } else {
+        ; Comportamiento original para paths sin "leader"
+        fullPath := LeaderRoot . "." . JoinArray(pathKeys, ".")
+        lastKey := pathKeys[pathKeys.Length]
+        adjustedPathKeys := pathKeys
+    }
+    
+    ; Construir path del padre
+    parentPath := LeaderRoot
+    if (adjustedPathKeys.Length > 1) {
+        parentKeys := []
+        Loop adjustedPathKeys.Length - 1 {
+            parentKeys.Push(adjustedPathKeys[A_Index])
         }
         parentPath := LeaderRoot . "." . JoinArray(parentKeys, ".")
     }

@@ -23,7 +23,7 @@ InitializeCommandSystem() {
     ; etc.
     
     RegisterCategoryKeymap("c", "s", "System Commands", 1)
-    RegisterCategoryKeymap("c", "h", "Hybrid Management", 2)
+    RegisterCategoryKeymap("h", "Hybrid Management", 2)
     RegisterCategoryKeymap("c", "g", "Git Commands", 3)
     RegisterCategoryKeymap("c", "m", "Monitoring Commands", 4)
     RegisterCategoryKeymap("c", "n", "Network Commands", 5)
