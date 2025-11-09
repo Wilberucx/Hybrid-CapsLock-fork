@@ -75,7 +75,8 @@ y:: {
 
 c:: {
     Send("{Delete}")
-    SwitchToInsertMode()
+    DeactivateVisualLayer()
+    SwitchToLayer("insert", PreviousLayer)  ; Go to insert, remember original layer
 }
 
 x:: {
@@ -100,7 +101,7 @@ a::Send("^a")
 Esc::ExitVisualLayer()
 
 ; === EXIT TO BASE (emergency) ===
-f::ExitToBase()
+f::ExitVisualToBase()
 
 ; === HELP SYSTEM ===
 +vkBF::ShowVisualHelp()
@@ -147,22 +148,10 @@ ExitVisualLayer() {
     ReturnToPreviousLayer()
 }
 
-; Exit visual and switch to insert mode (for 'c' command)
-SwitchToInsertMode() {
-    global
-    DeactivateVisualLayer()
-    
-    ; TODO: Implement generic insert mode or return to origin with insert flag
-    ; For now, just return to previous layer
-    ReturnToPreviousLayer()
-    
-    ; Show insert notification
-    ShowCenteredToolTip("INSERT MODE")
-    SetTimer(() => RemoveToolTip(), -1000)
-}
+; SwitchToInsertMode removed - now uses layer switching directly
 
 ; Emergency exit to base state
-ExitToBase() {
+ExitVisualToBase() {
     global CurrentActiveLayer, PreviousLayer
     DeactivateVisualLayer()
     CurrentActiveLayer := ""

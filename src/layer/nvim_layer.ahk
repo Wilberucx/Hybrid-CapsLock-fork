@@ -29,7 +29,7 @@
 global nvimLayerEnabled := true      ; Feature flag
 global nvimStaticEnabled := true     ; Static vs dynamic hotkeys
 global isNvimLayerActive := false    ; Layer state
-global _tempEditMode := false        ; Insert mode state
+; global _tempEditMode removed - now uses insert_layer.ahk
 
 ; ==============================
 ; TOGGLE ACTIVATION (F23 from Kanata)
@@ -164,40 +164,18 @@ r::VimRedo()         ; From vim_edit.ahk
 ^d::Send("{WheelDown 6}")
 
 ; === INSERT MODE ===
-i:: {
-    global isNvimLayerActive, _tempEditMode, tooltipConfig
-    isNvimLayerActive := false
-    _tempEditMode := true
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowNvimLayerToggleCS(false)
-    } else {
-        ShowNvimLayerStatus(false)
-    }
-    SetTempStatus("INSERT MODE (Esc para volver)", 1500)
-}
+i::SwitchToLayer("insert", "nvim")
 
 +i:: {
-    global isNvimLayerActive, _tempEditMode, tooltipConfig
-    isNvimLayerActive := false
-    _tempEditMode := true
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowNvimLayerToggleCS(false)
-    } else {
-        ShowNvimLayerStatus(false)
-    }
-    SetTempStatus("INSERT MODE (Esc para volver)", 1500)
-    Send("^!+i")
+    SwitchToLayer("insert", "nvim")
+    Send("^!+i")  ; Insert at beginning of line behavior
 }
 
 ; === ESCAPE (multi-purpose) ===
 Esc:: {
-    global _tempEditMode, ColonLogicActive
+    global ColonLogicActive
     if (ColonLogicActive) {
         ColonLogicCancel()
-        return
-    }
-    if (_tempEditMode) {
-        ReactivateNvimAfterInsert()
         return
     }
     Send("{Escape}")
