@@ -138,32 +138,6 @@ DebouncedTooltipWrite() {
 ; ===================================================================
 ; FUNCIONES PRINCIPALES DE TOOLTIP C#
 
-; Helper: Build items string from commands.ini [MenuDisplay] using a key prefix
-BuildCommandItemsFromIni(prefix, maxLines := 20) {
-    global CommandsIni
-    items := ""
-    Loop maxLines {
-        lineContent := IniRead(CommandsIni, "MenuDisplay", prefix . A_Index, "")
-        if (lineContent != "" && lineContent != "ERROR") {
-            cleanLine := RegExReplace(lineContent, "\s{2,}", "|||")
-            parts := StrSplit(cleanLine, "|||")
-            for _, part in parts {
-                part := Trim(part)
-                if (part != "" && InStr(part, " - ")) {
-                    dashPos := InStr(part, " - ")
-                    key := Trim(SubStr(part, 1, dashPos - 1))
-                    desc := Trim(SubStr(part, dashPos + 3))
-                    if (StrLen(key) = 1 && RegExMatch(key, "^[A-Za-z0-9]$")) {
-                        if (items != "")
-                            items .= "|"
-                        items .= key . ":" . desc
-                    }
-                }
-            }
-        }
-    }
-    return items
-}
 
 ; New helpers: build items from new schema ([Categories] / [<key>_category])
 BuildCommandsMainItemsFromCategories() {
@@ -189,27 +163,6 @@ BuildCommandsMainItemsFromCategories() {
     return items
 }
 
-BuildCommandItemsFromCategoryKey(catKey) {
-    global CommandsIni
-    items := ""
-    section := catKey . "_category"
-    order := IniRead(CommandsIni, section, "order", "")
-    if (order != "" && order != "ERROR") {
-        keys := StrSplit(order, [",", " ", "`t"])
-        for _, k in keys {
-            k := Trim(k)
-            if (k = "")
-                continue
-            title := IniRead(CommandsIni, section, k, "")
-            if (title != "" && title != "ERROR") {
-                if (items != "")
-                    items .= "|"
-                items .= k . ":" . title
-            }
-        }
-    }
-    return items
-}
 
 ; ===================================================================
 
@@ -1305,143 +1258,100 @@ ShowDeleteMenuCS() {
 ; ===================================================================
 
 ; Submenú System Commands (leader → c → s)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowSystemCommandsMenuCS() {
     TooltipNavPush("CMD_s")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("system")
-    
-    ; Fallback solo si el registry está vacío (no debería pasar)
     if (items = "") {
-        items := "[No commands registered for System]"
+        MsgBox("ERROR: System commands not registered. Check RegisterSystemKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
-    
     ShowCSharpOptionsMenu("SYSTEM COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Network Commands (leader → c → n)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowNetworkCommandsMenuCS() {
     TooltipNavPush("CMD_n")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("network")
-    
-    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "[No commands registered for Network]"
+        MsgBox("ERROR: Network commands not registered. Check RegisterNetworkKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
-    
     ShowCSharpOptionsMenu("NETWORK COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Git Commands (leader → c → g)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowGitCommandsMenuCS() {
     TooltipNavPush("CMD_g")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("git")
-    
-    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "[No commands registered for Git]"
+        MsgBox("ERROR: Git commands not registered. Check RegisterGitKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
-    
     ShowCSharpOptionsMenu("GIT COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Monitoring Commands (leader → c → m)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowMonitoringCommandsMenuCS() {
     TooltipNavPush("CMD_m")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("monitoring")
-    
-    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "[No commands registered for Monitoring]"
+        MsgBox("ERROR: Monitoring commands not registered. Check RegisterMonitoringKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
-    
     ShowCSharpOptionsMenu("MONITORING COMMANDS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Folder Commands (leader → c → f)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowFolderCommandsMenuCS() {
     TooltipNavPush("CMD_f")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("folder")
-    
-    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "[No commands registered for Folder]"
+        MsgBox("ERROR: Folder commands not registered. Check RegisterFolderKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
-    
     ShowCSharpOptionsMenu("FOLDER ACCESS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Power Options (leader → c → o)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowPowerOptionsCommandsMenuCS() {
     TooltipNavPush("CMD_o")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("power")
-    
-    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "[No commands registered for Power]"
+        MsgBox("ERROR: Power commands not registered. Check RegisterPowerKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
-    
     ShowCSharpOptionsMenu("POWER OPTIONS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú ADB Tools (leader → c → a)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowADBCommandsMenuCS() {
     TooltipNavPush("CMD_a")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("adb")
-    
-    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "[No commands registered for ADB]"
+        MsgBox("ERROR: ADB commands not registered. Check RegisterADBKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
     ShowCSharpOptionsMenu("ADB TOOLS", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú Hybrid Management (leader → h)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowHybridManagementMenuCS() {
     TooltipNavPush("HYBRID")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItemsForPath("leader.h")
-    
-    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "[No commands registered for Hybrid]"
+        MsgBox("ERROR: Hybrid commands not registered. Check RegisterHybridKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
-    
     ShowCSharpOptionsMenu("HYBRID MANAGEMENT", items, "\\: Back|ESC: Exit")
 }
 
 ; Submenú VaultFlow Commands (leader → c → v)
-; Fase 2: Usar keymap registry primero, fallback a INI/hardcoded
 ShowVaultFlowCommandsMenuCS() {
     TooltipNavPush("CMD_v")
-    
-    ; Generar items desde keymap registry (DINÁMICO)
     items := GenerateCategoryItems("vaultflow")
-    
-    ; Fallback solo si el registry está vacío
     if (items = "") {
-        items := "[No commands registered for VaultFlow]"
+        MsgBox("ERROR: VaultFlow commands not registered. Check RegisterVaultFlowKeymaps() in startup.", "Keymap Registry Error", "Icon!")
+        return
     }
     ShowCSharpOptionsMenu("VAULTFLOW COMMANDS", items, "\\: Back|ESC: Exit")
 }
