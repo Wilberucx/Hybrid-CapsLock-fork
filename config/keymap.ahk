@@ -21,6 +21,7 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("h", "Hybrid Management", 1)
     RegisterCategoryKeymap("t", "Timestamps", 2)
     RegisterCategoryKeymap("c", "Commands", 3)
+    RegisterKeymap("s", "Scroll", ActivateScrollLayer, false, 4)
     RegisterCategoryKeymap("p", "Programs", 5)
     ; ==============================
     ; 2. SUBCATEGORÍAS EN COMMANDS Y TIMESTAMPS
