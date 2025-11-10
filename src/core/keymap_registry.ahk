@@ -191,6 +191,12 @@ RegisterKeymapFlat(category, key, description, actionFunc, needsConfirm, order) 
         KeymapRegistry[category] := Map()
     }
     
+    ; PRIORIDAD: Solo registrar si no existe (config/keymap.ahk tiene prioridad)
+    if (KeymapRegistry[category].Has(key)) {
+        ; Ya existe - no sobrescribir (respeta prioridad)
+        return false
+    }
+    
     ; Registrar keymap flat
     KeymapRegistry[category][key] := Map(
         "key", key,
@@ -200,6 +206,8 @@ RegisterKeymapFlat(category, key, description, actionFunc, needsConfirm, order) 
         "order", order,
         "isCategory", false
     )
+    
+    return true
 }
 
 ; ==============================
@@ -240,6 +248,12 @@ RegisterKeymapHierarchical(pathKeys, description, actionFunc, needsConfirm, orde
         KeymapRegistry[parentPath] := Map()
     }
     
+    ; PRIORIDAD: Solo registrar si no existe (config/keymap.ahk tiene prioridad)
+    if (KeymapRegistry[parentPath].Has(lastKey)) {
+        ; Ya existe - no sobrescribir (respeta prioridad)
+        return false
+    }
+    
     ; Registrar en el padre
     KeymapRegistry[parentPath][lastKey] := Map(
         "key", lastKey,
@@ -250,6 +264,8 @@ RegisterKeymapHierarchical(pathKeys, description, actionFunc, needsConfirm, orde
         "order", order,
         "isCategory", false
     )
+    
+    return true
 }
 
 ; ==============================

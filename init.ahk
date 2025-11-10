@@ -4,11 +4,6 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 #Warn All
-
-; Orquestador que incluye módulos modulares en src/
-; Nota: Los módulos están vacíos inicialmente como 
-; parte del scaffolding.
-
 ; --------------------
 ; Core
 ; --------------------
@@ -40,15 +35,14 @@
 #Include src\actions\adb_actions.ahk
 #Include src\actions\vaultflow_actions.ahk
 #Include src\actions\timestamp_actions.ahk
-#Include src\actions\windows_actions.ahk
-#Include src\actions\program_actions.ahk
 #Include src\actions\shell_exec_actions.ahk
+
 
 ; ===== AUTO-LOADED ACTIONS START =====
 #Include src\actions\nvim_layer_helpers.ahk
+#Include src\actions\program_actions.ahk
 ; ===== AUTO-LOADED ACTIONS END =====
 
-; Category Keymaps Configuration (DEBE ir después de actions)
 #Include config\keymap.ahk
 
 ; --------------------
@@ -62,8 +56,6 @@
 ; Layers & Leader
 ; --------------------
 #Include src\layer\leader_router.ahk
-#Include src\layer\windows_layer.ahk
-#Include src\layer\programs_layer.ahk
 #Include src\layer\timestamps_layer.ahk
 #Include src\layer\information_layer.ahk
 #Include src\layer\excel_layer.ahk
@@ -86,16 +78,7 @@ try {
     StartKanataIfNeeded()
     
     ; Registrar keymaps (Fase 2 - Sistema Declarativo)
-    RegisterHybridKeymaps()
-    RegisterSystemKeymaps()
-    RegisterNetworkKeymaps()
-    RegisterGitKeymaps()
-    RegisterMonitoringKeymaps()
-    RegisterFolderKeymaps()
-    RegisterPowerKeymaps()
-    RegisterADBKeymaps()
-    RegisterVaultFlowKeymaps()
-    RegisterTimestampKeymaps()
+    ; ELIMINADO: ahora se maneja desde InitializeCategoryKeymaps()
     
     ; Luego cargar configuración de AHK
     LoadLayerFlags()

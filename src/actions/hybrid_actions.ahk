@@ -191,15 +191,16 @@ ScanLayersManual() {
 ; ==============================
 ; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
+; Desactivado - movido a keymap.ahk
 ; Ruta: Leader → h (Hybrid) → key
-RegisterHybridKeymaps() {
-    RegisterKeymap("leader", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
-    RegisterKeymap("leader", "h", "s", "Show System Status", ShowSystemStatus, false, 2)
-    RegisterKeymap("leader", "h", "v", "Show Version Info", ShowVersionInfo, false, 3)
-    RegisterKeymap("leader", "h", "l", "View Log File", ViewLogFile, false, 4)
-    RegisterKeymap("leader", "h", "c", "Open Config Folder", OpenConfigFolder, false, 5)
-    RegisterKeymap("leader", "h", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
-    RegisterKeymap("leader", "h", "S", "Scan Layers", ScanLayersManual, false, 7)
-    RegisterKeymap("leader", "h", "R", "Reload Script", ReloadHybridScript, true, 8)
-    RegisterKeymap("leader", "h", "e", "Exit Script", ExitHybridScript, true, 9)
-}
+; RegisterHybridKeymaps() {
+;     RegisterKeymap("leader", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
+;     RegisterKeymap("leader", "h", "s", "Show System Status", ShowSystemStatus, false, 2)
+;     RegisterKeymap("leader", "h", "v", "Show Version Info", ShowVersionInfo, false, 3)
+;     RegisterKeymap("leader", "h", "l", "View Log File", ViewLogFile, false, 4)
+;     RegisterKeymap("leader", "h", "c", "Open Config Folder", OpenConfigFolder, false, 5)
+;     RegisterKeymap("leader", "h", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
+;     RegisterKeymap("leader", "h", "S", "Scan Layers", ScanLayersManual, false, 7)
+;     RegisterKeymap("leader", "h", "R", "Reload Script", ReloadHybridScript, true, 8)
+;     RegisterKeymap("leader", "h", "e", "Exit Script", ExitHybridScript, true, 9)
+; }

@@ -230,36 +230,41 @@ ShakeWindow() {
 ; Path: Leader → w (Windows) → key
 
 RegisterWindowsKeymaps() {
-    ; NOTE: Windows is FLAT under leader (2 levels)
-    ; We use RegisterKeymapFlat() directly on "leader.w"
-    
+    ; Modernizado: usando RegisterKeymap inteligente que detecta estructura automáticamente
+    ; leader, w, key → DetectaAutomaticamente → RegisterKeymapHierarchical
+
     ; Splits
-    RegisterKeymapFlat("leader.w", "2", "Split 50/50", Split5050, false, 1)
-    RegisterKeymapFlat("leader.w", "3", "Split 33/67", Split3367, false, 2)
-    RegisterKeymapFlat("leader.w", "4", "Quarter Top-Left", QuarterSplitTopLeft, false, 3)
-    
+    RegisterKeymap("leader", "w", "2", "Split 50/50", Split5050, false, 1)
+    RegisterKeymap("leader", "w", "3", "Split 33/67", Split3367, false, 2)
+    RegisterKeymap("leader", "w", "4", "Quarter Top-Left", QuarterSplitTopLeft, false, 3)
+
     ; Window Management Básico
-    RegisterKeymapFlat("leader.w", "m", "Maximize", MaximizeWindow, false, 10)
-    RegisterKeymapFlat("leader.w", "-", "Minimize", MinimizeWindow, false, 11)
-    RegisterKeymapFlat("leader.w", "x", "Close", CloseWindow, false, 12)
-    
+    RegisterKeymap("leader", "w", "m", "Maximize", MaximizeWindow, false, 10)
+    RegisterKeymap("leader", "w", "-", "Minimize", MinimizeWindow, false, 11)
+    RegisterKeymap("leader", "w", "x", "Close", CloseWindow, false, 12)
+
     ; Snap Positions
-    RegisterKeymapFlat("leader.w", "h", "Snap Left", SnapLeft, false, 20)
-    RegisterKeymapFlat("leader.w", "l", "Snap Right", SnapRight, false, 21)
-    RegisterKeymapFlat("leader.w", "k", "Snap Top", SnapTop, false, 22)
-    RegisterKeymapFlat("leader.w", "j", "Snap Bottom", SnapBottom, false, 23)
-    
+    RegisterKeymap("leader", "w", "h", "Snap Left", SnapLeft, false, 20)
+    RegisterKeymap("leader", "w", "l", "Snap Right", SnapRight, false, 21)
+    RegisterKeymap("leader", "w", "k", "Snap Top", SnapTop, false, 22)
+    RegisterKeymap("leader", "w", "j", "Snap Bottom", SnapBottom, false, 23)
+
     ; Zoom Tools
-    RegisterKeymapFlat("leader.w", "d", "Draw Mode", ActivateDrawMode, false, 30)
-    RegisterKeymapFlat("leader.w", "z", "Zoom Mode", ActivateZoomMode, false, 31)
-    RegisterKeymapFlat("leader.w", "c", "Zoom Cursor", ActivateZoomCursor, false, 32)
-    
-    ; Blind Switch (j/k ya usados arriba, usar b para Blind)
-    RegisterKeymapFlat("leader.w", "b", "Blind Switch", StartPersistentBlindSwitch, false, 40)
-    
+    RegisterKeymap("leader", "w", "d", "Draw Mode", ActivateDrawMode, false, 30)
+    RegisterKeymap("leader", "w", "z", "Zoom Mode", ActivateZoomMode, false, 31)
+    RegisterKeymap("leader", "w", "c", "Zoom Cursor", ActivateZoomCursor, false, 32)
+
+    ; Blind Switch
+    RegisterKeymap("leader", "w", "b", "Blind Switch", StartPersistentBlindSwitch, false, 40)
+
     ; Virtual Desktops
-    RegisterKeymapFlat("leader.w", "n", "New Desktop", NewVirtualDesktop, false, 50)
-    RegisterKeymapFlat("leader.w", "q", "Close Desktop", CloseVirtualDesktop, false, 51)
-    RegisterKeymapFlat("leader.w", "[", "Desktop Left", SwitchDesktopLeft, false, 52)
-    RegisterKeymapFlat("leader.w", "]", "Desktop Right", SwitchDesktopRight, false, 53)
+    RegisterKeymap("leader", "w", "n", "New Desktop", NewVirtualDesktop, false, 50)
+    RegisterKeymap("leader", "w", "q", "Close Desktop", CloseVirtualDesktop, false, 51)
+    RegisterKeymap("leader", "w", "[", "Desktop Left", SwitchDesktopLeft, false, 52)
+    RegisterKeymap("leader", "w", "]", "Desktop Right", SwitchDesktopRight, false, 53)
+
+    ; Move Between Monitors
+    RegisterKeymap("leader", "w", "M", "Move Monitor Left", MoveWindowToMonitorLeft, false, 60)
+    RegisterKeymap("leader", "w", "L", "Move Monitor Right", MoveWindowToMonitorRight, false, 61)
+    RegisterKeymap("leader", "w", "s", "Shake Window", ShakeWindow, false, 62)
 }

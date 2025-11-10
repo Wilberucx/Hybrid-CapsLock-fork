@@ -128,32 +128,30 @@ InsertDateTimeDefault() {
 ; REGISTRO DE KEYMAPS (Sistema Declarativo)
 ; ==============================
 
-RegisterTimestampKeymaps() {
     ; Date formats (leader → t → d → KEY)
-    RegisterKeymap("t", "d", "a", "yyyy-MM-dd", InsertDateFormat1, false, 1)
-    RegisterKeymap("t", "d", "b", "dd/MM/yyyy", InsertDateFormat2, false, 2)
-    RegisterKeymap("t", "d", "c", "MM/dd/yyyy", InsertDateFormat3, false, 3)
-    RegisterKeymap("t", "d", "e", "dd-MMM-yyyy", InsertDateFormat4, false, 4)
-    RegisterKeymap("t", "d", "f", "ddd, dd MMM yyyy", InsertDateFormat5, false, 5)
-    RegisterKeymap("t", "d", "g", "yyyyMMdd", InsertDateFormat6, false, 6)
-    RegisterKeymap("t", "d", "d", "Default (yyyyMMdd)", InsertDateDefault, false, 7)
-    
+    ; RegisterKeymap("t", "d", "a", "yyyy-MM-dd", InsertDateFormat1, false, 1)
+    ; RegisterKeymap("t", "d", "b", "dd/MM/yyyy", InsertDateFormat2, false, 2)
+    ; RegisterKeymap("t", "d", "c", "MM/dd/yyyy", InsertDateFormat3, false, 3)
+    ; RegisterKeymap("t", "d", "e", "dd-MMM-yyyy", InsertDateFormat4, false, 4)
+    ; RegisterKeymap("t", "d", "f", "ddd, dd MMM yyyy", InsertDateFormat5, false, 5)
+    ; RegisterKeymap("t", "d", "g", "yyyyMMdd", InsertDateFormat6, false, 6)
+    ; RegisterKeymap("t", "d", "d", "Default (yyyyMMdd)", InsertDateDefault, false, 7)
+    ; 
     ; Time formats (leader → t → t → KEY)
-    RegisterKeymap("t", "t", "a", "HH:mm:ss", InsertTimeFormat1, false, 1)
-    RegisterKeymap("t", "t", "b", "HH:mm", InsertTimeFormat2, false, 2)
-    RegisterKeymap("t", "t", "c", "hh:mm tt", InsertTimeFormat3, false, 3)
-    RegisterKeymap("t", "t", "e", "HHmmss", InsertTimeFormat4, false, 4)
-    RegisterKeymap("t", "t", "f", "HH.mm.ss", InsertTimeFormat5, false, 5)
-    RegisterKeymap("t", "t", "t", "Default (HHmmss)", InsertTimeDefault, false, 6)
-    
+    ; RegisterKeymap("t", "t", "a", "HH:mm:ss", InsertTimeFormat1, false, 1)
+    ; RegisterKeymap("t", "t", "b", "HH:mm", InsertTimeFormat2, false, 2)
+    ; RegisterKeymap("t", "t", "c", "hh:mm tt", InsertTimeFormat3, false, 3)
+    ; RegisterKeymap("t", "t", "e", "HHmmss", InsertTimeFormat4, false, 4)
+    ; RegisterKeymap("t", "t", "f", "HH.mm.ss", InsertTimeFormat5, false, 5)
+    ; RegisterKeymap("t", "t", "t", "Default (HHmmss)", InsertTimeDefault, false, 6)
+    ;
     ; DateTime formats (leader → t → h → KEY)
-    RegisterKeymap("t", "h", "a", "yyyy-MM-dd HH:mm:ss", InsertDateTimeFormat1, false, 1)
-    RegisterKeymap("t", "h", "b", "dd/MM/yyyy HH:mm", InsertDateTimeFormat2, false, 2)
-    RegisterKeymap("t", "h", "c", "yyyy-MM-dd HH:mm:ss", InsertDateTimeFormat3, false, 3)
-    RegisterKeymap("t", "h", "e", "yyyyMMddHHmmss", InsertDateTimeFormat4, false, 4)
-    RegisterKeymap("t", "h", "f", "ddd, dd MMM yyyy HH:mm", InsertDateTimeFormat5, false, 5)
-    RegisterKeymap("t", "h", "h", "Default (yyyyMMddHHmmss)", InsertDateTimeDefault, false, 6)
-}
+    ; RegisterKeymap("t", "h", "a", "yyyy-MM-dd HH:mm:ss", InsertDateTimeFormat1, false, 1)
+    ; RegisterKeymap("t", "h", "b", "dd/MM/yyyy HH:mm", InsertDateTimeFormat2, false, 2)
+    ; RegisterKeymap("t", "h", "c", "yyyy-MM-dd HH:mm:ss", InsertDateTimeFormat3, false, 3)
+    ; RegisterKeymap("t", "h", "e", "yyyyMMddHHmmss", InsertDateTimeFormat4, false, 4)
+    ; RegisterKeymap("t", "h", "f", "ddd, dd MMM yyyy HH:mm", InsertDateTimeFormat5, false, 5)
+    ; RegisterKeymap("t", "h", "h", "Default (yyyyMMddHHmmss)", InsertDateTimeDefault, false, 6)
 
 ; ==============================
 ; NOTA: Estas funciones son reutilizables
