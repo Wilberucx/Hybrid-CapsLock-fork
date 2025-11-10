@@ -6,6 +6,7 @@
 ;
 ; USED IN: windows_layer.ahk
 
+F13::WinMinimize("A")
 ; ==============================
 ; BASIC WINDOW MANAGEMENT
 ; ==============================

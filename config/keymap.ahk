@@ -22,6 +22,7 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("t", "Timestamps", 2)
     RegisterCategoryKeymap("c", "Commands", 3)
     RegisterCategoryKeymap("w", "Windows", 4)
+    RegisterCategoryKeymap("p", "Programs", 5)
     
     ; ==============================
     ; 2. SUBCATEGORÍAS EN COMMANDS Y TIMESTAMPS

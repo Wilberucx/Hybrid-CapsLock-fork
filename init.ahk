@@ -41,6 +41,8 @@
 #Include src\actions\vaultflow_actions.ahk
 #Include src\actions\timestamp_actions.ahk
 #Include src\actions\windows_actions.ahk
+#Include src\actions\program_actions.ahk
+#Include src\actions\shell_exec_actions.ahk
 
 ; ===== AUTO-LOADED ACTIONS START =====
 #Include src\actions\nvim_layer_helpers.ahk
@@ -59,16 +61,13 @@
 ; --------------------
 ; Layers & Leader
 ; --------------------
-#Include src\layer\window_shortcuts.ahk
 #Include src\layer\leader_router.ahk
 #Include src\layer\windows_layer.ahk
 #Include src\layer\programs_layer.ahk
 #Include src\layer\timestamps_layer.ahk
 #Include src\layer\information_layer.ahk
-; #Include src\layer\commands_layer.ahk  ; OBSOLETO - Sistema declarativo con RegisterKeymap()
 #Include src\layer\excel_layer.ahk
 #Include src\layer\nvim_layer.ahk
-; #Include src\layer\modifier_mode.ahk  ; DESACTIVADO - Delegado a Kanata
 #Include src\layer\scroll_layer.ahk
 
 ; ===== AUTO-LOADED LAYERS START =====
