@@ -31,8 +31,14 @@ global scrollLayerActive := false      ; Layer state (managed by SwitchToLayer)
 ; ==============================
 
 ActivateScrollLayer(originLayer := "leader") {
+    ; DEBUG: Log para verificar si se ejecuta
+    OutputDebug("[SCROLL DEBUG] ActivateScrollLayer() llamado con originLayer: " . originLayer)
+    
     ; Use SwitchToLayer for consistent behavior
-    return SwitchToLayer("scroll", originLayer)
+    result := SwitchToLayer("scroll", originLayer)
+    
+    OutputDebug("[SCROLL DEBUG] SwitchToLayer result: " . (result ? "true" : "false"))
+    return result
 }
 
 ; ==============================
@@ -42,7 +48,17 @@ ActivateScrollLayer(originLayer := "leader") {
 OnScrollLayerActivate() {
     global scrollLayerActive
     scrollLayerActive := true
-    try ShowScrollLayerStatus(true)
+    
+    ; DEBUG: Log para verificar si se ejecuta
+    OutputDebug("[SCROLL DEBUG] OnScrollLayerActivate() EJECUTÁNDOSE")
+    
+    try {
+        ShowScrollLayerStatus(true)
+        OutputDebug("[SCROLL DEBUG] ShowScrollLayerStatus(true) completado")
+    } catch Error as e {
+        OutputDebug("[SCROLL DEBUG] ERROR en ShowScrollLayerStatus: " . e.Message)
+    }
+    
     try SetTempStatus("SCROLL LAYER ON", 1500)
 }
 
@@ -126,6 +142,16 @@ ScrollCloseHelp() {
     } else {
         try RemoveToolTip()
     }
+}
+
+; ==============================
+; TEMPORARY DEBUG HOTKEY (REMOVE AFTER TESTING)
+; ==============================
+
+; Test hotkey: Ctrl+Shift+S para probar ActivateScrollLayer directamente
+^+s:: {
+    OutputDebug("[SCROLL DEBUG] Manual test hotkey pressed - calling ActivateScrollLayer()")
+    ActivateScrollLayer("manual_test")
 }
 
 ; ==============================
