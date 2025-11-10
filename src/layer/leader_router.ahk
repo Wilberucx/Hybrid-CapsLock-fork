@@ -126,7 +126,6 @@ NavigateHierarchical(currentPath) {
         ; ==============================
         ; Everything is handled by ExecuteKeymapAtPath() from registry
         ; NO hardcoded logic for specific categories
-        
         ; Execute keymap at current path
         result := ExecuteKeymapAtPath(currentPath, key)
         

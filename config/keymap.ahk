@@ -1,18 +1,6 @@
 ; ==============================
 ; Keymap Configuration - Configuración de Categorías y Navegación
 ; ==============================
-; Sistema declarativo jerárquico estilo which-key de Neovim
-; Define la estructura completa de navegación del sistema
-; 
-; PROPÓSITO: Archivo de configuración centralizado para categorías y subcategorías
-; Ubicación: config/ (fácil de editar sin tocar código core)
-; 
-; ESTRUCTURA: leader → categoría → subcategoría → acción
-; 
-; EVOLUCIÓN FUTURA: Este archivo puede tener prioridad sobre los keymaps
-; definidos en src/actions/*.ahk, manteniendo esos como fallback.
-; 
-; LLAMAR InitializeCategoryKeymaps() UNA SOLA VEZ al inicio
 
 InitializeCategoryKeymaps() {
     ; ==============================
@@ -22,7 +10,9 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("t", "Timestamps", 2)
     RegisterCategoryKeymap("c", "Commands", 3)
     RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
-    RegisterCategoryKeymap("p", "Programs", 5)
+    RegisterKeymap("leader", "e", "Excel Layer", ActivateExcelLayer, false, 5)
+    RegisterCategoryKeymap("p", "Programs", 6)
+    RegisterCategoryKeymap("o", "Power Options", 7)
     ; ==============================
     ; 2. SUBCATEGORÍAS EN COMMANDS Y TIMESTAMPS
     ; ==============================
@@ -32,9 +22,8 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("c", "m", "Monitoring Commands", 4)
     RegisterCategoryKeymap("c", "n", "Network Commands", 5)
     RegisterCategoryKeymap("c", "f", "Folder Access", 6)
-    RegisterCategoryKeymap("c", "o", "Power Options", 7)
-    RegisterCategoryKeymap("c", "a", "ADB Tools", 8)
-    RegisterCategoryKeymap("c", "v", "VaultFlow", 9)
+    RegisterCategoryKeymap("c", "a", "ADB Tools", 7)
+    RegisterCategoryKeymap("c", "v", "VaultFlow", 8)
     ; Leader → t 
     RegisterCategoryKeymap("t", "d", "Date Formats", 1)
     RegisterCategoryKeymap("t", "t", "Time Formats", 2)
@@ -86,26 +75,63 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "h", "S", "Scan Layers", ScanLayersManual, false, 7)
     RegisterKeymap("leader", "h", "R", "Reload Script", ReloadHybridScript, true, 8)
     RegisterKeymap("leader", "h", "e", "Exit Script", ExitHybridScript, true, 9)
-    ; ==============================
-    ; 3. CONFIGURACIÓN PERSONALIZADA (OVERRIDE)
-    ; ==============================
-    ; Aquí puedes override cualquier keymap desde actions
-    ; Estos keymaps tienen PRIORIDAD sobre los definidos en src/actions/
-    
-    ; Programs overrides (ejemplos):
-    ; RegisterKeymap("leader", "p", "e", "Explorer Downloads", ShellExec("explorer.exe", "C:\Users\Downloads"), false, 1)
-    ; RegisterKeymap("leader", "p", "v", "VS Code Project", ShellExec("code.exe", "C:\MyProject"), false, 1)
-    
-    ; Windows overrides (ejemplos):
-    ; RegisterKeymap("leader", "w", "m", "Minimize Custom", () => MinimizeWindow(), false, 1)
-    
-    ; System overrides (ejemplos):
-    ; RegisterKeymap("leader", "c", "s", "r", "Restart Custom", () => RestartSystem(), true, 1)
-    
-    ; ==============================
-    ; 4. CARGAR FALLBACKS DESDE ACTIONS
-    ; ==============================
-    ; Solo se registran keymaps que NO fueron definidos arriba
+    ; System Commands (leader → c → s → KEY)
+    RegisterKeymap("leader", "c", "s", "s", "System Info", ShowSystemInfo, false, 1)
+    RegisterKeymap("leader", "c", "s", "t", "Task Manager", ShowTaskManager, false, 2)
+    RegisterKeymap("leader", "c", "s", "v", "Services Manager", ShowServicesManager, false, 3)
+    RegisterKeymap("leader", "c", "s", "e", "Event Viewer", ShowEventViewer, false, 4)
+    RegisterKeymap("leader", "c", "s", "d", "Device Manager", ShowDeviceManager, false, 5)
+    RegisterKeymap("leader", "c", "s", "c", "Disk Cleanup", ShowDiskCleanup, false, 6)
+    RegisterKeymap("leader", "c", "s", "h", "Toggle Hidden Files", ToggleHiddenFiles, false, 7)
+    RegisterKeymap("leader", "c", "s", "r", "Registry Editor", ShowRegistryEditor, false, 8)
+    RegisterKeymap("leader", "c", "s", "E", "Environment Variables", ShowEnvironmentVariables, false, 9)
+    RegisterKeymap("leader", "c", "s", "w", "Windows Version", ShowWindowsVersion, false, 10)
+    ; Git Commands (leader → c → g → KEY)
+    RegisterKeymap("leader", "c", "g", "s", "Status", GitStatus, false, 1)
+    RegisterKeymap("leader", "c", "g", "l", "Log (last 10)", GitLog, false, 2)
+    RegisterKeymap("leader", "c", "g", "b", "Branches", GitBranches, false, 3)
+    RegisterKeymap("leader", "c", "g", "d", "Diff", GitDiff, false, 4)
+    RegisterKeymap("leader", "c", "g", "a", "Add All", GitAddAll, true, 5)
+    RegisterKeymap("leader", "c", "g", "p", "Pull", GitPull, true, 6)
+    ; Monitoring Commands (leader → c → m → KEY)
+    RegisterKeymap("leader", "c", "m", "p", "Top Processes", ShowTopProcesses, false, 1)
+    RegisterKeymap("leader", "c", "m", "s", "Services Status", ShowServicesStatus, false, 2)
+    RegisterKeymap("leader", "c", "m", "d", "Disk Space", ShowDiskSpace, false, 3)
+    RegisterKeymap("leader", "c", "m", "m", "Memory Usage", ShowMemoryUsage, false, 4)
+    RegisterKeymap("leader", "c", "m", "c", "CPU Usage", ShowCPUUsage, false, 5)
+    ; Network Commands (leader → c → n → KEY)
+    RegisterKeymap("leader", "c", "n", "i", "IP Config", ShowIPConfig, false, 1)
+    RegisterKeymap("leader", "c", "n", "p", "Ping Google", PingGoogle, false, 2)
+    RegisterKeymap("leader", "c", "n", "n", "Netstat", ShowNetstat, false, 3)
+    ; Folder Access (leader → c → f → KEY)
+    RegisterKeymap("leader", "c", "f", "t", "Temp Folder", OpenTempFolder, false, 1)
+    RegisterKeymap("leader", "c", "f", "a", "AppData", OpenAppDataFolder, false, 2)
+    RegisterKeymap("leader", "c", "f", "p", "Program Files", OpenProgramFilesFolder, false, 3)
+    RegisterKeymap("leader", "c", "f", "u", "User Profile", OpenUserProfileFolder, false, 4)
+    RegisterKeymap("leader", "c", "f", "d", "Desktop", OpenDesktopFolder, false, 5)
+    RegisterKeymap("leader", "c", "f", "s", "System32", OpenSystem32Folder, false, 6)
+    ; Power Options (leader → c → o → KEY)
+    RegisterKeymap("leader", "o", "l", "Lock Screen", LockWorkstation, false, 1)
+    RegisterKeymap("leader", "o", "s", "Sleep", SuspendSystem, false, 2)
+    RegisterKeymap("leader", "o", "h", "Hibernate", HibernateSystem, false, 3)
+    RegisterKeymap("leader", "o", "o", "Sign Out", SignOutUser, true, 4)
+    RegisterKeymap("leader", "o", "r", "Restart", RestartSystem, true, 5)
+    RegisterKeymap("leader", "o", "S", "Shutdown", ShutdownSystem, true, 6)
+    ; Adb Tools (leader → c → a → KEY)
+    RegisterKeymap("leader", "c", "a", "d", "List Devices", ADBListDevices, false, 1)
+    RegisterKeymap("leader", "c", "a", "x", "Disconnect", ADBDisconnect, false, 2)
+    RegisterKeymap("leader", "c", "a", "s", "Shell", ADBShell, false, 3)
+    RegisterKeymap("leader", "c", "a", "l", "Logcat", ADBLogcat, false, 4)
+    RegisterKeymap("leader", "c", "a", "i", "Install APK", ADBInstallAPK, false, 5)
+    RegisterKeymap("leader", "c", "a", "u", "Uninstall Package", ADBUninstallPackage, false, 6)
+    RegisterKeymap("leader", "c", "a", "c", "Clear App Data", ADBClearAppData, false, 7)
+    RegisterKeymap("leader", "c", "a", "r", "Reboot Device", ADBRebootDevice, false, 8)
+    ; VualtFlow (leader → c → v → KEY)
+    RegisterKeymap("leader", "c", "v", "v", "Run VaultFlow", RunVaultFlow, false, 1)
+    RegisterKeymap("leader", "c", "v", "s", "Status", VaultFlowStatus, false, 2)
+    RegisterKeymap("leader", "c", "v", "l", "List", VaultFlowList, false, 3)
+    RegisterKeymap("leader", "c", "v", "h", "Help", VaultFlowHelp, false, 4)
+
     ; LoadActionKeymapFallbacks()
 }
 
@@ -123,8 +149,5 @@ InitializeCategoryKeymaps() {
 ;     RegisterVaultFlowKeymaps()
 ;     RegisterTimestampKeymaps()
 ;     RegisterWindowsKeymaps()
-;
-;     ; NOTA: program_actions.ahk usa declaración directa (no función wrapper)
-;     ; Sus RegisterKeymap se ejecutan automáticamente al cargar el archivo
 ; }
 

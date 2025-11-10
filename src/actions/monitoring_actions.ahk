@@ -31,10 +31,10 @@ ShowCPUUsage() {
 ; REGISTRO DECLARATIVO JERÁRQUICO
 ; ==============================
 ; Ruta: Leader → c (Commands) → m (Monitoring) → key
-RegisterMonitoringKeymaps() {
-    RegisterKeymap("c", "m", "p", "Top Processes", ShowTopProcesses, false, 1)
-    RegisterKeymap("c", "m", "s", "Services Status", ShowServicesStatus, false, 2)
-    RegisterKeymap("c", "m", "d", "Disk Space", ShowDiskSpace, false, 3)
-    RegisterKeymap("c", "m", "m", "Memory Usage", ShowMemoryUsage, false, 4)
-    RegisterKeymap("c", "m", "c", "CPU Usage", ShowCPUUsage, false, 5)
-}
+; RegisterMonitoringKeymaps() {
+;     RegisterKeymap("c", "m", "p", "Top Processes", ShowTopProcesses, false, 1)
+;     RegisterKeymap("c", "m", "s", "Services Status", ShowServicesStatus, false, 2)
+;     RegisterKeymap("c", "m", "d", "Disk Space", ShowDiskSpace, false, 3)
+;     RegisterKeymap("c", "m", "m", "Memory Usage", ShowMemoryUsage, false, 4)
+;     RegisterKeymap("c", "m", "c", "CPU Usage", ShowCPUUsage, false, 5)
+; }

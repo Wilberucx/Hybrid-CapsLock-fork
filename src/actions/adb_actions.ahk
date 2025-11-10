@@ -53,16 +53,16 @@ ADBDisconnect() {
 ;   6. confirm: mostrar confirmación (opcional, default false)
 ;   7. order: posición en menú (opcional, default 999)
 
-RegisterADBKeymaps() {
-    ; Ruta completa: Leader → c → a → key
-    ; Orden lógico: Conexión → Info → Shell → Logs → Reinicio
-    RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
-    RegisterKeymap("c", "a", "x", "Disconnect", ADBDisconnect, false, 2)
-    RegisterKeymap("c", "a", "s", "Shell", ADBShell, false, 3)
-    RegisterKeymap("c", "a", "l", "Logcat", ADBLogcat, false, 4)
-    RegisterKeymap("c", "a", "i", "Install APK", ADBInstallAPK, false, 5)
-    RegisterKeymap("c", "a", "u", "Uninstall Package", ADBUninstallPackage, false, 6)
-    RegisterKeymap("c", "a", "c", "Clear App Data", ADBClearAppData, false, 7)
-    RegisterKeymap("c", "a", "r", "Reboot Device", ADBRebootDevice, false, 8)
-}
+; RegisterADBKeymaps() {
+;     ; Ruta completa: Leader → c → a → key
+;     ; Orden lógico: Conexión → Info → Shell → Logs → Reinicio
+;     RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
+;     RegisterKeymap("c", "a", "x", "Disconnect", ADBDisconnect, false, 2)
+;     RegisterKeymap("c", "a", "s", "Shell", ADBShell, false, 3)
+;     RegisterKeymap("c", "a", "l", "Logcat", ADBLogcat, false, 4)
+;     RegisterKeymap("c", "a", "i", "Install APK", ADBInstallAPK, false, 5)
+;     RegisterKeymap("c", "a", "u", "Uninstall Package", ADBUninstallPackage, false, 6)
+;     RegisterKeymap("c", "a", "c", "Clear App Data", ADBClearAppData, false, 7)
+;     RegisterKeymap("c", "a", "r", "Reboot Device", ADBRebootDevice, false, 8)
+; }
 
