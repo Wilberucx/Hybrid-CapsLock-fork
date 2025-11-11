@@ -1,10 +1,11 @@
 # Capa Excel/Accounting (leader → n)
 
 > Referencia rápida
+>
 > - Confirmaciones: no aplica (acciones inmediatas)
 > - Tooltips (C#): sección [Tooltips] en config/configuration.ini (CONFIGURATION.md)
 
-La Capa Excel es una capa persistente especializada para trabajo con hojas de cálculo y aplicaciones contables. Combina un numpad completo con navegación optimizada y atajos específicos de Excel para máxima productividad.
+La Capa Excel es una capa persistente especializada para trabajo con hojas de cálculo y aplicaciones contables. Combina un numpad completo (numpad que también se puede acceder de manera rápida y temporal manteniendo presionada la tecla O) con navegación optimizada y atajos específicos de Excel para máxima productividad.
 
 ## 🎯 Activación
 
@@ -38,6 +39,8 @@ h  j  l           →    ←  ↓  →
 
 ### 📈 Sección Excel
 
+Esto está pendiente de refacromación para mejor claridad, pero en esencia es:
+
 ```
 Funciones especializadas para hojas de cálculo
 i, f, u, r, g, m, y, p, c, v (minicapas), etc.
@@ -62,14 +65,14 @@ i, f, u, r, g, m, y, p, c, v (minicapas), etc.
 
 #### 🔣 Símbolos y Operaciones
 
-| Tecla Física       | Función      | Descripción         |
-| ------------------ | ------------ | ------------------- |
-| `,` (coma)         | , (coma)     | Coma (sin mapeo)    |
-| `.` (punto)        | Numpad Dot   | Punto decimal       |
-| `8`                | *            | Multiplicación      |
-| `9`                | ()           | Paréntesis (función)|
-| `;` (punto y coma) | Numpad -     | Resta               |
-| `/` (barra)        | Numpad /     | División            |
+| Tecla Física       | Función    | Descripción          |
+| ------------------ | ---------- | -------------------- |
+| `,` (coma)         | , (coma)   | Coma (sin mapeo)     |
+| `.` (punto)        | Numpad Dot | Punto decimal        |
+| `8`                | \*         | Multiplicación       |
+| `9`                | ()         | Paréntesis (función) |
+| `;` (punto y coma) | Numpad -   | Resta                |
+| `/` (barra)        | Numpad /   | División             |
 
 #### 🧭 Navegación
 
@@ -84,39 +87,40 @@ i, f, u, r, g, m, y, p, c, v (minicapas), etc.
 
 #### 📈 Funciones Excel
 
-| Tecla Física | Función         | Descripción                    |
-| ------------ | --------------- | ------------------------------ |
-| `i`          | F2              | Editar celda                   |
-| `I`          | F2 + Exit       | Editar celda y salir de capa   |
-| `f`          | Ctrl + F        | Buscar                         |
-| `u`          | Ctrl + Z        | Deshacer (Undo)                |
-| `r`          | Ctrl + Y        | Rehacer (Redo)                 |
-| `g`          | Ctrl + Home     | Ir al inicio de la hoja        |
-| `G`          | Ctrl + End      | Ir al final de datos           |
-| `m`          | Ctrl + G        | Ir a celda específica          |
-| `y`          | Ctrl + C        | Copiar (Yank)                  |
-| `p`          | Ctrl + V        | Pegar                          |
-| `o`          | Enter           | Confirmar/Bajar celda          |
-| `O`          | Shift + Enter   | Subir celda                    |
+| Tecla Física | Función       | Descripción                  |
+| ------------ | ------------- | ---------------------------- |
+| `i`          | F2            | Editar celda                 |
+| `I`          | F2 + Exit     | Editar celda y salir de capa |
+| `f`          | Ctrl + F      | Buscar                       |
+| `u`          | Ctrl + Z      | Deshacer (Undo)              |
+| `r`          | Ctrl + Y      | Rehacer (Redo)               |
+| `g`          | Ctrl + Home   | Ir al inicio de la hoja      |
+| `G`          | Ctrl + End    | Ir al final de datos         |
+| `m`          | Ctrl + G      | Ir a celda específica        |
+| `y`          | Ctrl + C      | Copiar (Yank)                |
+| `p`          | Ctrl + V      | Pegar                        |
+| `o`          | Enter         | Confirmar/Bajar celda        |
+| `O`          | Shift + Enter | Subir celda                  |
 
 #### 🎯 Funciones de Selección Avanzadas (Minicapas)
 
 La tecla `v` activa una **mini-capa temporal** (V Logic) que permite acceder a comandos de selección sin ocupar teclas individuales. La mini-capa permanece activa ~3 segundos (configurable) esperando el siguiente comando.
 
-| Comando | Función                  | Descripción                           |
-| ------- | ------------------------ | ------------------------------------- |
-| `vr`    | Shift + Space           | Seleccionar fila completa             |
-| `vc`    | Ctrl + Space            | Seleccionar columna completa           |
-| `vv`    | Modo selección visual   | hjkl con Shift+flechas para seleccionar múltiples celdas, Esc/Enter para salir|
+| Comando | Función               | Descripción                                                                    |
+| ------- | --------------------- | ------------------------------------------------------------------------------ |
+| `vr`    | Shift + Space         | Seleccionar fila completa                                                      |
+| `vc`    | Ctrl + Space          | Seleccionar columna completa                                                   |
+| `vv`    | Modo selección visual | hjkl con Shift+flechas para seleccionar múltiples celdas, Esc/Enter para salir |
 
 **Cómo usar:**
+
 1. Presiona `v` → Se activa V Logic (mini-capa temporal)
 2. Presiona `r`, `c` o `v` → Ejecuta la acción y sale de la mini-capa
 3. Si no presionas nada en ~3s, la mini-capa se cancela automáticamente
 
 **Nota técnica:** Esta mini-capa usa InputLevel 2 para tener prioridad sobre los hotkeys normales de Excel. Ver [implementación técnica](develop/excel_v_logic_mini_layer.md) para detalles.
 
-*Nota: Enter y Space mantienen su comportamiento normal*
+_Nota: Enter y Space mantienen su comportamiento normal_
 
 #### 🚪 Control de Capa
 
@@ -232,5 +236,3 @@ leader → Menú Principal
 ---
 
 **¿Necesitas más funciones numéricas?** Esta capa se puede extender fácilmente para incluir más operaciones matemáticas o funciones especializadas.
-
-

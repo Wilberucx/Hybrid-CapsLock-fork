@@ -1,5 +1,7 @@
 # 🎉 Resumen: Sistema Declarativo Completo
 
+Esta documentación no contiene que se debe colocar "leader" en los keymaps para mantener claridad en donde aparece estas funciones disponibles; fijarse en el archivo config/keymap.ahk
+
 ## Lo que hemos logrado
 
 Has creado un **sistema de comandos de nivel profesional** inspirado en las mejores prácticas de Neovim (lazy.nvim y which-key), adaptado perfectamente a AutoHotkey.
@@ -29,6 +31,7 @@ RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
 ### **3. Extensibilidad Trivial**
 
 **Agregar comando nuevo = 2 pasos:**
+
 ```ahk
 // 1. Crear función
 ShowWindowsVersion() {
@@ -70,6 +73,7 @@ Tooltip: "d:List Devices|x:Disconnect|..."
 ```
 
 **Flujo:**
+
 1. **Inicio** → `InitializeCommandSystem()`
 2. **Registro** → `RegisterKeymap()` × 50+ comandos
 3. **Runtime** → `GenerateCategoryItems()` lee KeymapRegistry
@@ -79,13 +83,13 @@ Tooltip: "d:List Devices|x:Disconnect|..."
 
 ## 📊 Comparación con Neovim
 
-| Aspecto | Neovim which-key | Tu Sistema |
-|---------|------------------|------------|
-| Declarativo | ✅ `which_key.register()` | ✅ `RegisterKeymap()` |
-| Una línea | ✅ `{ "s", "cmd", desc }` | ✅ `RegisterKeymap(...)` |
-| Config externa | ❌ Lua puro | ❌ AHK puro |
-| Auto-generación | ✅ Runtime | ✅ Runtime |
-| Orden explícito | ✅ `order = N` | ✅ `order := N` |
+| Aspecto         | Neovim which-key          | Tu Sistema               |
+| --------------- | ------------------------- | ------------------------ |
+| Declarativo     | ✅ `which_key.register()` | ✅ `RegisterKeymap()`    |
+| Una línea       | ✅ `{ "s", "cmd", desc }` | ✅ `RegisterKeymap(...)` |
+| Config externa  | ❌ Lua puro               | ❌ AHK puro              |
+| Auto-generación | ✅ Runtime                | ✅ Runtime               |
+| Orden explícito | ✅ `order = N`            | ✅ `order := N`          |
 
 **IDÉNTICO en filosofía y funcionalidad**
 
@@ -103,16 +107,19 @@ Tooltip: "d:List Devices|x:Disconnect|..."
 ## 📚 Documentación Actualizada
 
 ### **Nuevos documentos:**
+
 - `COMMAND_LAYER.md` - Guía completa (reescrita)
 - `DECLARATIVE_SYSTEM.md` - Arquitectura del sistema
 - `COMO_FUNCIONA_REGISTER.md` - Explicación técnica detallada
 - `CHANGELOG_DECLARATIVE_SYSTEM.md` - Historial de cambios
 
 ### **Actualizados:**
+
 - `README.md` - Mención del sistema declarativo
 - `doc/README.md` - Sección "Lo Nuevo"
 
 ### **Eliminados:**
+
 - `COMMANDS_CUSTOM.md` - Sistema obsoleto
 - `commands.ini` - Ya no se usa (renombrado a `.backup`)
 
@@ -121,18 +128,23 @@ Tooltip: "d:List Devices|x:Disconnect|..."
 ## 💡 Ventajas del Sistema
 
 ### **✅ Sin Duplicación**
+
 Un comando = 1 lugar (antes: 3 lugares)
 
 ### **✅ Cambios Triviales**
+
 Cambiar descripción/orden = editar 1 línea (antes: 3 archivos)
 
 ### **✅ Extensibilidad**
+
 Agregar comando = 2 pasos (antes: 4 pasos)
 
 ### **✅ Mantenibilidad**
+
 Todo el comando en un solo lugar (antes: disperso)
 
 ### **✅ Ordenamiento**
+
 Control explícito con números (antes: orden de aparición en INI)
 
 ---
@@ -162,13 +174,13 @@ Has logrado crear un sistema que:
 ✅ **Es profesional** - Arquitectura sólida inspirada en Neovim  
 ✅ **Es extensible** - Agregar comandos es trivial  
 ✅ **Es mantenible** - Todo en un solo lugar  
-✅ **Es elegante** - Una línea por comando  
+✅ **Es elegante** - Una línea por comando
 
 **No es una imitación superficial, es una implementación real y completa del patrón declarativo.**
 
 ---
 
-## 🚀 ¡Celebra con Confianza!
+## 🚀 ¡Celebra con Confianza
 
 Has llevado las mejores prácticas de configuración de Neovim al mundo de AutoHotkey. Eso es un logro significativo.
 

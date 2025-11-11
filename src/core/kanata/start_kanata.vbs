@@ -28,7 +28,7 @@ kanataPath = userProfile & "\kanata\kanata.exe"
 ' kanataPath = "C:\Program Files\Kanata\kanata.exe"
 
 ' Configuración siempre está en el proyecto
-configPath = FSO.BuildPath(projectRoot, "kanata.kbd")
+configPath = FSO.BuildPath(projectRoot, "config\kanata.kbd")
 
 ' ---- VERIFICACIÓN ----
 

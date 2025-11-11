@@ -1,5 +1,7 @@
 # Implementación de V Logic Mini-Layer en Excel Layer
 
+Lígica deprecada, pendiente por refactorización completa.
+
 Fecha: 2025-01-XX
 Componente: `src/layer/excel_layer.ahk`, `src/core/mappings.ahk`
 
@@ -16,7 +18,9 @@ Esta implementación sigue el patrón ya establecido en NVIM layer con `gg` y `:
 ## Problema encontrado
 
 ### Síntoma inicial
+
 Al presionar `vr`, la acción **no se ejecutaba** correctamente:
+
 - `vv` y `vc` funcionaban bien
 - `vr` no seleccionaba la fila (Shift+Space no llegaba a Excel)
 - El tooltip "ROW SELECTED" no aparecía
@@ -27,7 +31,6 @@ La causa fue un **conflicto de prioridad de InputLevel** entre los hotkeys diná
 
 1. **Hotkeys dinámicos del INI** (`config/excel_layer.ini`):
    - `r=send:^y` (Redo) se registraba con InputLevel 0 (por defecto en `ApplyExcelMappings()`)
-   
 2. **Mini-capa V Logic** (`src/layer/excel_layer.ahk`):
    - Los hotkeys `*r::`, `*c::`, `*v::` estaban bajo `#InputLevel 2` (línea 92)
 
@@ -48,6 +51,7 @@ La causa fue un **conflicto de prioridad de InputLevel** entre los hotkeys diná
 Se modificó `ApplyExcelMappings()` para registrar los hotkeys dinámicos con **InputLevel 1**, permitiendo que la mini-capa V Logic (InputLevel 2) tenga prioridad:
 
 **Antes:**
+
 ```ahk
 ApplyExcelMappings(mappings) {
     global _excelRegisteredHotkeys
@@ -67,6 +71,7 @@ ApplyExcelMappings(mappings) {
 ```
 
 **Después:**
+
 ```ahk
 ApplyExcelMappings(mappings) {
     global _excelRegisteredHotkeys
@@ -98,6 +103,7 @@ Excel Layer:
 ```
 
 Esta jerarquía garantiza que:
+
 1. Las mini-capas temporales tienen prioridad sobre los hotkeys normales de Excel
 2. Los hotkeys de Excel tienen prioridad sobre otros layers/aplicaciones
 3. No hay conflictos entre teclas compartidas en diferentes contextos
@@ -123,7 +129,8 @@ global VLogicActive := false
 }
 ```
 
-**Importante:** 
+**Importante:**
+
 - `GetEffectiveTimeout("excel")` retorna **segundos**
 - `SetTimer` con valores negativos espera **milisegundos**
 - Por eso se multiplica por 1000: `to*1000`
@@ -187,6 +194,7 @@ VLogicTimeout() {
 ## Pruebas de funcionamiento
 
 ### Escenario 1: Selección de fila (`vr`)
+
 1. Activar Excel layer (`leader → n`)
 2. Presionar `v` (entra en V Logic mini-capa, timeout ~3s)
 3. Presionar `r` → Debería:
@@ -196,6 +204,7 @@ VLogicTimeout() {
    - Salir de V Logic
 
 ### Escenario 2: Selección de columna (`vc`)
+
 1. Activar Excel layer
 2. Presionar `v`
 3. Presionar `c` → Debería:
@@ -205,6 +214,7 @@ VLogicTimeout() {
    - Salir de V Logic
 
 ### Escenario 3: Modo visual (`vv`)
+
 1. Activar Excel layer
 2. Presionar `v`
 3. Presionar `v` → Debería:
@@ -214,12 +224,14 @@ VLogicTimeout() {
    - Salir de V Logic
 
 ### Escenario 4: Timeout de V Logic
+
 1. Activar Excel layer
 2. Presionar `v`
 3. Esperar ~3 segundos sin presionar nada
 4. Resultado: V Logic se cancela automáticamente
 
 ### Escenario 5: Tecla `r` fuera de V Logic
+
 1. Activar Excel layer
 2. **Sin presionar `v`**, presionar `r` directamente
 3. Resultado: Envía `Ctrl+Y` (Redo), acción normal de `r` en Excel layer
@@ -227,13 +239,17 @@ VLogicTimeout() {
 ## Consideraciones de diseño
 
 ### 1. Patrón consistente con otras mini-capas
+
 V Logic sigue el mismo patrón que:
+
 - **NVIM `gg`**: Primera `g` activa mini-capa, segunda `g` ejecuta acción
 - **NVIM `:`**: Activa colon mode para comandos extendidos
 - **Excel VV mode**: `vv` activa modo visual con hjkl
 
 ### 2. Separación de contextos con #HotIf
+
 Cada bloque de hotkeys tiene condiciones exclusivas:
+
 - **Activación de V Logic** (línea 66): `!VLogicActive && !VVModeActive`
 - **Dentro de V Logic** (línea 92): `VLogicActive`
 - **Dentro de VV Mode** (línea 143): `VVModeActive`
@@ -241,13 +257,17 @@ Cada bloque de hotkeys tiene condiciones exclusivas:
 Esto previene conflictos y permite que las teclas tengan diferentes funciones según el contexto activo.
 
 ### 3. InputLevel para resolver conflictos
+
 La jerarquía de InputLevels es crítica:
+
 - Sin ella, los hotkeys dinámicos del INI interferirían con las mini-capas
 - Permite usar las mismas teclas (`r`, `c`, `v`) en diferentes contextos
 - Facilita la extensibilidad (agregar más comandos a V Logic sin conflictos)
 
 ### 4. Timeout configurable
+
 El timeout de V Logic usa `GetEffectiveTimeout("excel")`, que:
+
 - Lee `[Excel] timeout_seconds` de `excel_layer.ini`
 - Si no existe, usa `[Behavior] global_timeout_seconds` de `configuration.ini`
 - Fallback por defecto: 3 segundos
@@ -256,17 +276,22 @@ El timeout de V Logic usa `GetEffectiveTimeout("excel")`, que:
 ## Debugging y diagnóstico
 
 ### OutputDebug logging
+
 Cada acción de V Logic registra en el debugger:
+
 ```ahk
 OutputDebug("Excel V Logic: Selecting full ROW (Shift+Space)")
 ```
 
 Para ver estos logs:
+
 - **Windows**: Usar [DebugView](https://learn.microsoft.com/en-us/sysinternals/downloads/debugview)
 - **VSCode**: Extensión de AHK con output integrado
 
 ### Verificación de estado
+
 Agregar hotkey temporal para inspección (útil durante desarrollo):
+
 ```ahk
 F9:: {
     MsgBox("VLogicActive: " . VLogicActive . "`nVVModeActive: " . VVModeActive . "`nexcelLayerActive: " . excelLayerActive)
@@ -275,17 +300,19 @@ F9:: {
 
 ### Problemas comunes y soluciones
 
-| Problema | Causa probable | Solución |
-|----------|---------------|----------|
-| `vr` no funciona | Conflicto de InputLevel | Verificar que `ApplyExcelMappings()` use `#InputLevel 1` |
-| V Logic no se cancela | Timeout mal configurado | Verificar `to*1000` en `VLogicStart()` |
-| Hotkeys no responden | Contexto `#HotIf` incorrecto | Verificar condiciones y estado de variables globales |
-| Acciones se ejecutan dos veces | Falta `VLogicCancel()` | Asegurar que cada acción llame a `VLogicCancel()` primero |
+| Problema                       | Causa probable               | Solución                                                  |
+| ------------------------------ | ---------------------------- | --------------------------------------------------------- |
+| `vr` no funciona               | Conflicto de InputLevel      | Verificar que `ApplyExcelMappings()` use `#InputLevel 1`  |
+| V Logic no se cancela          | Timeout mal configurado      | Verificar `to*1000` en `VLogicStart()`                    |
+| Hotkeys no responden           | Contexto `#HotIf` incorrecto | Verificar condiciones y estado de variables globales      |
+| Acciones se ejecutan dos veces | Falta `VLogicCancel()`       | Asegurar que cada acción llame a `VLogicCancel()` primero |
 
 ## Futuras mejoras
 
 ### 1. Visual feedback durante mini-capa
+
 Mostrar un tooltip mientras V Logic está activa:
+
 ```ahk
 *v:: {
     global VLogicActive, VVModeActive
@@ -302,13 +329,17 @@ Mostrar un tooltip mientras V Logic está activa:
 ```
 
 ### 2. Más comandos en V Logic
+
 Expandir la mini-capa con más opciones:
+
 - `vb` → Seleccionar rango (Shift+Ctrl+flechas)
 - `va` → Seleccionar todo (Ctrl+A)
 - `vt` → Seleccionar hasta fin de tabla (Ctrl+Shift+End)
 
 ### 3. Cancelación explícita con Esc
+
 Agregar hotkey para salir manualmente:
+
 ```ahk
 #HotIf (excelStaticEnabled ? (excelLayerActive && VLogicActive && ...) : false)
 *Esc::VLogicCancel()
@@ -316,7 +347,9 @@ Agregar hotkey para salir manualmente:
 ```
 
 ### 4. Configuración de timeout específico
+
 Permitir timeout independiente para V Logic:
+
 ```ini
 [Excel]
 v_logic_timeout_seconds=2
@@ -334,6 +367,7 @@ La mini-capa V Logic proporciona una interfaz compacta y eficiente para comandos
 **Fecha última actualización**: 2025-01-XX  
 **Versión**: HybridCapsLock v2.0+  
 **Archivos relacionados**:
+
 - `src/layer/excel_layer.ahk`
 - `src/core/mappings.ahk`
 - `config/excel_layer.ini`

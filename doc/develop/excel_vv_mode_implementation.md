@@ -1,5 +1,7 @@
 # Excel VV Mode Implementation - Visual Selection Mode
 
+Lógica deprecada, pendiente refactorización.
+
 ## Overview
 
 The VV (Visual-Visual) mode in Excel Layer provides Vim-like visual selection using `hjkl` keys, similar to the visual mode in Nvim Layer. This document explains the implementation, challenges encountered, and the solution.
@@ -13,6 +15,7 @@ Initially, the VV mode was activating correctly (showing "VISUAL SELECTION MODE 
 The issue was a **hotkey context precedence conflict**. The `hjkl` keys were defined in two different `#HotIf` contexts:
 
 1. **Excel Layer Normal Context** (lines ~16-50):
+
    ```autohotkey
    #HotIf (excelStaticEnabled ? (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelLayerAppAllowed()) : false)
    h::Send("{Left}")
@@ -22,6 +25,7 @@ The issue was a **hotkey context precedence conflict**. The `hjkl` keys were def
    ```
 
 2. **VV Mode Context** (lines ~139-156):
+
    ```autohotkey
    #HotIf (excelStaticEnabled ? (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelLayerAppAllowed() && VVModeActive) : false)
    h::ExcelVVDirectionalSend("Left")
@@ -41,16 +45,19 @@ Add `&& !VVModeActive` to all Excel Layer normal contexts to ensure they are **d
 #### 1. Main Excel Layer Context (Line 16)
 
 **Before:**
+
 ```autohotkey
 #HotIf (excelStaticEnabled ? (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelLayerAppAllowed()) : false)
 ```
 
 **After:**
+
 ```autohotkey
 #HotIf (excelStaticEnabled ? (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelLayerAppAllowed() && !VVModeActive) : false)
 ```
 
 This affects all hotkeys in the main Excel Layer section, including:
+
 - `hjkl` (navigation)
 - `y` (yank/copy)
 - `p` (paste)
@@ -60,12 +67,14 @@ This affects all hotkeys in the main Excel Layer section, including:
 #### 2. V Logic Start Context (Line 79)
 
 **Before:**
+
 ```autohotkey
 #HotIf (excelStaticEnabled ? (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelLayerAppAllowed() && !VLogicActive) : false)
 v::VLogicStart()
 ```
 
 **After:**
+
 ```autohotkey
 #HotIf (excelStaticEnabled ? (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelLayerAppAllowed() && !VLogicActive && !VVModeActive) : false)
 v::VLogicStart()
@@ -76,11 +85,13 @@ This prevents accidentally re-entering V Logic while in VV mode.
 #### 3. Help Toggle Context (Line 81)
 
 **Before:**
+
 ```autohotkey
 #HotIf (excelStaticEnabled ? (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelLayerAppAllowed()) : false)
 ```
 
 **After:**
+
 ```autohotkey
 #HotIf (excelStaticEnabled ? (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelLayerAppAllowed() && !VVModeActive) : false)
 ```
@@ -102,6 +113,7 @@ This ensures help can still be toggled but won't interfere with VV mode.
 #### Navigation with Selection (hjkl)
 
 Uses the helper function `ExcelVVDirectionalSend()` which:
+
 - Detects current modifiers (Ctrl, Alt, Shift)
 - **Always adds Shift** to extend selection
 - Respects modifier combinations (e.g., Ctrl+Shift for block selection)
@@ -116,11 +128,11 @@ ExcelVVDirectionalSend(dir) {
         mods .= "!"
     if GetKeyState("Shift", "P")
         mods .= "+"
-    
+
     ; Always ensure Shift is present in VV mode
     if (VVModeActive && !InStr(mods, "+"))
         mods .= "+"
-    
+
     SendInput(mods . "{" . dir . "}")
 }
 ```
@@ -135,6 +147,7 @@ ExcelVVDirectionalSend(dir) {
 ### Debug Features
 
 During implementation, debug output was added:
+
 - Tooltip showing what command is being sent (e.g., "VV: +{Left}")
 - OutputDebug logging for troubleshooting
 - F9 debug hotkey to check variable states (in V Logic context)
@@ -146,12 +159,14 @@ These can be removed or kept for troubleshooting.
 The VV mode implementation mirrors the visual mode in `nvim_layer.ahk`:
 
 ### Similarities
+
 - Uses a helper function (`ExcelVVDirectionalSend` vs `NvimDirectionalSend`)
 - Automatically adds Shift modifier for selection
 - Respects other modifiers (Ctrl, Alt)
 - Uses `#InputLevel 2` for VV mode context
 
 ### Differences
+
 - Excel VV mode has explicit actions (`y`, `d`, `p`) that exit the mode
 - Nvim visual mode is more complex with multiple visual modes (character, line, block)
 - Excel VV mode uses `SendInput()` for more reliable input in Excel
@@ -188,6 +203,7 @@ To verify VV mode is working correctly:
 ## Future Enhancements
 
 Potential improvements:
+
 - [ ] Add visual line mode (`V`) - select entire rows
 - [ ] Add visual block mode (`Ctrl+v`) - columnar selection
 - [ ] Add more Vim-like commands (`x` for cut, `c` for change, etc.)
@@ -221,6 +237,7 @@ When multiple `#HotIf` contexts match, AutoHotkey uses the **first matching cont
 ### Importance of Mode Exclusion
 
 The key insight: **Parent contexts must explicitly exclude child mode states**, otherwise they will capture hotkeys before the child context can. This is especially important when:
+
 - Using the same keys in different modes
 - Implementing mini-layers or sub-modes
 - Building hierarchical input systems
@@ -256,6 +273,7 @@ The VV mode now uses the modern C# tooltip system for a consistent visual experi
 #### VV Mode Tooltip Behavior
 
 **Activation (`vv`):**
+
 ```autohotkey
 if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
     try ShowExcelVVModeToggleCS(true)
@@ -265,6 +283,7 @@ if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
 ```
 
 **Exit (Esc/Enter):**
+
 ```autohotkey
 if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
     try ShowExcelVVModeToggleCS(false)  // Restores Excel layer tooltip
@@ -274,6 +293,7 @@ if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
 ```
 
 **Copy Action (`y`):**
+
 ```autohotkey
 if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
     try ShowCopyNotificationCS()  // Uses standard copy notification
@@ -283,6 +303,7 @@ if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
 ```
 
 **Delete Action (`d`):**
+
 ```autohotkey
 if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
     try {
@@ -293,6 +314,7 @@ if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
 ```
 
 **Paste Action (`p`):**
+
 ```autohotkey
 if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
     try {
@@ -303,6 +325,7 @@ if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
 ```
 
 **Help (`?` / Shift+/):**
+
 ```autohotkey
 if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
     try ShowExcelVVHelpCS()
@@ -314,6 +337,7 @@ if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
 ### Visual Consistency
 
 The VV mode tooltips maintain visual consistency with:
+
 - **Nvim Layer** - Same bottom-right list layout and help hint (?)
 - **Visual Mode** - Similar activation/deactivation pattern
 - **Excel Layer** - Seamless transition between Excel and VV tooltips
@@ -322,6 +346,7 @@ The VV mode tooltips maintain visual consistency with:
 ### Fallback Support
 
 All tooltip functions include native fallback when C# tooltips are disabled:
+
 - Simple `ToolTip()` calls with centered positioning
 - Automatic cleanup with `SetTimer(() => ToolTip(), -duration)`
 - Same functionality, different visual presentation
@@ -329,6 +354,7 @@ All tooltip functions include native fallback when C# tooltips are disabled:
 ### Configuration
 
 VV mode tooltips respect the global tooltip configuration from `config/configuration.ini`:
+
 - `[Tooltips] enabled` - Enable/disable C# tooltips
 - `[Tooltips] status_notification_timeout` - Duration for status messages
 - `[Tooltips] options_timeout` - Duration for help menus
@@ -353,4 +379,3 @@ VV mode tooltips respect the global tooltip configuration from `config/configura
 6. VV mode exits → Excel layer tooltip automatically restored
 
 This creates a smooth, professional experience that feels like a unified system rather than disconnected features.
-

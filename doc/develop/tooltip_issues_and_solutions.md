@@ -1,5 +1,7 @@
 # HybridCapsLock – Tooltip issues and solutions log
 
+Lógica deprecada pendiente por rafctorizar/eliminar:
+
 This document records the main problems found and the solutions applied during the tooltip modernization work (AutoHotkey + C# TooltipApp). It serves as a future reference for behavior, design decisions, and troubleshooting.
 
 Date: 2025-10-13

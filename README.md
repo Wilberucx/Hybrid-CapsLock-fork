@@ -29,16 +29,16 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 
 ### 🆚 vs Hybrid-CapsLock Original
 
-| Aspecto | Original (Solo AHK) | Este Fork (Kanata + AHK) |
-|---------|---------------------|---------------------------|
-| **Tap-hold detection** | Software (AHK) | Hardware-level (Kanata) |
-| **Homerow mods** | ❌ No disponible | ✅ a/s/d/f, j/k/l/; |
-| **Timing precision** | ~100-200ms delay | <10ms (kernel-level) |
-| **Ergonomía** | Buena | Excelente |
-| **Dependencias** | Solo AHK | AHK + Kanata |
-| **Complejidad** | Media | Media-Alta |
-| **Context-aware** | ✅ Completo | ✅ Completo |
-| **Tooltips visuales** | ✅ C# + nativos | ✅ C# + nativos |
+| Aspecto                | Original (Solo AHK) | Este Fork (Kanata + AHK) |
+| ---------------------- | ------------------- | ------------------------ |
+| **Tap-hold detection** | Software (AHK)      | Hardware-level (Kanata)  |
+| **Homerow mods**       | ❌ No disponible    | ✅ a/s/d/f, j/k/l/;      |
+| **Timing precision**   | ~100-200ms delay    | <10ms (kernel-level)     |
+| **Ergonomía**          | Buena               | Excelente                |
+| **Dependencias**       | Solo AHK            | AHK + Kanata             |
+| **Complejidad**        | Media               | Media-Alta               |
+| **Context-aware**      | ✅ Completo         | ✅ Completo              |
+| **Tooltips visuales**  | ✅ C# + nativos     | ✅ C# + nativos          |
 
 **Recomendación**: Usa el [proyecto original](https://github.com/Wilberucx/Hybrid-CapsLock) si prefieres simplicidad y cero dependencias. Usa este fork si quieres máxima ergonomía con homerow mods y timing perfecto.
 
@@ -51,11 +51,11 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 ### 🎹 Capas y Modos
 
 #### Kanata (Hardware-Level)
+
 - **🏠 Homerow Mods:** Modificadores sin salir de la home row
   - **Mano izquierda**: `a`=Ctrl, `s`=Alt, `d`=Win, `f`=Shift
   - **Mano derecha**: `j`=Shift, `k`=Win, `l`=Alt, `;`=Ctrl
   - [**📖 Guía Completa de Homerow Mods**](doc/HOMEROW_MODS.md)
-  
 - **🧭 Navegación Rápida (Hold CapsLock):** Navegación hjkl instantánea mientras mantienes CapsLock presionado (sin persistencia, desaparece al soltar)
 
 - **🔢 Numpad (Hold O):** Teclado numérico completo en mano izquierda
@@ -64,6 +64,7 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 - [**📖 Guía de Numpad y Media Layers**](doc/NUMPAD_MEDIA_LAYERS.md)
 
 #### AutoHotkey (Lógica Context-Aware)
+
 - **📝 Nvim Layer (Tap CapsLock):** Toggle persistente de navegación Vim con lógica avanzada (visual mode, comandos :wq, gg/G, etc). A diferencia de `Hold CapsLock`, esta capa permanece activa hasta que vuelvas a tocar CapsLock.
 
 - **🎯 Modo Líder (Hold CapsLock + Space):** Menús contextuales inteligentes para programas, ventanas, comandos del sistema, timestamps, información personal y más. Configurable como atajo en `kanata.kbd` (F24 en capa vim-nav).
@@ -71,24 +72,28 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 ## ⚙️ Instalación y Uso
 
 ### Requisitos
+
 1. **Instalar:** [AutoHotkey v2.0](https://www.autohotkey.com/v2/)
 2. **Instalar:** [Kanata](https://github.com/jtroo/kanata) - Remapper de teclado a nivel bajo
 
 ### Inicio Rápido
 
 **Inicio Automático (Recomendado)**:
+
 ```
 Doble click en HybridCapslock.ahk
 ```
+
 Inicia automáticamente Kanata + HybridCapsLock en un solo paso.
 
 > **⚠️ Importante:** Siempre ejecuta `HybridCapslock.ahk`, no `init.ahk` directamente. El auto-loader necesita ejecutarse primero para detectar archivos en `src/actions/` y `src/layer/`.
 
 **Inicio Manual (Avanzado)**:
+
 1. Ejecutar `start_kanata.vbs`
 2. Ejecutar `init.ahk`
 
-**Inicio automático en Windows (Opcional):** Crear un acceso directo de `init.ahk` en la carpeta de inicio de Windows (`shell:startup`).
+**Inicio automático en Windows (Opcional):** Crear un acceso directo de `Hybrid-CapsLock.ahk` en la carpeta de inicio de Windows (`shell:startup`).
 
 ### Recargar Configuración
 
