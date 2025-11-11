@@ -43,10 +43,27 @@ CleanIniValue(value) {
     return Trim(value)
 }
 
-; Function to read tooltip configuration from configuration.ini
+; Function to read tooltip configuration (UPDATED: HybridConfig support)
 ReadTooltipConfig() {
-    global ConfigIni
+    global HybridConfig, ConfigIni
     
+    ; Try HybridConfig first
+    if (IsSet(HybridConfig)) {
+        config := {}
+        config.enabled := HybridConfig.tooltips.enabled
+        config.handleInput := HybridConfig.tooltips.handles_input
+        config.optionsTimeout := HybridConfig.tooltips.timeouts.options_menu
+        config.statusTimeout := HybridConfig.tooltips.timeouts.status_notification
+        config.autoHide := HybridConfig.tooltips.features.auto_hide_on_action
+        config.persistent := HybridConfig.tooltips.features.persistent_menus
+        config.fadeAnimation := HybridConfig.tooltips.features.fade_animation
+        config.clickThrough := HybridConfig.tooltips.features.click_through
+        config.exePath := HybridConfig.tooltips.exe_path
+        config.menuLayout := HybridConfig.tooltips.layout.menu_layout
+        return config
+    }
+    
+    ; Fallback to INI
     config := {}
     
     ; Helper function to clean read values (remove comments)
@@ -1363,10 +1380,47 @@ StopTooltipApp() {
 ; API AVANZADA: TEMA, MERGE Y SERIALIZACIÓN JSON
 ; ===================================================================
 
-; Leer tema por defecto desde configuration.ini (opcional)
+; Leer tema por defecto desde configuration.ini (UPDATED: HybridConfig support)
 ReadTooltipThemeDefaults() {
-    global ConfigIni
-    global ConfigIni
+    global HybridConfig, ConfigIni
+    
+    ; Try HybridConfig theme first
+    if (IsSet(HybridConfig)) {
+        try {
+            theme := HybridConfig.getTheme()
+            defaults := Map()
+            defaults.window := Map()
+            defaults.window["layout"] := theme.window.layout
+            defaults.window["columns"] := theme.window.columns
+            defaults.window["topmost"] := theme.window.topmost
+            defaults.window["click_through"] := theme.window.click_through
+            defaults.window["opacity"] := theme.window.opacity
+            defaults.style := Map()
+            for key in ["background","text","border","accent_options","accent_navigation","navigation_text","success","error"] {
+                if (theme.colors.HasOwnProp(key))
+                    defaults.style[key] := theme.colors.%key%
+            }
+            for key in ["title_font_size","item_font_size","navigation_font_size"] {
+                if (theme.typography.HasOwnProp(key))
+                    defaults.style[key] := theme.typography.%key%
+            }
+            defaults.style["border_thickness"] := theme.spacing.border_thickness
+            defaults.style["corner_radius"] := theme.spacing.corner_radius
+            if (theme.spacing.HasOwnProp("padding"))
+                defaults.style.padding := [theme.spacing.padding.left, theme.spacing.padding.top, theme.spacing.padding.right, theme.spacing.padding.bottom]
+            defaults.position := Map()
+            defaults.position["anchor"] := theme.position.anchor
+            defaults.position["offset_x"] := theme.position.offset_x
+            defaults.position["offset_y"] := theme.position.offset_y
+            if (theme.navigation.HasOwnProp("back_label") && theme.navigation.HasOwnProp("exit_label"))
+                defaults["navigation_label"] := theme.navigation.back_label . " | " . theme.navigation.exit_label
+            return defaults
+        } catch {
+            ; Fall through to INI
+        }
+    }
+    
+    ; Fallback to INI
     defaults := Map()
     ; Layout/ventana
     defaults.window := Map()

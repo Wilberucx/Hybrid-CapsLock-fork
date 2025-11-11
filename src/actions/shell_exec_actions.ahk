@@ -107,9 +107,9 @@ ShellExecNow(command, param2 := "", param3 := "", param4 := "") {
         
         return true
         
-    } catch Error as err {
+    } catch Error as e {
         ; Show error tooltip if execution fails
-        ShowCenteredToolTip("Failed to execute: " . finalCommand . "`nError: " . err.message)
+        ShowCenteredToolTip("Failed to execute: " . finalCommand . "`nError: " . e.message)
         SetTimer(() => RemoveToolTip(), -3000)
         return false
     }
@@ -153,8 +153,8 @@ ShellExecCapture(command, workingDir := "") {
             FileDelete(tempFile)
             return output
         }
-    } catch Error as err {
-        ShowCenteredToolTip("Failed to capture output: " . err.message)
+    } catch Error as e {
+        ShowCenteredToolTip("Failed to capture output: " . e.message)
         SetTimer(() => RemoveToolTip(), -3000)
     }
     return ""
@@ -168,7 +168,7 @@ ShellExecWait(command, workingDir := "", timeout := 0) {
         } else {
             return RunWait(command, workingDir, "Hide")
         }
-    } catch Error as err {
+    } catch Error as e {
         ShowCenteredToolTip("Command execution failed or timed out")
         SetTimer(() => RemoveToolTip(), -2000)
         return -1

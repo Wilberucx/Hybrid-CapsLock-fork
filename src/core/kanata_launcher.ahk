@@ -35,7 +35,7 @@ StartKanataIfNeeded() {
         Run(startVBS)
         Sleep(KanataStartDelay)
         return true
-    } catch as err {
+    } catch as e {
         ; Error silencioso, continuar sin Kanata
         return false
     }

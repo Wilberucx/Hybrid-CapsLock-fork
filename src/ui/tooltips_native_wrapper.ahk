@@ -6,9 +6,23 @@
 
 ; Normalize navigation labels in native tooltips using INI [TooltipStyle]/navigation_label.
 NormalizeNavigationLabels(text) {
-    global ConfigIni
-    ; Try read custom label
+    global HybridConfig, ConfigIni
     navLbl := ""
+    
+    ; Try HybridConfig theme first
+    if (IsSet(HybridConfig)) {
+        try {
+            theme := HybridConfig.getTheme()
+            if (theme.navigation.HasOwnProp("back_label") && theme.navigation.HasOwnProp("exit_label")) {
+                text := StrReplace(text, "[\: Back]", "[" . theme.navigation.back_label . "]")
+                text := StrReplace(text, "[Esc: Exit]", "[" . theme.navigation.exit_label . "]")
+                text := StrReplace(text, "[ESC: Exit]", "[" . theme.navigation.exit_label . "]")
+                return text
+            }
+        }
+    }
+    
+    ; Fallback to INI
     try navLbl := IniRead(ConfigIni, "TooltipStyle", "navigation_label", "")
     if (navLbl != "" && navLbl != "ERROR") {
         parts := StrSplit(navLbl, "|")

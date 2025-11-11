@@ -468,8 +468,8 @@ ExecuteKeymap(category, key) {
     try {
         km["action"].Call()
         return true
-    } catch as err {
-        ShowCenteredToolTip("Error: " . km["desc"] . " - " . err.Message)
+    } catch as e {
+        ShowCenteredToolTip("Error: " . km["desc"] . " - " . e.Message)
         SetTimer(() => RemoveToolTip(), -2000)
         return true
     }

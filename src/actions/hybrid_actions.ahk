@@ -138,8 +138,16 @@ ViewLogFile() {
 
 ; ---- Show Version Info ----
 ShowVersionInfo() {
-    ver := IniRead(A_ScriptDir . "\\config\\configuration.ini", "General", "script_version", "")
-    verText := (ver != "" && ver != "ERROR") ? ("HybridCapsLock v" . ver) : "HybridCapsLock"
+    global HybridConfig
+    
+    ; Try HybridConfig first
+    if (IsSet(HybridConfig)) {
+        verText := HybridConfig.app.name . " v" . HybridConfig.app.version
+    } else {
+        ; Fallback to INI
+        ver := IniRead(A_ScriptDir . "\config\configuration.ini", "General", "script_version", "")
+        verText := (ver != "" && ver != "ERROR") ? ("HybridCapsLock v" . ver) : "HybridCapsLock"
+    }
     ShowCenteredToolTip(verText)
     SetTimer(() => RemoveToolTip(), -1500)
 }
@@ -178,11 +186,11 @@ ScanLayersManual() {
             ShowCenteredToolTip("LAYERS SCANNED`nRegistry updated")
             SetTimer(() => RemoveToolTip(), -1500)
         }
-    } catch as err {
+    } catch as e {
         if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-            try ShowCSharpStatusNotification("AUTO-LOADER", "Error: " . err.Message)
+            try ShowCSharpStatusNotification("AUTO-LOADER", "Error: " . e.Message)
         } else {
-            ShowCenteredToolTip("SCAN ERROR`n" . err.Message)
+            ShowCenteredToolTip("SCAN ERROR`n" . e.Message)
             SetTimer(() => RemoveToolTip(), -2000)
         }
     }

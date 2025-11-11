@@ -15,10 +15,8 @@
 ; --------------------
 ; Core
 ; --------------------
-#Include src\core\auto_loader.ahk
 #Include src\core\kanata_launcher.ahk
 #Include src\core\globals.ahk
-#Include src\core\config_loader.ahk
 #Include src\core\config.ahk
 #Include src\core\persistence.ahk
 ; #Include src\core\confirmations.ahk  ; REMOVED: Replaced with simple keymap boolean system
@@ -47,7 +45,8 @@
 ; ===== AUTO-LOADED ACTIONS END =====
 
 #Include config\keymap.ahk
-
+#Include config\settings.ahk
+#Include config\colorscheme.ahk
 ; --------------------
 ; UI
 ; --------------------
@@ -75,15 +74,6 @@ try {
     
     ; Registrar keymaps (Fase 2 - Sistema Declarativo)
     ; ELIMINADO: ahora se maneja desde InitializeCategoryKeymaps()
-    
-    ; Load modern configuration (AHK with INI fallback)
-    try {
-        global configData := ConfigLoader.Load()
-        global HybridConfig := configData.config
-        OutputDebug("[INIT] Config loaded from: " . configData.source . "`n")
-    } catch as err {
-        OutputDebug("[INIT] Config load failed: " . err.Message . "`n")
-    }
     
     ; Luego cargar configuración de AHK
     LoadLayerFlags()

@@ -36,7 +36,7 @@ ToggleHiddenFiles() {
         statusText := (newValue = 1) ? "HIDDEN FILES SHOWN" : "HIDDEN FILES HIDDEN"
         ShowCenteredToolTip(statusText)
         SetTimer(() => RemoveToolTip(), -2000)
-    } catch Error as err {
+    } catch Error as e {
         ShowCenteredToolTip("Error toggling hidden files")
         SetTimer(() => RemoveToolTip(), -2000)
     }
