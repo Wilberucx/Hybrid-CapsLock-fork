@@ -39,11 +39,11 @@ class ConfigLoader {
         }
         
         ; Get theme using the helper function from HybridConfig
-        currentTheme := HybridConfig.getTheme()
+        themeData := HybridConfig.getTheme()
         
         return {
             config: HybridConfig,
-            theme: currentTheme,
+            theme: themeData,
             source: "ahk"
         }
     }

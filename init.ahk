@@ -46,6 +46,8 @@
 #Include src\actions\vim_visual.ahk
 ; ===== AUTO-LOADED ACTIONS END =====
 
+#Include config\colorscheme.ahk
+#Include config\settings.ahk
 #Include config\keymap.ahk
 
 ; --------------------
@@ -76,13 +78,12 @@ try {
     ; Registrar keymaps (Fase 2 - Sistema Declarativo)
     ; ELIMINADO: ahora se maneja desde InitializeCategoryKeymaps()
     
-    ; Load modern configuration (AHK with INI fallback)
-    try {
-        global configData := ConfigLoader.Load()
-        global HybridConfig := configData.config
-        OutputDebug("[INIT] Config loaded from: " . configData.source . "`n")
-    } catch as err {
-        OutputDebug("[INIT] Config load failed: " . err.Message . "`n")
+    ; Configuration loaded via #Include directives above
+    ; HybridConfig is now global from settings.ahk
+    if (IsSet(HybridConfig)) {
+        OutputDebug("[INIT] Config loaded from: ahk`n")
+    } else {
+        OutputDebug("[INIT] Config not loaded, will use INI fallback`n")
     }
     
     ; Luego cargar configuración de AHK

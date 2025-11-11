@@ -1389,34 +1389,49 @@ ReadTooltipThemeDefaults() {
         try {
             theme := HybridConfig.getTheme()
             defaults := Map()
+            
+            ; Window properties
             defaults.window := Map()
             defaults.window["layout"] := theme.window.layout
-            defaults.window["columns"] := theme.window.columns
+            defaults.window["columns"] := theme.window.columns  
             defaults.window["topmost"] := theme.window.topmost
             defaults.window["click_through"] := theme.window.click_through
             defaults.window["opacity"] := theme.window.opacity
+            
+            ; Style - colors
             defaults.style := Map()
-            for key in ["background","text","border","accent_options","accent_navigation","navigation_text","success","error"] {
-                if (theme.colors.HasOwnProp(key))
-                    defaults.style[key] := theme.colors.%key%
-            }
-            for key in ["title_font_size","item_font_size","navigation_font_size"] {
-                if (theme.typography.HasOwnProp(key))
-                    defaults.style[key] := theme.typography.%key%
-            }
+            defaults.style["background"] := theme.colors.background
+            defaults.style["text"] := theme.colors.text
+            defaults.style["border"] := theme.colors.border
+            defaults.style["accent_options"] := theme.colors.accent_options
+            defaults.style["accent_navigation"] := theme.colors.accent_navigation
+            defaults.style["navigation_text"] := theme.colors.navigation_text
+            defaults.style["success"] := theme.colors.success
+            defaults.style["error"] := theme.colors.error
+            
+            ; Style - typography
+            defaults.style["title_font_size"] := theme.typography.title_font_size
+            defaults.style["item_font_size"] := theme.typography.item_font_size
+            defaults.style["navigation_font_size"] := theme.typography.navigation_font_size
+            
+            ; Style - spacing
             defaults.style["border_thickness"] := theme.spacing.border_thickness
             defaults.style["corner_radius"] := theme.spacing.corner_radius
-            if (theme.spacing.HasOwnProp("padding"))
-                defaults.style.padding := [theme.spacing.padding.left, theme.spacing.padding.top, theme.spacing.padding.right, theme.spacing.padding.bottom]
+            defaults.style.padding := [theme.spacing.padding.left, theme.spacing.padding.top, theme.spacing.padding.right, theme.spacing.padding.bottom]
+            
+            ; Position
             defaults.position := Map()
             defaults.position["anchor"] := theme.position.anchor
             defaults.position["offset_x"] := theme.position.offset_x
             defaults.position["offset_y"] := theme.position.offset_y
-            if (theme.navigation.HasOwnProp("back_label") && theme.navigation.HasOwnProp("exit_label"))
-                defaults["navigation_label"] := theme.navigation.back_label . " | " . theme.navigation.exit_label
+            
+            ; Navigation labels
+            defaults["navigation_label"] := theme.navigation.back_label . " | " . theme.navigation.exit_label
+            
             return defaults
-        } catch {
+        } catch as e {
             ; Fall through to INI
+            OutputDebug("[Tooltip] Failed to read theme from HybridConfig: " . e.Message . "`n")
         }
     }
     
