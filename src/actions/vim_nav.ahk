@@ -1,16 +1,16 @@
 ; ==============================
-; Vim Navigation Actions - Funciones Reutilizables
+; Vim Navigation Actions - Reusable Functions
 ; ==============================
-; Navegación estilo Vim que puede ser usada en múltiples capas:
-; - nvim_layer.ahk (navegación de texto)
-; - excel_layer.ahk (navegación de celdas)
-; - Cualquier futura capa que necesite navegación hjkl
+; Vim-style navigation that can be used in multiple layers:
+; - nvim_layer.ahk (text navigation)
+; - excel_layer.ahk (cell navigation)
+; - Any future layer that needs hjkl navigation
 ;
-; Estas funciones son GENÉRICAS y NO dependen de contexto específico.
-; Cada capa decide CUÁNDO llamarlas (context-aware en el layer).
+; These functions are GENERIC and do NOT depend on specific context.
+; Each layer decides WHEN to call them (context-aware in the layer).
 
 ; ==============================
-; NAVEGACIÓN BÁSICA (hjkl)
+; BASIC NAVIGATION (hjkl)
 ; ==============================
 
 ; Move Left (h)
@@ -34,7 +34,7 @@ VimMoveRight() {
 }
 
 ; ==============================
-; NAVEGACIÓN POR PALABRAS (w/b/e)
+; WORD NAVIGATION (w/b/e)
 ; ==============================
 
 ; Word Forward (w)
@@ -54,7 +54,7 @@ VimEndOfWord() {
 }
 
 ; ==============================
-; NAVEGACIÓN DE LÍNEA (0/$)
+; LINE NAVIGATION (0/$)
 ; ==============================
 
 ; Start of Line (0 o ^)
@@ -68,7 +68,7 @@ VimEndOfLine() {
 }
 
 ; ==============================
-; NAVEGACIÓN DE DOCUMENTO (gg/G)
+; DOCUMENT NAVIGATION (gg/G)
 ; ==============================
 
 ; Top of File (gg)
@@ -82,7 +82,7 @@ VimBottomOfFile() {
 }
 
 ; ==============================
-; NAVEGACIÓN DE PÁGINA (Ctrl+d/Ctrl+u)
+; PAGE NAVIGATION (Ctrl+d/Ctrl+u)
 ; ==============================
 
 ; Page Down (Ctrl+d)
@@ -110,12 +110,12 @@ VimHalfPageUp() {
 }
 
 ; ==============================
-; NAVEGACIÓN DE PANTALLA (H/M/L)
+; SCREEN NAVIGATION (H/M/L)
 ; ==============================
 
 ; High (H) - Top of visible screen
 VimScreenTop() {
-    ; Aproximación: PgUp luego Home
+    ; Approximation: PgUp then Home
     Send("{PgUp}")
     Send("{Home}")
 }
@@ -134,7 +134,7 @@ VimScreenBottom() {
 }
 
 ; ==============================
-; BÚSQUEDA Y NAVEGACIÓN (f/t/;/,)
+; SEARCH AND NAVIGATION (f/t/;/,)
 ; ==============================
 
 ; Find character forward (f{char})

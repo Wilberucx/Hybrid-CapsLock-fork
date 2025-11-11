@@ -1,10 +1,10 @@
 # Layers No-Include Folder
 
-Esta carpeta contiene archivos `.ahk` de capas que **NO** serán incluidos automáticamente por el sistema de auto-carga.
+This folder contains layer `.ahk` files that will **NOT** be automatically included by the auto-loader system.
 
-## 🎯 Propósito
+## 🎯 Purpose
 
-Usa esta carpeta para:
+Use this folder for:
 
 1. **Capas en desarrollo**: Layers que aún no están completas o testeadas
 2. **Desactivar capas temporalmente**: Deshabilitar layers sin eliminar el código

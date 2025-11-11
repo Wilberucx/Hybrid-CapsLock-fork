@@ -1,21 +1,21 @@
 ; ==============================
-; NVIM Layer Helpers - Funciones Específicas
+; NVIM Layer Helpers - Specific Functions
 ; ==============================
-; Funciones que son específicas de nvim_layer.ahk y NO son reutilizables
-; en otras capas. Estas funciones dependen del estado de nvim_layer.
+; Functions that are specific to nvim_layer.ahk and NOT reusable
+; in other layers. These functions depend on nvim_layer state.
 ;
-; USADO EXCLUSIVAMENTE EN: nvim_layer.ahk
+; USED EXCLUSIVELY IN: nvim_layer.ahk
 ;
-; REQUIERE:
+; REQUIRES:
 ; - Global: isNvimLayerActive, VisualMode, _tempEditMode
-; - vim_nav.ahk, vim_edit.ahk (para operaciones básicas)
+; - vim_nav.ahk, vim_edit.ahk (for basic operations)
 
 ; ==============================
-; NAVEGACIÓN DIRECCIONAL CON VISUAL MODE
+; DIRECTIONAL NAVIGATION WITH VISUAL MODE
 ; ==============================
 
 ; Directional send that respects VisualMode and modifiers
-; Si VisualMode está activo, añade Shift para extender selección
+; If VisualMode is active, adds Shift to extend selection
 NvimDirectionalSend(dir) {
     global VisualMode
     mods := ""
@@ -25,7 +25,7 @@ NvimDirectionalSend(dir) {
         mods .= "!"
     if GetKeyState("Shift", "P")
         mods .= "+"
-    ; En VisualMode, asegurar que Shift esté presente para extender selección
+    ; In VisualMode, ensure Shift is present to extend selection
     if (VisualMode && !InStr(mods, "+"))
         mods .= "+"
     Send(mods . "{" . dir . "}")

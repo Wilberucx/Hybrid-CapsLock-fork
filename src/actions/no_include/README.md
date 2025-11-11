@@ -1,10 +1,10 @@
 # Actions No-Include Folder
 
-Esta carpeta contiene archivos `.ahk` que **NO** serán incluidos automáticamente por el sistema de auto-carga.
+This folder contains `.ahk` files that will **NOT** be automatically included by the auto-loader system.
 
-## 🎯 Propósito
+## 🎯 Purpose
 
-Usa esta carpeta para:
+Use this folder for:
 
 1. **Archivos incompletos o en desarrollo**: Actions que aún no están listas para usar
 2. **Desactivar actions temporalmente**: Mover archivos aquí para deshabilitarlos sin eliminarlos

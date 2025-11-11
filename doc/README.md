@@ -14,11 +14,16 @@ Bienvenido al centro de documentación de HybridCapsLock. Aquí encontrarás tod
 
 ---
 
-## 🚀 Primeros Pasos
+## 🚀 Getting Started
 
-> **🚨 IMPORTANTE:** Si ya usabas HybridCapsLock, lee **[CAMBIOS DE STARTUP](STARTUP_CHANGES.md)** - Nuevo punto de entrada.
+> **🚨 IMPORTANT:** If you were already using HybridCapsLock, read **[STARTUP CHANGES](STARTUP_CHANGES.md)** - New entry point.
 
-- **[Guía de Inicio Rápido](GETTING_STARTED.md)**: ¿Nuevo aquí? Empieza con los atajos esenciales y una guía de configuración de 2 minutos.
+### Quick Navigation
+- **[👤 User Documentation](user/README.md)** - Guides for end users
+- **[🛠️ Developer Documentation](developer/README.md)** - Technical documentation
+
+### Essential Guides
+- **[Quick Setup Guide](GETTING_STARTED.md)** - New here? Start with essential shortcuts and 2-minute setup guide
 
 ## 🎯 Guías de Funcionalidades (Capas)
 

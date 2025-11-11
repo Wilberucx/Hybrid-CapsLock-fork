@@ -1,131 +1,116 @@
 ; ==============================
-; Timestamp Actions - Funciones reutilizables
+; Timestamp Actions - Reusable Functions
 ; ==============================
-; Extracted from timestamps_layer.ahk para seguir arquitectura declarativa
-; Cada función inserta un timestamp con formato específico
+; Extracted from timestamps_layer.ahk to follow declarative architecture
+; Each function inserts a timestamp with specific format
 
 ; ==============================
-; FUNCIONES DE DATE FORMATS
+; CORE TIMESTAMP FUNCTION (DRY Principle)
+; ==============================
+
+/**
+ * InsertTimestamp - Generic timestamp inserter
+ * @param format - AutoHotkey time format string
+ * @param description - Optional description for tooltip
+ */
+InsertTimestamp(format, description := "") {
+    timestamp := FormatTime(, format)
+    SendText(timestamp)
+    tooltipMsg := description ? description . ": " . timestamp : "TIMESTAMP: " . timestamp
+    ShowCenteredToolTip(tooltipMsg)
+    SetTimer(() => RemoveToolTip(), -2000)
+}
+
+; ==============================
+; DATE FORMATS
 ; ==============================
 
 InsertDateFormat1() {
-    SendText(FormatTime(, "yyyy-MM-dd"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "yyyy-MM-dd"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("yyyy-MM-dd", "ISO Date")
 }
 
 InsertDateFormat2() {
-    SendText(FormatTime(, "dd/MM/yyyy"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "dd/MM/yyyy"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("dd/MM/yyyy", "EU Date")
 }
 
 InsertDateFormat3() {
-    SendText(FormatTime(, "MM/dd/yyyy"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "MM/dd/yyyy"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("MM/dd/yyyy", "US Date")
 }
 
 InsertDateFormat4() {
-    SendText(FormatTime(, "dd-MMM-yyyy"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "dd-MMM-yyyy"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("dd-MMM-yyyy", "Month Name")
 }
 
 InsertDateFormat5() {
-    SendText(FormatTime(, "ddd, dd MMM yyyy"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "ddd, dd MMM yyyy"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("ddd, dd MMM yyyy", "Full Date")
 }
 
 InsertDateFormat6() {
-    SendText(FormatTime(, "yyyyMMdd"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "yyyyMMdd"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("yyyyMMdd", "Compact Date")
 }
 
 InsertDateDefault() {
-    InsertDateFormat6()  ; Default es formato 6
+    InsertDateFormat6()  ; Default is format 6
 }
 
 ; ==============================
-; FUNCIONES DE TIME FORMATS
+; TIME FORMATS
 ; ==============================
 
 InsertTimeFormat1() {
-    SendText(FormatTime(, "HH:mm:ss"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "HH:mm:ss"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("HH:mm:ss", "24H Time")
 }
 
 InsertTimeFormat2() {
-    SendText(FormatTime(, "HH:mm"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "HH:mm"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("HH:mm", "24H Short")
 }
 
 InsertTimeFormat3() {
-    SendText(FormatTime(, "hh:mm tt"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "hh:mm tt"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("hh:mm tt", "12H Time")
 }
 
 InsertTimeFormat4() {
-    SendText(FormatTime(, "HHmmss"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "HHmmss"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("HHmmss", "Compact Time")
 }
 
 InsertTimeFormat5() {
-    SendText(FormatTime(, "HH.mm.ss"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "HH.mm.ss"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("HH.mm.ss", "Dotted Time")
 }
 
 InsertTimeDefault() {
-    InsertTimeFormat4()  ; Default es formato 4
+    InsertTimeFormat4()  ; Default is format 4
 }
 
 ; ==============================
-; FUNCIONES DE DATETIME FORMATS
+; DATETIME FORMATS
 ; ==============================
 
 InsertDateTimeFormat1() {
-    SendText(FormatTime(, "yyyy-MM-dd HH:mm:ss"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "yyyy-MM-dd HH:mm:ss"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("yyyy-MM-dd HH:mm:ss", "ISO DateTime")
 }
 
 InsertDateTimeFormat2() {
-    SendText(FormatTime(, "dd/MM/yyyy HH:mm"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "dd/MM/yyyy HH:mm"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("dd/MM/yyyy HH:mm", "EU DateTime")
 }
 
 InsertDateTimeFormat3() {
-    SendText(FormatTime(, "yyyy-MM-dd HH:mm:ss"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "yyyy-MM-dd HH:mm:ss"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("yyyy-MM-dd HH:mm:ss", "ISO DateTime")  ; Same as Format1
 }
 
 InsertDateTimeFormat4() {
-    SendText(FormatTime(, "yyyyMMddHHmmss"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "yyyyMMddHHmmss"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("yyyyMMddHHmmss", "Compact DateTime")
 }
 
 InsertDateTimeFormat5() {
-    SendText(FormatTime(, "ddd, dd MMM yyyy HH:mm"))
-    ShowCenteredToolTip("TIMESTAMP: " . FormatTime(, "ddd, dd MMM yyyy HH:mm"))
-    SetTimer(() => RemoveToolTip(), -2000)
+    InsertTimestamp("ddd, dd MMM yyyy HH:mm", "Full DateTime")
 }
 
 InsertDateTimeDefault() {
-    InsertDateTimeFormat4()  ; Default es formato 4
+    InsertDateTimeFormat4()  ; Default is format 4
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (Sistema Declarativo)
+; KEYMAP REGISTRATION (Declarative System)
 ; ==============================
 
     ; Date formats (leader → t → d → KEY)
