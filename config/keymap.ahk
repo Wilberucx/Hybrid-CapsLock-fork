@@ -133,7 +133,6 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "c", "v", "l", "List", VaultFlowList, false, 3)
     RegisterKeymap("leader", "c", "v", "h", "Help", VaultFlowHelp, false, 4)
     ; Information (leader → i → KEY)
-    ; Usando SendInfo() - Todo en una línea sin crear funciones individuales
     RegisterKeymap("leader", "i", "e", "Email", SendInfo("tu.email@example.com", "EMAIL INSERTED"), false, 1)
     RegisterKeymap("leader", "i", "p", "Phone", SendInfo("+1-555-123-4567", "PHONE INSERTED"), false, 2)
     RegisterKeymap("leader", "i", "n", "Name", SendInfo("Tu Nombre Completo", "NAME INSERTED"), false, 3)

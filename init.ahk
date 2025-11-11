@@ -1,5 +1,13 @@
 ; ===================================================================
-; HybridCapsLock Orchestrator (Modular)
+; HybridCapsLock - Main Application
+; ===================================================================
+; NOTE: This file is auto-updated by HybridCapslock.ahk
+; Execute HybridCapslock.ahk instead of this file directly!
+; 
+; The auto-loader sections are managed automatically:
+; - Files in src/actions/ and src/layer/ are auto-included
+; - Files in no_include/ folders are ignored
+; - Manual #Includes outside AUTO-LOADED sections are preserved
 ; ===================================================================
 #Requires AutoHotkey v2.0
 #SingleInstance Force
@@ -7,6 +15,7 @@
 ; --------------------
 ; Core
 ; --------------------
+#Include src\core\auto_loader.ahk
 #Include src\core\kanata_launcher.ahk
 #Include src\core\globals.ahk
 #Include src\core\config.ahk
@@ -14,33 +23,26 @@
 #Include src\core\confirmations.ahk
 #Include src\core\keymap_registry.ahk
 #Include src\core\mappings.ahk
-#Include src\core\auto_loader.ahk
 
-; --------------------
-; Actions (funciones reutilizables - sistema declarativo)
-; --------------------
-; Core actions (reutilizables en múltiples capas)
-#Include src\actions\vim_nav.ahk
-#Include src\actions\vim_visual.ahk
-#Include src\actions\vim_edit.ahk
-
-; Actions específicas por dominio
-#Include src\actions\hybrid_actions.ahk
-#Include src\actions\system_actions.ahk
-#Include src\actions\network_actions.ahk
-#Include src\actions\git_actions.ahk
-#Include src\actions\monitoring_actions.ahk
-#Include src\actions\folder_actions.ahk
-#Include src\actions\power_actions.ahk
-#Include src\actions\adb_actions.ahk
-#Include src\actions\vaultflow_actions.ahk
-#Include src\actions\timestamp_actions.ahk
-#Include src\actions\text_insert_actions.ahk
-#Include src\actions\shell_exec_actions.ahk
 
 
 ; ===== AUTO-LOADED ACTIONS START =====
+#Include src\actions\adb_actions.ahk
+#Include src\actions\folder_actions.ahk
+#Include src\actions\git_actions.ahk
+#Include src\actions\hybrid_actions.ahk
+#Include src\actions\monitoring_actions.ahk
+#Include src\actions\network_actions.ahk
 #Include src\actions\nvim_layer_helpers.ahk
+#Include src\actions\power_actions.ahk
+#Include src\actions\sendinfo_actions.ahk
+#Include src\actions\shell_exec_actions.ahk
+#Include src\actions\system_actions.ahk
+#Include src\actions\timestamp_actions.ahk
+#Include src\actions\vaultflow_actions.ahk
+#Include src\actions\vim_edit.ahk
+#Include src\actions\vim_nav.ahk
+#Include src\actions\vim_visual.ahk
 ; ===== AUTO-LOADED ACTIONS END =====
 
 #Include config\keymap.ahk
@@ -52,18 +54,12 @@
 #Include src\\ui\\tooltips_native_wrapper.ahk
 #Include src\\ui\\scroll_tooltip_integration.ahk
 
-; --------------------
-; Layers & Leader
-; --------------------
-#Include src\layer\leader_router.ahk
-#Include src\layer\timestamps_layer.ahk
-#Include src\layer\information_layer.ahk
+; ===== AUTO-LOADED LAYERS START =====
 #Include src\layer\excel_layer.ahk
+#Include src\layer\insert_layer.ahk
+#Include src\layer\leader_router.ahk
 #Include src\layer\nvim_layer.ahk
 #Include src\layer\scroll_layer.ahk
-
-; ===== AUTO-LOADED LAYERS START =====
-#Include src\layer\insert_layer.ahk
 #Include src\layer\visual_layer.ahk
 ; ===== AUTO-LOADED LAYERS END =====
 
@@ -71,8 +67,7 @@
 ; Startup logic
 ; --------------------
 try {
-    ; Run auto-loader to detect new files (before anything else)
-    AutoLoaderInit()
+    ; Auto-loader already executed by HybridCapslock.ahk preprocessor
     
     ; Iniciar Kanata primero (si existe)
     StartKanataIfNeeded()

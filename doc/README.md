@@ -16,6 +16,8 @@ Bienvenido al centro de documentación de HybridCapsLock. Aquí encontrarás tod
 
 ## 🚀 Primeros Pasos
 
+> **🚨 IMPORTANTE:** Si ya usabas HybridCapsLock, lee **[CAMBIOS DE STARTUP](STARTUP_CHANGES.md)** - Nuevo punto de entrada.
+
 - **[Guía de Inicio Rápido](GETTING_STARTED.md)**: ¿Nuevo aquí? Empieza con los atajos esenciales y una guía de configuración de 2 minutos.
 
 ## 🎯 Guías de Funcionalidades (Capas)
@@ -51,9 +53,9 @@ Cada capa tiene un propósito específico. Aprende a usarlas y configurarlas en 
   - **[example_browser_layer.ahk](templates/example_browser_layer.ahk)**: Ejemplo funcional de una capa para navegadores web.
   - **[📖 Documentación Completa](develop/PERSISTENT_LAYER_TEMPLATE.md)**: Guía detallada para crear capas personalizadas.
 
-- **[🔄 Auto-Loader System](develop/AUTO_LOADER_SYSTEM.md)**: Sistema de detección automática de actions y layers.
+- **[🔄 Auto-Loader System](AUTO_LOADER_USAGE.md)**: Sistema de detección automática de actions y layers.
   - Escaneo automático de `src/actions/` y `src/layer/` en cada inicio
-  - Auto-include en `init.ahk` de nuevos archivos
+  - Auto-include en `init.ahk` de nuevos archivos (ejecutado automáticamente por `HybridCapslock.ahk`)
   - Carpetas `no_include/` para archivos en desarrollo o desactivados temporalmente
   - Memoria JSON para rastrear cambios
 

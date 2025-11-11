@@ -78,9 +78,11 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 
 **Inicio Automático (Recomendado)**:
 ```
-Doble click en init.ahk
+Doble click en HybridCapslock.ahk
 ```
 Inicia automáticamente Kanata + HybridCapsLock en un solo paso.
+
+> **⚠️ Importante:** Siempre ejecuta `HybridCapslock.ahk`, no `init.ahk` directamente. El auto-loader necesita ejecutarse primero para detectar archivos en `src/actions/` y `src/layer/`.
 
 **Inicio Manual (Avanzado)**:
 1. Ejecutar `start_kanata.vbs`

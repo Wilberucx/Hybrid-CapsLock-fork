@@ -97,11 +97,13 @@ AutoLoaderInit() {
         
         OutputDebug("[AutoLoader] Changes applied successfully")
         
-        ; Show notification
+        ; Show notification (if tooltip functions are available)
         try {
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            if (IsSet(tooltipConfig) && tooltipConfig.enabled && IsSet(ShowCSharpStatusNotification)) {
                 ShowCSharpStatusNotification("AUTO-LOADER", "Files updated - Reload required")
             }
+        } catch {
+            ; Ignore if tooltip functions not available yet
         }
     } else {
         OutputDebug("[AutoLoader] No changes detected")
@@ -128,8 +130,8 @@ LoadAutoLoaderMemory() {
         memory := Jxon_Load(&content)
         OutputDebug("[AutoLoader] Memory loaded: " . memory["actions"].Length . " actions, " . memory["layers"].Length . " layers")
         return memory
-    } catch as err {
-        OutputDebug("[AutoLoader] Error loading memory: " . err.Message)
+    } catch as loadErr {
+        OutputDebug("[AutoLoader] Error loading memory: " . loadErr.Message)
         return Map("actions", [], "layers", [], "version", "1.0")
     }
 }
@@ -155,8 +157,8 @@ SaveAutoLoaderMemory(actions, layers) {
         FileDelete(AUTO_LOADER_MEMORY_FILE)
         FileAppend(jsonContent, AUTO_LOADER_MEMORY_FILE)
         OutputDebug("[AutoLoader] Memory saved successfully")
-    } catch as err {
-        OutputDebug("[AutoLoader] Error saving memory: " . err.Message)
+    } catch as saveErr {
+        OutputDebug("[AutoLoader] Error saving memory: " . saveErr.Message)
     }
 }
 
@@ -431,8 +433,8 @@ ApplyChanges(changes, currentActions, currentLayers) {
         FileDelete(AUTO_LOADER_INIT_FILE)
         FileAppend(content, AUTO_LOADER_INIT_FILE)
         OutputDebug("[AutoLoader] init.ahk updated successfully")
-    } catch as err {
-        OutputDebug("[AutoLoader] ERROR updating init.ahk: " . err.Message)
+    } catch as updateErr {
+        OutputDebug("[AutoLoader] ERROR updating init.ahk: " . updateErr.Message)
     }
 }
 
@@ -649,8 +651,8 @@ GenerateLayerRegistry(allLayers) {
         FileDelete(AUTO_LOADER_LAYER_REGISTRY_FILE)
         FileAppend(registryContent, AUTO_LOADER_LAYER_REGISTRY_FILE)
         OutputDebug("[LayerRegistry] Registry generated successfully at: " . AUTO_LOADER_LAYER_REGISTRY_FILE)
-    } catch as err {
-        OutputDebug("[LayerRegistry] ERROR generating registry: " . err.Message)
+    } catch as registryErr {
+        OutputDebug("[LayerRegistry] ERROR generating registry: " . registryErr.Message)
     }
 }
 
@@ -715,8 +717,8 @@ LoadLayerRegistry() {
         
         OutputDebug("[LayerSwitcher] Registry loaded: " . LayerRegistry.Count . " layers")
         return true
-    } catch as err {
-        OutputDebug("[LayerSwitcher] ERROR loading registry: " . err.Message)
+    } catch as regLoadErr {
+        OutputDebug("[LayerSwitcher] ERROR loading registry: " . regLoadErr.Message)
         return false
     }
 }
@@ -794,8 +796,8 @@ ActivateLayer(layerName) {
             %hookFunction%()
             OutputDebug("[LayerSwitcher] Called activation hook: " . hookFunction)
         }
-    } catch as err {
-        OutputDebug("[LayerSwitcher] Activation hook not found or failed: " . hookFunction . " - " . err.Message)
+    } catch as hookErr {
+        OutputDebug("[LayerSwitcher] Activation hook not found or failed: " . hookFunction . " - " . hookErr.Message)
     }
     
     ; Set layer state variable
@@ -818,8 +820,8 @@ DeactivateLayer(layerName) {
             %hookFunction%()
             OutputDebug("[LayerSwitcher] Called deactivation hook: " . hookFunction)
         }
-    } catch as err {
-        OutputDebug("[LayerSwitcher] Deactivation hook not found or failed: " . hookFunction . " - " . err.Message)
+    } catch as deactivationErr {
+        OutputDebug("[LayerSwitcher] Deactivation hook not found or failed: " . hookFunction . " - " . deactivationErr.Message)
     }
     
     ; Unset layer state variable
@@ -843,8 +845,8 @@ DeactivateOriginLayer(layerName) {
                 global isNvimLayerActive
                 isNvimLayerActive := false
                 OutputDebug("[LayerSwitcher] Temporarily deactivated nvim layer")
-            } catch as err {
-                OutputDebug("[LayerSwitcher] Error deactivating nvim layer: " . err.Message)
+            } catch as deactivateErr {
+                OutputDebug("[LayerSwitcher] Error deactivating nvim layer: " . deactivateErr.Message)
             }
         
         case "excel":
@@ -853,8 +855,8 @@ DeactivateOriginLayer(layerName) {
                 global excelLayerActive
                 excelLayerActive := false
                 OutputDebug("[LayerSwitcher] Temporarily deactivated excel layer")
-            } catch as err {
-                OutputDebug("[LayerSwitcher] Error deactivating excel layer: " . err.Message)
+            } catch as excelDeactivateErr {
+                OutputDebug("[LayerSwitcher] Error deactivating excel layer: " . excelDeactivateErr.Message)
             }
         
         default:
@@ -880,8 +882,8 @@ ReactivateOriginLayer(layerName) {
                 global isNvimLayerActive
                 isNvimLayerActive := true
                 OutputDebug("[LayerSwitcher] Reactivated nvim layer")
-            } catch as err {
-                OutputDebug("[LayerSwitcher] Error reactivating nvim layer: " . err.Message)
+            } catch as reactivateErr {
+                OutputDebug("[LayerSwitcher] Error reactivating nvim layer: " . reactivateErr.Message)
             }
         
         case "excel":
@@ -890,8 +892,8 @@ ReactivateOriginLayer(layerName) {
                 global excelLayerActive
                 excelLayerActive := true
                 OutputDebug("[LayerSwitcher] Reactivated excel layer")
-            } catch as err {
-                OutputDebug("[LayerSwitcher] Error reactivating excel layer: " . err.Message)
+            } catch as excelReactivateErr {
+                OutputDebug("[LayerSwitcher] Error reactivating excel layer: " . excelReactivateErr.Message)
             }
         
         default:
