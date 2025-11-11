@@ -82,6 +82,13 @@ try {
     ; HybridConfig is now global from settings.ahk
     if (IsSet(HybridConfig)) {
         OutputDebug("[INIT] Config loaded from: ahk`n")
+        
+        ; Initialize debug_mode from HybridConfig
+        global debug_mode
+        debug_mode := HybridConfig.app.debug_mode
+        if (debug_mode) {
+            InfoLog("Debug mode ENABLED - verbose logging active", "INIT")
+        }
     } else {
         OutputDebug("[INIT] Config not loaded, will use INI fallback`n")
     }

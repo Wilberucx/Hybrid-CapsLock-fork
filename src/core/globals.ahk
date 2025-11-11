@@ -43,8 +43,30 @@ global leaderLayerEnabled := true
 ; Static mapping toggles for dynamic override
 global nvimStaticEnabled := true
 
-; Debug flag (loaded from configuration.ini [General].debug_mode)
+; ===============================
+; DEBUG SYSTEM
+; ===============================
+; Debug flag - controls development logging
+; Updated from HybridConfig.app.debug_mode after config loads
 global debug_mode := false
+
+; Debug logging function - only logs if debug_mode is enabled
+DebugLog(message, category := "DEBUG") {
+    global debug_mode
+    if (debug_mode) {
+        OutputDebug("[" . category . "] " . message . "`n")
+    }
+}
+
+; Always log (regardless of debug_mode) - for critical messages
+InfoLog(message, category := "INFO") {
+    OutputDebug("[" . category . "] " . message . "`n")
+}
+
+; Error logging (always shown)
+ErrorLog(message, category := "ERROR") {
+    OutputDebug("[" . category . "] " . message . "`n")
+}
 
 ; Persistence master flag (can be overwritten by LoadLayerFlags)
 global enableLayerPersistence := true

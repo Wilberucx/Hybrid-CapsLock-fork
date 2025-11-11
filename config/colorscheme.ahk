@@ -5,7 +5,7 @@
 ; Supports multiple themes with runtime switching
 
 ; Current Active Theme
-global CurrentTheme := "light"
+global CurrentTheme := "tokyo_night"
 
 ; ===============================
 ; TOKYO NIGHT THEME (DEFAULT)
