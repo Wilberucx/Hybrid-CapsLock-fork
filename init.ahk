@@ -20,7 +20,7 @@
 #Include src\core\globals.ahk
 #Include src\core\config.ahk
 #Include src\core\persistence.ahk
-#Include src\core\confirmations.ahk
+; #Include src\core\confirmations.ahk  ; REMOVED: Replaced with simple keymap boolean system
 #Include src\core\keymap_registry.ahk
 #Include src\core\mappings.ahk
 

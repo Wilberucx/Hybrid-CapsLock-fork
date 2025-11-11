@@ -442,7 +442,26 @@ ExecuteKeymap(category, key) {
         return false
     
     if (km["confirm"]) {
-        if (!ConfirmYN("Execute: " . km["desc"] . "?"))
+        ; Simple Y/N confirmation (replacing complex confirmations.ahk system)
+        ShowCenteredToolTip("Execute: " . km["desc"] . "?`n[y: Yes] [n/Esc: No]")
+        ih := InputHook("L1 T3")  ; 3 second timeout
+        ih.KeyOpt("{Escape}", "+")
+        ih.Start()
+        ih.Wait()
+        confirmed := false
+        if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
+            confirmed := false
+        } else if (ih.EndReason = "Timeout") {
+            confirmed := false
+        } else {
+            key := ih.Input
+            if (key = "y" || key = "Y")
+                confirmed := true
+        }
+        ih.Stop()
+        SetTimer(() => RemoveToolTip(), -200)
+        
+        if (!confirmed)
             return true
     }
     
@@ -473,8 +492,26 @@ ExecuteKeymapAtPath(path, key) {
     
     ; Es acción, ejecutar
     if (data["confirm"]) {
-        response := MsgBox("¿Ejecutar: " . data["desc"] . "?", "Confirmación", "YesNo")
-        if (response = "No")
+        ; Simple Y/N confirmation
+        ShowCenteredToolTip("Execute: " . data["desc"] . "?`n[y: Yes] [n/Esc: No]")
+        ih := InputHook("L1 T3")  ; 3 second timeout
+        ih.KeyOpt("{Escape}", "+")
+        ih.Start()
+        ih.Wait()
+        confirmed := false
+        if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
+            confirmed := false
+        } else if (ih.EndReason = "Timeout") {
+            confirmed := false
+        } else {
+            key := ih.Input
+            if (key = "y" || key = "Y")
+                confirmed := true
+        }
+        ih.Stop()
+        SetTimer(() => RemoveToolTip(), -200)
+        
+        if (!confirmed)
             return false
     }
     

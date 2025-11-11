@@ -15,7 +15,7 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("o", "Power Options", 7)
     RegisterCategoryKeymap("i", "Information", 8)
     ; ==============================
-    ; 2. SUBCATEGORÍAS EN COMMANDS Y TIMESTAMPS
+    ; 2. SUBCATEGORÍAS 
     ; ==============================
     ; Leader → c
     RegisterCategoryKeymap("c", "s", "System Commands", 1)
