@@ -1,7 +1,7 @@
 ; ==============================
 ; Vim Edit Operations - Operaciones de Edición
 ; ==============================
-; Funciones para operaciones de edición de texto estilo Vim.
+; Functions for Vim-style text editing operations.
 ; Estas funciones NO son navegación, son ACCIONES sobre el texto.
 ;
 ; USADAS EN:
@@ -81,7 +81,7 @@ VimRedo() {
 
 ; Change (delete + insert mode)
 VimChange() {
-    Send("^x")  ; Borra selección, listo para insertar
+    Send("^x")  ; Delete selection, ready to insert
 }
 
 ; Change to End of Line - C en Vim
@@ -223,7 +223,7 @@ VimLowercase() {
 ; Repeat last change - . (dot) en Vim
 ; Nota: Difícil de implementar genéricamente, requiere state tracking
 
-; Duplicate line (no es Vim estándar, pero útil)
+; Duplicate line (not standard Vim, but useful)
 VimDuplicateLine() {
     Send("{Home}")
     Send("+{End}")

@@ -137,12 +137,12 @@ ActivateZoomCursor() {
 ; PERSISTENT BLIND SWITCH (Alt+Tab persistente)
 ; ==============================
 ; NOTA: Esta función es COMPLEJA y específica de Windows Layer
-; Mantiene un loop para Alt+Tab/Alt+Shift+Tab sin soltar Alt
+; Maintains a loop for Alt+Tab/Alt+Shift+Tab without releasing Alt
 
 StartPersistentBlindSwitch() {
     ShowCenteredToolTip("BLIND SWITCH MODE`nj: Next | k: Previous | Enter: Exit | Esc: Cancel")
 
-    ; Persistent loop para blind switching
+    ; Persistent loop for blind switching
     Loop {
         ih := InputHook("L1 T" . GetEffectiveTimeout("windows"))
         ih.Start()

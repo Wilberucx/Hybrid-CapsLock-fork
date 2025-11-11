@@ -1,7 +1,7 @@
 ; ===================================================================
 ; INTEGRACIÓN C# TOOLTIP PARA HYBRIDCAPSLOCK v2
 ; ===================================================================
-; Archivo de integración para reemplazar tooltips básicos con C# + WPF
+; Integration file to replace basic tooltips with C# + WPF
 ; Incluir este archivo en HybridCapsLock.ahk con: #Include tooltip_csharp_integration.ahk
 
 ; ===================================================================
@@ -25,7 +25,7 @@ if (!IsSet(CommandsIni)) {
     global CommandsIni := A_ScriptDir . "\config\commands.ini"
 }
 
-; Variables globales para configuración de tooltips
+; Global variables for tooltip configuration
 global tooltipConfig := ReadTooltipConfig()
 
 ; Stop/kills the TooltipApp process if running
@@ -35,7 +35,7 @@ global tooltipConfig := ReadTooltipConfig()
 ; FUNCIONES DE CONFIGURACIÓN
 ; ===================================================================
 
-; Helper global para limpiar valores leídos del INI (remueve comentarios ; y espacios)
+; Global helper to clean values read from INI (removes comments ; and spaces)
 CleanIniValue(value) {
     if (InStr(value, ";")) {
         value := Trim(SubStr(value, 1, InStr(value, ";") - 1))
@@ -43,13 +43,13 @@ CleanIniValue(value) {
     return Trim(value)
 }
 
-; Función para leer configuración de tooltips desde configuration.ini
+; Function to read tooltip configuration from configuration.ini
 ReadTooltipConfig() {
     global ConfigIni
     
     config := {}
     
-    ; Función helper para limpiar valores leídos (remover comentarios)
+    ; Helper function to clean read values (remove comments)
     CleanIniValue(value) {
         ; Remover comentarios (todo después de ;)
         if (InStr(value, ";")) {
@@ -104,18 +104,18 @@ GetTooltipJsonPath() {
     return A_ScriptDir . "\tooltip_commands.json"
 }
 
-; Escritura atómica: escribe a .tmp y luego hace move para evitar lecturas parciales
+; Atomic write: writes to .tmp then moves to avoid partial reads
 WriteFileAtomic(path, content) {
     tmp := path . ".tmp"
     try {
         FileDelete(tmp)
     }
     FileAppend(content, tmp)
-    ; Move con overwrite (1) para reemplazo seguro
+    ; Move with overwrite (1) for safe replacement
     FileMove(tmp, path, 1)
 }
 
-; Estado para debounce de escritura
+; State for write debouncing
 global tooltipJsonPending := ""
 global tooltipDebounceMs := 100
 

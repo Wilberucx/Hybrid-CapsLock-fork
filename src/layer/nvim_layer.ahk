@@ -116,7 +116,7 @@ g::GLogicStart()
 #HotIf (nvimStaticEnabled ? (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()) : false)
 
 ; === BASIC NAVIGATION (hjkl) ===
-; NOTA: Duplicación intencional con Kanata
+; NOTE: Intentional duplication with Kanata
 ; Kanata: Hold CapsLock + hjkl = instant navigation (no persistent)
 ; AHK: Nvim Layer active + hjkl = persistent with Visual Mode logic
 *h::NvimDirectionalSend("Left")

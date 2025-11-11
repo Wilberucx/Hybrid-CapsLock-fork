@@ -262,9 +262,9 @@ ListProcesses() => ShellExecCapture("tasklist")
 ; RegisterKeymap("leader", "p", "d", "Deploy BAT", ShellExec("deploy.bat", "production.cfg"), false, 1)
 ;
 ; VENTAJAS DE LA SINTAXIS INTELIGENTE:
-; ✓ Una sola función para todo (ShellExec)
+; ✓ Single function for everything (ShellExec)
 ; ✓ Detección automática de parámetros (directorio, config, visibilidad)
 ; ✓ Sin funciones wrapper necesarias
 ; ✓ Sintaxis corta y consistente
-; ✓ Soporte automático para .vbs, .bat, .exe, .ahk
+; ✓ Automatic support for .vbs, .bat, .exe, .ahk
 ; ✓ Manejo de errores integrado

@@ -1,12 +1,12 @@
 ; ==============================
-; Text Insert Actions - Sistema inteligente para insertar texto
+; Text Insert Actions - Intelligent system for text insertion
 ; ==============================
-; Función estilo ShellExec que usa closures para capturar texto
+; ShellExec-style function that uses closures to capture text
 ;
 ; ARQUITECTURA:
 ; - SendInfo(text, tooltipMsg) retorna una función que captura los parámetros
-; - Similar a ShellExec, usa closures para evitar crear funciones individuales
-; - Un solo patrón para toda la información
+; - Similar to ShellExec, uses closures to avoid creating individual functions
+; - Single pattern for all information
 
 ; ==============================
 ; FUNCIÓN PRINCIPAL (Estilo ShellExec)
@@ -111,10 +111,10 @@ InsertTextWithCallbackHelper(text, callback, tooltipMsg) {
 }
 
 ; ==============================
-; FUNCIONES DE COMPATIBILIDAD (Deprecadas pero mantenidas)
+; COMPATIBILITY FUNCTIONS (Deprecated but maintained)
 ; ==============================
-; Estas funciones se mantienen para compatibilidad hacia atrás
-; pero se recomienda usar SendInfo() en su lugar
+; These functions are maintained for backward compatibility
+; but using SendInfo() is recommended instead
 
 InsertHola() {
     SendText("Hola, cómo estás?")

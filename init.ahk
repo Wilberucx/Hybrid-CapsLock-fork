@@ -69,7 +69,7 @@
 try {
     ; Auto-loader already executed by HybridCapslock.ahk preprocessor
     
-    ; Iniciar Kanata primero (si existe)
+    ; Start Kanata first (if it exists)
     StartKanataIfNeeded()
     
     ; Registrar keymaps (Fase 2 - Sistema Declarativo)

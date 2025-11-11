@@ -140,5 +140,5 @@ InsertDateTimeDefault() {
 
 ; ==============================
 ; NOTA: Estas funciones son reutilizables
-; Pueden ser llamadas desde cualquier parte del código
+; Can be called from anywhere in the code
 ; ==============================

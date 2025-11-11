@@ -1,7 +1,7 @@
 ; ==============================
 ; Vim Visual Mode - Navegación con Selección
 ; ==============================
-; Funciones para navegación con selección (Visual Mode de Vim).
+; Functions for navigation with selection (Vim Visual Mode).
 ; Estas funciones añaden Shift a los comandos de navegación.
 ;
 ; USADAS EN:

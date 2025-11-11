@@ -1,7 +1,7 @@
 ; ==============================
 ; Keymap Registry - Sistema Declarativo Jerárquico
 ; ==============================
-; Registro central estilo Neovim which-key con soporte jerárquico
+; Central registry Neovim which-key style with hierarchical support
 ; 
 ; SOPORTA DOS SINTAXIS:
 ; 1. Sintaxis flat (legacy):
@@ -14,7 +14,7 @@
 ; El sistema detecta automáticamente qué sintaxis se está usando.
 
 global KeymapRegistry := Map()      ; Keymaps jerárquicos y flat
-global CategoryRegistry := Map()    ; Categorías con metadata
+global CategoryRegistry := Map()    ; Categories with metadata
 global CategoryOrder := []          ; Orden de categorías
 global LeaderRoot := "leader"       ; Raíz del sistema jerárquico
 
@@ -24,8 +24,8 @@ global LeaderRoot := "leader"       ; Raíz del sistema jerárquico
 
 ; RegisterCategory(symbol, internal, title, order := 999)
 ; SINTAXIS FLAT (legacy compatible):
-;   symbol: tecla para activar (ej: "h", "s")
-;   internal: nombre interno para keymaps (ej: "hybrid", "system")
+;   symbol: key to activate (e.g.: "h", "s")
+;   internal: internal name for keymaps (e.g.: "hybrid", "system")
 ;   title: título mostrado
 ;   order: posición en menú
 RegisterCategory(symbol, internal, title, order := 999) {
@@ -40,7 +40,7 @@ RegisterCategory(symbol, internal, title, order := 999) {
     
     CategoryOrder.Push(symbol)
     
-    ; Inicializar Map de keymaps para esta categoría (flat)
+    ; Initialize Map of keymaps for this category (flat)
     if (!KeymapRegistry.Has(internal)) {
         KeymapRegistry[internal] := Map()
     }

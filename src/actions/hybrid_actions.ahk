@@ -1,7 +1,7 @@
 ; ==============================
 ; Hybrid Management Actions
 ; ==============================
-; Funciones reutilizables para Hybrid Management
+; Reusable functions for Hybrid Management
 ; Estilo: una función = una acción atómica
 ; Inspirado en kanata_launcher.ahk - funciones limpias y reutilizables
 

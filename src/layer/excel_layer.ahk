@@ -309,14 +309,14 @@ ShowExcelLayerStatus(isActive) {
 ; 1. Navegación hjkl → VimMoveLeft/Down/Up/Right() de vim_nav.ahk
 ; 2. Navegación 0/$/g/G → VimStartOfLine/EndOfLine/TopOfFile/BottomOfFile() de vim_nav.ahk
 ; 3. Edición y/p/u/r → VimYank/Paste/Undo/Redo() de vim_edit.ahk
-; 4. VV Mode ELIMINADO → reemplazado con SwitchToLayer("visual", "excel")
+; 4. VV Mode REMOVED → replaced with SwitchToLayer("visual", "excel")
 ; 5. VLogic vv → ahora también usa visual_layer en lugar de VVModeActive
-; 6. Estructura similar a nvim_layer.ahk con layer switching
-; 7. Modo Insert agregado con i/I (F2 para editar celda)
+; 6. Structure similar to nvim_layer.ahk with layer switching
+; 7. Insert mode added with i/I (F2 to edit cell)
 ;
 ; Funciones Excel-específicas que permanecen:
 ; - Numpad virtual (123/QWE/ASD/Z)
-; - VLogic para vr (row) y vc (column) - exclusivo de Excel
+; - VLogic for vr (row) and vc (column) - Excel exclusive
 ; - ExcelEnterEditMode() - F2 específico de Excel
 ; - ExcelAppAllowedGuard() - filtrado de aplicaciones
 ;
@@ -329,6 +329,6 @@ ShowExcelLayerStatus(isActive) {
 ; Ventajas:
 ; - Código más limpio y mantenible
 ; - Reutilización de funciones probadas
-; - Compatibilidad con visual_layer para selección
-; - Estructura consistente con otros layers
+; - Compatibility with visual_layer for selection
+; - Consistent structure with other layers
 ; - Menos duplicación de código
