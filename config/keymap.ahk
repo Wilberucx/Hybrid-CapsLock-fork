@@ -13,6 +13,7 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "e", "Excel Layer", ActivateExcelLayer, false, 5)
     RegisterCategoryKeymap("p", "Programs", 6)
     RegisterCategoryKeymap("o", "Power Options", 7)
+    RegisterCategoryKeymap("i", "Information", 8)
     ; ==============================
     ; 2. SUBCATEGORÍAS EN COMMANDS Y TIMESTAMPS
     ; ==============================
@@ -131,7 +132,16 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "c", "v", "s", "Status", VaultFlowStatus, false, 2)
     RegisterKeymap("leader", "c", "v", "l", "List", VaultFlowList, false, 3)
     RegisterKeymap("leader", "c", "v", "h", "Help", VaultFlowHelp, false, 4)
-
+    ; Information (leader → i → KEY)
+    ; Usando SendInfo() - Todo en una línea sin crear funciones individuales
+    RegisterKeymap("leader", "i", "e", "Email", SendInfo("tu.email@example.com", "EMAIL INSERTED"), false, 1)
+    RegisterKeymap("leader", "i", "p", "Phone", SendInfo("+1-555-123-4567", "PHONE INSERTED"), false, 2)
+    RegisterKeymap("leader", "i", "n", "Name", SendInfo("Tu Nombre Completo", "NAME INSERTED"), false, 3)
+    RegisterKeymap("leader", "i", "a", "Address", SendInfo("123 Main St, City, State 12345", "ADDRESS INSERTED"), false, 4)
+    RegisterKeymap("leader", "i", "h", "Hola", SendInfo("Hola, cómo estás?", "TEXT INSERTED"), false, 5)
+    RegisterKeymap("leader", "i", "t", "Thanks", SendInfo("Muchas gracias por tu ayuda!", "TEXT INSERTED"), false, 6)
+    RegisterKeymap("leader", "i", "g", "Good morning", SendInfo("Good morning! How are you?", "TEXT INSERTED"), false, 7)
+    RegisterKeymap("leader", "i", "s", "Signature", SendInfoMultiline(["Saludos cordiales,", "Tu Nombre", "Tu Cargo/Empresa"], "SIGNATURE INSERTED"), false, 8)
     ; LoadActionKeymapFallbacks()
 }
 

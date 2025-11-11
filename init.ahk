@@ -35,12 +35,12 @@
 #Include src\actions\adb_actions.ahk
 #Include src\actions\vaultflow_actions.ahk
 #Include src\actions\timestamp_actions.ahk
+#Include src\actions\text_insert_actions.ahk
 #Include src\actions\shell_exec_actions.ahk
 
 
 ; ===== AUTO-LOADED ACTIONS START =====
 #Include src\actions\nvim_layer_helpers.ahk
-#Include src\actions\program_actions.ahk
 ; ===== AUTO-LOADED ACTIONS END =====
 
 #Include config\keymap.ahk
