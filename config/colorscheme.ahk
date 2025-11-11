@@ -5,7 +5,7 @@
 ; Supports multiple themes with runtime switching
 
 ; Current Active Theme
-global CurrentTheme := "tokyo_night"
+global CurrentTheme := "light"
 
 ; ===============================
 ; TOKYO NIGHT THEME (DEFAULT)
@@ -15,7 +15,6 @@ TokyoNightTheme := {
     name: "Tokyo Night",
     description: "Dark theme inspired by Tokyo Night color scheme",
     
-    ; Color System (from configuration.ini [TooltipStyle])
     colors: {
         background: "#1a1b26",
         text: "#c0caf5",
@@ -34,14 +33,12 @@ TokyoNightTheme := {
         navigation_font_size: 12
     },
     
-    ; Spacing System (from configuration.ini [TooltipStyle])
     spacing: {
         padding: { left: 16, top: 12, right: 16, bottom: 12 },
         border_thickness: 1,
         corner_radius: 4
     },
     
-    ; Window Properties (from configuration.ini [TooltipWindow])
     window: {
         layout: "list",
         columns: 1,
@@ -50,14 +47,12 @@ TokyoNightTheme := {
         opacity: 0.98
     },
     
-    ; Position (from configuration.ini [TooltipPosition])
     position: {
         anchor: "bottom_right",
         offset_x: -10,
         offset_y: -10
     },
     
-    ; Navigation Labels
     navigation: {
         back_label: "BACKSPACE: Back",
         exit_label: "ESC: Exit"

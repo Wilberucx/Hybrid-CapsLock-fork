@@ -217,8 +217,12 @@ ShowCSharpTooltipWithType(title, items, navigation := "", timeout := 0, tooltipT
         cmd["layout"] := "list"
 
     ; Copiar estilo y posición desde tema (si existen)
-    if (theme.style.Count)
+    if (theme.style.Count) {
         cmd["style"] := theme.style
+        OutputDebug("[Tooltip] Theme style applied: " . theme.style.Count . " properties`n")
+    } else {
+        OutputDebug("[Tooltip] WARNING: theme.style is empty!`n")
+    }
     if (theme.position.Count)
         cmd["position"] := theme.position
 
@@ -1387,7 +1391,9 @@ ReadTooltipThemeDefaults() {
     ; Try HybridConfig theme first
     if (IsSet(HybridConfig)) {
         try {
+            OutputDebug("[Tooltip] Reading theme from HybridConfig`n")
             theme := HybridConfig.getTheme()
+            OutputDebug("[Tooltip] Theme name: " . theme.name . "`n")
             defaults := Map()
             
             ; Window properties
@@ -1428,14 +1434,16 @@ ReadTooltipThemeDefaults() {
             ; Navigation labels
             defaults["navigation_label"] := theme.navigation.back_label . " | " . theme.navigation.exit_label
             
+            OutputDebug("[Tooltip] Theme from HybridConfig loaded successfully - " . defaults.style.Count . " style properties`n")
             return defaults
         } catch as e {
             ; Fall through to INI
-            OutputDebug("[Tooltip] Failed to read theme from HybridConfig: " . e.Message . "`n")
+            OutputDebug("[Tooltip] ERROR reading theme from HybridConfig: " . e.Message . "`n")
         }
     }
     
     ; Fallback to INI
+    OutputDebug("[Tooltip] Using INI fallback for theme`n")
     defaults := Map()
     ; Layout/ventana
     defaults.window := Map()

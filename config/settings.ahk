@@ -117,6 +117,6 @@ global HybridConfig := {
     isProduction: !AppConfig.debug_mode,
     
     ; Helper functions (defined in colorscheme.ahk)
-    getTheme: () => GetCurrentTheme(),
-    setTheme: (name) => SetTheme(name)
+    getTheme: (*) => GetCurrentTheme(),
+    setTheme: (name, *) => SetTheme(name)
 }
