@@ -147,7 +147,7 @@ ScrollCloseHelp() {
 ; ==============================
 ; Register all scroll layer keymaps - SINGLE SOURCE OF TRUTH
 ; These are executed by ListenForLayerKeymaps() which uses ExecuteKeymapAtPath()
-
+; Keympas on keymap.ahk
 ; RegisterScrollKeymaps() {
 ;     ; Scroll navigation
 ;     RegisterKeymap("scroll", "k", "Scroll Up", ScrollUp, false, 1)

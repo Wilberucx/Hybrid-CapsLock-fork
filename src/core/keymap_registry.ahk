@@ -731,12 +731,17 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
             continue
         }
         
-        ; Ejecutar keymap registrado (reusa ExecuteKeymapAtPath existente)
-        ; Nota: Las persistent layers NO tienen jerarquía, solo acciones directas
+        ; Ejecutar keymap registrado (con soporte para navegación jerárquica)
         OutputDebug("[LayerListener] Key pressed: " . key . " in layer: " . layerName)
         
         try {
-            ExecuteKeymapAtPath(layerName, key)
+            result := ExecuteKeymapAtPath(layerName, key)
+            
+            ; Si es una categoría, entrar en navegación jerárquica
+            if (result && Type(result) = "String") {
+                OutputDebug("[LayerListener] Category detected, entering hierarchical navigation: " . result)
+                NavigateHierarchicalInLayer(result, layerActiveVarName)
+            }
         } catch as execErr {
             OutputDebug("[LayerListener] ERROR executing keymap: " . execErr.Message)
         }
@@ -744,6 +749,138 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
     
     OutputDebug("[LayerListener] Stopped listener for layer: " . layerName)
     return true
+}
+
+; NavigateHierarchicalInLayer(currentPath, layerActiveVarName)
+; Navegación jerárquica dentro de layers persistentes
+; Similar a NavigateHierarchical pero respeta el estado de la layer
+NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
+    OutputDebug("[LayerHierarchy] Starting hierarchical navigation at path: " . currentPath)
+    
+    ; Stack para navegación (para back)
+    pathStack := [currentPath]
+    
+    Loop {
+        ; Verificar si layer sigue activa
+        try {
+            isActive := %layerActiveVarName%
+            if (!isActive) {
+                OutputDebug("[LayerHierarchy] Layer deactivated, exiting navigation")
+                break
+            }
+        } catch {
+            OutputDebug("[LayerHierarchy] ERROR: State variable not found: " . layerActiveVarName)
+            break
+        }
+        
+        currentPath := pathStack[pathStack.Length]
+        
+        ; Mostrar menú para el path actual
+        try {
+            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+                ; Use C# tooltip if available
+                items := GenerateCategoryItemsForPath(currentPath)
+                if (items != "") {
+                    ; Extract title from path (last part after last dot)
+                    title := currentPath
+                    if (InStr(currentPath, ".")) {
+                        parts := StrSplit(currentPath, ".")
+                        title := parts[parts.Length]
+                    }
+                }
+            } else {
+                ; Fallback to native tooltip
+                menuText := BuildMenuForPath(currentPath)
+                if (menuText != "") {
+                    ShowCenteredToolTip(menuText . "`n[Backspace: Back] [Esc: Exit]")
+                }
+            }
+        } catch as tooltipErr {
+            OutputDebug("[LayerHierarchy] ERROR showing tooltip: " . tooltipErr.Message)
+        }
+        
+        ; Esperar input
+        ih := InputHook("L1", "{Escape}{Backspace}")
+        ih.KeyOpt("{Escape}", "S")
+        ih.KeyOpt("{Backspace}", "S")
+        ih.Start()
+        ih.Wait()
+        
+        ; Verificar nuevamente si layer sigue activa
+        try {
+            isActive := %layerActiveVarName%
+            if (!isActive) {
+                ih.Stop()
+                try RemoveToolTip()
+                break
+            }
+        } catch {
+            ih.Stop()
+            try RemoveToolTip()
+            break
+        }
+        
+        ; Handle Escape - exit navigation
+        if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
+            ih.Stop()
+            try RemoveToolTip()
+            OutputDebug("[LayerHierarchy] Escape pressed, exiting navigation")
+            break
+        }
+        
+        ; Handle Backspace - go back
+        if (ih.EndReason = "EndKey" && ih.EndKey = "Backspace") {
+            ih.Stop()
+            try RemoveToolTip()
+            if (pathStack.Length > 1) {
+                pathStack.Pop()
+                OutputDebug("[LayerHierarchy] Going back to: " . pathStack[pathStack.Length])
+                continue
+            } else {
+                OutputDebug("[LayerHierarchy] At root level, exiting navigation")
+                break
+            }
+        }
+        
+        ; Get pressed key
+        key := ih.Input
+        ih.Stop()
+        try RemoveToolTip()
+        
+        ; Empty or invalid key
+        if (key = "" || key = Chr(0)) {
+            continue
+        }
+        
+        OutputDebug("[LayerHierarchy] Key pressed: " . key . " at path: " . currentPath)
+        
+        ; Execute keymap at current path
+        try {
+            result := ExecuteKeymapAtPath(currentPath, key)
+            
+            if (result) {
+                if (Type(result) = "String") {
+                    ; Es una categoría, navegar más profundo
+                    pathStack.Push(result)
+                    OutputDebug("[LayerHierarchy] Navigating deeper to: " . result)
+                    continue
+                } else {
+                    ; Es una acción ejecutada, salir de navegación
+                    OutputDebug("[LayerHierarchy] Action executed, exiting navigation")
+                    break
+                }
+            } else {
+                ; Tecla no encontrada
+                OutputDebug("[LayerHierarchy] Key not found: " . key)
+                continue
+            }
+        } catch as execErr {
+            OutputDebug("[LayerHierarchy] ERROR executing keymap: " . execErr.Message)
+            continue
+        }
+    }
+    
+    OutputDebug("[LayerHierarchy] Stopped hierarchical navigation")
 }
 
 ; ==============================

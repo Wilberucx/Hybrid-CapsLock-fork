@@ -25,12 +25,14 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("leader", "t", "Timestamps", 2)
     RegisterCategoryKeymap("leader", "c", "Commands", 3)
     RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
+    RegisterKeymap("leader", "e", "Excel", ActivateExcelLayer, false, 5)
     RegisterCategoryKeymap("leader", "p", "Programs", 6)
     RegisterCategoryKeymap("leader", "o", "Power Options", 7)
     RegisterCategoryKeymap("leader", "i", "Information", 8)
     ; ==============================
     ; 2. SUBCATEGORÍAS 
     ; ==============================
+    
     ; Leader → c
     RegisterCategoryKeymap("leader", "c", "s", "System Commands", 1)
     RegisterCategoryKeymap("leader", "c", "g", "Git Commands", 3)
@@ -39,10 +41,12 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("leader", "c", "f", "Folder Access", 6)
     RegisterCategoryKeymap("leader", "c", "a", "ADB Tools", 7)
     RegisterCategoryKeymap("leader", "c", "v", "VaultFlow", 8)
+    
     ; Leader → t 
     RegisterCategoryKeymap("leader", "t", "d", "Date Formats", 1)
     RegisterCategoryKeymap("leader", "t", "t", "Time Formats", 2)
     RegisterCategoryKeymap("leader", "t", "h", "Date+Time Formats", 3)
+    
     ; Programas (leader → p → KEY)
     RegisterKeymap("leader", "p", "e", "Explorer", ShellExec("explorer.exe"), false, 1)
     RegisterKeymap("leader", "p", "i", "Settings", ShellExec("ms-settings:"), false, 1)
@@ -57,6 +61,7 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "p", "q", "Quick Share", ShellExec("QuickShare.exe"), false, 1)
     RegisterKeymap("leader", "p", "p", "Bitwarden", ShellExec(EnvGet("USERPROFILE") . "\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Bitwarden.lnk"), false, 1)
     RegisterKeymap("leader", "p", "k", "LocalSend", ShellExec(EnvGet("USERPROFILE") . "\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\LocalSend.lnk"), false, 1)
+    
     ; Category timestamps (leader → t → KEY)
     RegisterKeymap("leader", "t", "d", "1", "yyyy-MM-dd", InsertDateFormat1, false, 1)
     RegisterKeymap("leader", "t", "d", "2", "dd/MM/yyyy", InsertDateFormat2, false, 2)
@@ -65,6 +70,7 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "t", "d", "5", "ddd, dd MMM yyyy", InsertDateFormat5, false, 5)
     RegisterKeymap("leader", "t", "d", "6", "yyyyMMdd", InsertDateFormat6, false, 6)
     RegisterKeymap("leader", "t", "d", "d", "Default (yyyyMMdd)", InsertDateDefault, false, 7)
+    
     ; Time formats (leader → t → t → KEY)
     RegisterKeymap("leader", "t", "t", "1", "HH:mm:ss", InsertTimeFormat1, false, 1)
     RegisterKeymap("leader", "t", "t", "2", "HH:mm", InsertTimeFormat2, false, 2)
@@ -80,6 +86,7 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "t", "h", "4", "yyyyMMddHHmmss", InsertDateTimeFormat4, false, 4)
     RegisterKeymap("leader", "t", "h", "5", "ddd, dd MMM yyyy HH:mm", InsertDateTimeFormat5, false, 5)
     RegisterKeymap("leader", "t", "h", "h", "Default (yyyyMMddHHmmss)", InsertDateTimeDefault, false, 6)
+    
     ; Hybrid Management (leader → h → KEY)
     RegisterKeymap("leader", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
     RegisterKeymap("leader", "h", "s", "Show System Status", ShowSystemStatus, false, 2)
@@ -90,6 +97,7 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "h", "S", "Scan Layers", ScanLayersManual, false, 7)
     RegisterKeymap("leader", "h", "R", "Reload Script", ReloadHybridScript, true, 8)
     RegisterKeymap("leader", "h", "e", "Exit Script", ExitHybridScript, true, 9)
+    
     ; System Commands (leader → c → s → KEY)
     RegisterKeymap("leader", "c", "s", "s", "System Info", ShowSystemInfo, false, 1)
     RegisterKeymap("leader", "c", "s", "t", "Task Manager", ShowTaskManager, false, 2)
@@ -101,6 +109,7 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "c", "s", "r", "Registry Editor", ShowRegistryEditor, false, 8)
     RegisterKeymap("leader", "c", "s", "E", "Environment Variables", ShowEnvironmentVariables, false, 9)
     RegisterKeymap("leader", "c", "s", "w", "Windows Version", ShowWindowsVersion, false, 10)
+    
     ; Git Commands (leader → c → g → KEY)
     RegisterKeymap("leader", "c", "g", "s", "Status", GitStatus, false, 1)
     RegisterKeymap("leader", "c", "g", "l", "Log (last 10)", GitLog, false, 2)
@@ -108,16 +117,19 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "c", "g", "d", "Diff", GitDiff, false, 4)
     RegisterKeymap("leader", "c", "g", "a", "Add All", GitAddAll, true, 5)
     RegisterKeymap("leader", "c", "g", "p", "Pull", GitPull, true, 6)
+    
     ; Monitoring Commands (leader → c → m → KEY)
     RegisterKeymap("leader", "c", "m", "p", "Top Processes", ShowTopProcesses, false, 1)
     RegisterKeymap("leader", "c", "m", "s", "Services Status", ShowServicesStatus, false, 2)
     RegisterKeymap("leader", "c", "m", "d", "Disk Space", ShowDiskSpace, false, 3)
     RegisterKeymap("leader", "c", "m", "m", "Memory Usage", ShowMemoryUsage, false, 4)
     RegisterKeymap("leader", "c", "m", "c", "CPU Usage", ShowCPUUsage, false, 5)
+    
     ; Network Commands (leader → c → n → KEY)
     RegisterKeymap("leader", "c", "n", "i", "IP Config", ShowIPConfig, false, 1)
     RegisterKeymap("leader", "c", "n", "p", "Ping Google", PingGoogle, false, 2)
     RegisterKeymap("leader", "c", "n", "n", "Netstat", ShowNetstat, false, 3)
+    
     ; Folder Access (leader → c → f → KEY)
     RegisterKeymap("leader", "c", "f", "t", "Temp Folder", OpenTempFolder, false, 1)
     RegisterKeymap("leader", "c", "f", "a", "AppData", OpenAppDataFolder, false, 2)
@@ -125,6 +137,7 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "c", "f", "u", "User Profile", OpenUserProfileFolder, false, 4)
     RegisterKeymap("leader", "c", "f", "d", "Desktop", OpenDesktopFolder, false, 5)
     RegisterKeymap("leader", "c", "f", "s", "System32", OpenSystem32Folder, false, 6)
+    
     ; Power Options (leader → c → o → KEY)
     RegisterKeymap("leader", "o", "l", "Lock Screen", LockWorkstation, false, 1)
     RegisterKeymap("leader", "o", "s", "Sleep", SuspendSystem, false, 2)
@@ -132,6 +145,7 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "o", "o", "Sign Out", SignOutUser, true, 4)
     RegisterKeymap("leader", "o", "r", "Restart", RestartSystem, true, 5)
     RegisterKeymap("leader", "o", "S", "Shutdown", ShutdownSystem, true, 6)
+    
     ; Adb Tools (leader → c → a → KEY)
     RegisterKeymap("leader", "c", "a", "d", "List Devices", ADBListDevices, false, 1)
     RegisterKeymap("leader", "c", "a", "x", "Disconnect", ADBDisconnect, false, 2)
@@ -141,11 +155,13 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "c", "a", "u", "Uninstall Package", ADBUninstallPackage, false, 6)
     RegisterKeymap("leader", "c", "a", "c", "Clear App Data", ADBClearAppData, false, 7)
     RegisterKeymap("leader", "c", "a", "r", "Reboot Device", ADBRebootDevice, false, 8)
+    
     ; VualtFlow (leader → c → v → KEY)
     RegisterKeymap("leader", "c", "v", "v", "Run VaultFlow", RunVaultFlow, false, 1)
     RegisterKeymap("leader", "c", "v", "s", "Status", VaultFlowStatus, false, 2)
     RegisterKeymap("leader", "c", "v", "l", "List", VaultFlowList, false, 3)
     RegisterKeymap("leader", "c", "v", "h", "Help", VaultFlowHelp, false, 4)
+    
     ; Information (leader → i → KEY)
     RegisterKeymap("leader", "i", "e", "Email", SendInfo("tu.email@example.com", "EMAIL INSERTED"), false, 1)
     RegisterKeymap("leader", "i", "p", "Phone", SendInfo("+1-555-123-4567", "PHONE INSERTED"), false, 2)
@@ -207,6 +223,19 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("nvim", "f", "Quick Exit", NvimExit, false, 71)
     RegisterKeymap("nvim", "Escape", "Exit", NvimExit, false, 72)
     RegisterKeymap("nvim", "?", "Toggle Help", NvimToggleHelp, false, 73)
+
+    ;Excel Layer Keymaps
+    RegisterKeymap("excel", "h", "Move Left", VimMoveLeft, false, 20)
+    RegisterKeymap("excel", "j", "Move Down", VimMoveDown, false, 21)
+    RegisterKeymap("excel", "k", "Move Up", VimMoveUp, false, 22)
+    RegisterKeymap("excel", "l", "Move Right", VimMoveRight, false, 23)
+    RegisterCategoryKeymap("excel", "g", "Go to", 1)
+    RegisterKeymap("excel", "g", "g", "Go to Top", VimTopOfFile, false, 41)
+    RegisterKeymap("excel", "G", "Go to Bottom", VimBottomOfFile, false, 41)
+    RegisterKeymap("excel", "p", "Paste", VimPaste, false, 52)
+    RegisterKeymap("excel", "u", "Undo", VimUndo, false, 55)
+    RegisterKeymap("excel", "r", "Redo", VimRedo, false, 56)
+    RegisterKeymap("excel", "Escape", "Exit", ExcelExit, false, 72)
     
     ; REMOVED (Complex logic moved to no_include/nvim_layer_LEGACY.ahk):
     ; - ColonLogic (:w, :q, :wq)
