@@ -141,6 +141,19 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "i", "t", "Thanks", SendInfo("Muchas gracias por tu ayuda!", "TEXT INSERTED"), false, 6)
     RegisterKeymap("leader", "i", "g", "Good morning", SendInfo("Good morning! How are you?", "TEXT INSERTED"), false, 7)
     RegisterKeymap("leader", "i", "s", "Signature", SendInfoMultiline(["Saludos cordiales,", "Tu Nombre", "Tu Cargo/Empresa"], "SIGNATURE INSERTED"), false, 8)
+    ; Keymaps for Scroll Layer (leader → s) 
+    RegisterKeymap("scroll", "k", "Scroll Up", ScrollUp, false, 1)
+    RegisterKeymap("scroll", "j", "Scroll Down", ScrollDown, false, 2)
+    RegisterKeymap("scroll", "h", "Scroll Left", ScrollLeft, false, 3)
+    RegisterKeymap("scroll", "l", "Scroll Right", ScrollRight, false, 4)
+    RegisterKeymap("scroll", "s", "Exit Scroll Layer", ScrollExit, true, 10)
+    RegisterKeymap("scroll", "Escape", "Exit Scroll Layer", ScrollExit, true, 11)
+    RegisterKeymap("scroll", "?", "Toggle Help", ScrollToggleHelp, false, 20)
+    ; ==============================
+    ; PERSISTENT LAYERS KEYMAPS
+    ; ==============================
+    ; Register keymaps for persistent layers (scroll, nvim, excel, etc.)
+    
     ; LoadActionKeymapFallbacks()
 }
 
@@ -158,5 +171,6 @@ InitializeCategoryKeymaps() {
 ;     RegisterVaultFlowKeymaps()
 ;     RegisterTimestampKeymaps()
 ;     RegisterWindowsKeymaps()
+;     RegisterScrollKeymaps()
 ; }
 

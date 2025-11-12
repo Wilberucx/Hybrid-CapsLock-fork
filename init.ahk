@@ -36,6 +36,7 @@
 #Include src\actions\network_actions.ahk
 #Include src\actions\nvim_layer_helpers.ahk
 #Include src\actions\power_actions.ahk
+#Include src\actions\scroll_actions.ahk
 #Include src\actions\sendinfo_actions.ahk
 #Include src\actions\shell_exec_actions.ahk
 #Include src\actions\system_actions.ahk

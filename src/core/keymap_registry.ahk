@@ -647,6 +647,106 @@ HasKeymaps(category) {
 }
 
 ; ==============================
+; LISTEN FOR PERSISTENT LAYER KEYMAPS
+; ==============================
+; Similar to NavigateHierarchical but for persistent layers (nvim, scroll, excel, etc.)
+; Listens for inputs while layer is active and executes registered keymaps
+
+; ListenForLayerKeymaps(layerName, layerActiveVarName)
+; layerName: nombre del layer en KeymapRegistry (ej: "scroll", "nvim")
+; layerActiveVarName: nombre de la variable global que indica si layer está activo (ej: "isScrollLayerActive")
+;
+; Uso:
+;   En OnScrollLayerActivate():
+;     ListenForLayerKeymaps("scroll", "isScrollLayerActive")
+;
+ListenForLayerKeymaps(layerName, layerActiveVarName) {
+    OutputDebug("[LayerListener] Starting listener for layer: " . layerName)
+    
+    ; Verificar que el layer existe en KeymapRegistry
+    if (!KeymapRegistry.Has(layerName)) {
+        OutputDebug("[LayerListener] ERROR: Layer not found in KeymapRegistry: " . layerName)
+        return false
+    }
+    
+    ; Loop persistente mientras la layer esté activa
+    Loop {
+        ; Verificar si layer sigue activa
+        try {
+            isActive := %layerActiveVarName%
+            if (!isActive) {
+                OutputDebug("[LayerListener] Layer deactivated: " . layerName)
+                break
+            }
+        } catch {
+            OutputDebug("[LayerListener] ERROR: State variable not found: " . layerActiveVarName)
+            break
+        }
+        
+        ; Esperar input (sin timeout - persistente)
+        ih := InputHook("L1", "{Escape}")
+        ih.KeyOpt("{Escape}", "S")
+        ih.Start()
+        ih.Wait()
+        
+        ; Verificar nuevamente si layer sigue activa (puede haberse desactivado durante input)
+        try {
+            isActive := %layerActiveVarName%
+            if (!isActive) {
+                ih.Stop()
+                break
+            }
+        } catch {
+            ih.Stop()
+            break
+        }
+        
+        ; Handle Escape - try to execute keymap if registered
+        if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
+            ih.Stop()
+            OutputDebug("[LayerListener] Escape pressed in layer: " . layerName)
+            
+            ; Try to execute registered Escape keymap if it exists
+            try {
+                result := ExecuteKeymapAtPath(layerName, "Escape")
+                if (result) {
+                    ; Keymap executed successfully
+                    continue
+                }
+            } catch as execErr {
+                OutputDebug("[LayerListener] ERROR executing Escape keymap: " . execErr.Message)
+            }
+            
+            ; If no Escape keymap registered or execution failed, just exit
+            OutputDebug("[LayerListener] No Escape keymap registered, exiting layer")
+            break
+        }
+        
+        ; Get pressed key
+        key := ih.Input
+        ih.Stop()
+        
+        ; Empty or invalid key
+        if (key = "" || key = Chr(0)) {
+            continue
+        }
+        
+        ; Ejecutar keymap registrado (reusa ExecuteKeymapAtPath existente)
+        ; Nota: Las persistent layers NO tienen jerarquía, solo acciones directas
+        OutputDebug("[LayerListener] Key pressed: " . key . " in layer: " . layerName)
+        
+        try {
+            ExecuteKeymapAtPath(layerName, key)
+        } catch as execErr {
+            OutputDebug("[LayerListener] ERROR executing keymap: " . execErr.Message)
+        }
+    }
+    
+    OutputDebug("[LayerListener] Stopped listener for layer: " . layerName)
+    return true
+}
+
+; ==============================
 ; EJEMPLOS DE USO:
 ; ==============================
 ; FLAT (legacy):
@@ -658,4 +758,13 @@ HasKeymaps(category) {
 ;   RegisterCategoryKeymap("c", "a", "ADB Tools", 1)
 ;   RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
 ;
-; Ambas sintaxis funcionan simultáneamente en el mismo sistema.
+; PERSISTENT LAYERS (nuevo):
+;   RegisterKeymap("scroll", "h", "Scroll Left", ScrollLeft, false, 1)
+;   RegisterKeymap("scroll", "j", "Scroll Down", ScrollDown, false, 2)
+;   ; En scroll_layer.ahk:
+;   OnScrollLayerActivate() {
+;       isScrollLayerActive := true
+;       ListenForLayerKeymaps("scroll", "isScrollLayerActive")
+;   }
+;
+; Todas las sintaxis funcionan simultáneamente en el mismo sistema.

@@ -23,8 +23,9 @@
 ; CONFIGURATION
 ; ==============================
 
-global scrollLayerEnabled := true      ; Feature flag
-global scrollLayerActive := false      ; Layer state (managed by SwitchToLayer)
+global scrollLayerEnabled := true        ; Feature flag
+global isScrollLayerActive := false      ; Layer state (managed by SwitchToLayer)
+                                          ; Renamed to isScrollLayerActive for consistency
 
 ; ==============================
 ; ACTIVATION FUNCTION (for easy invocation)
@@ -46,25 +47,38 @@ ActivateScrollLayer(originLayer := "leader") {
 ; ==============================
 
 OnScrollLayerActivate() {
-    global scrollLayerActive
-    scrollLayerActive := true
+    global isScrollLayerActive
+    isScrollLayerActive := true
     
-    ; DEBUG: Log para verificar si se ejecuta
-    OutputDebug("[SCROLL DEBUG] OnScrollLayerActivate() EJECUTÁNDOSE")
+    OutputDebug("[ScrollLayer] OnScrollLayerActivate() - Activating layer")
     
+    ; Show status
     try {
         ShowScrollLayerStatus(true)
-        OutputDebug("[SCROLL DEBUG] ShowScrollLayerStatus(true) completado")
+        SetTempStatus("SCROLL LAYER ON", 1500)
     } catch Error as e {
-        OutputDebug("[SCROLL DEBUG] ERROR en ShowScrollLayerStatus: " . e.Message)
+        OutputDebug("[ScrollLayer] ERROR showing status: " . e.Message)
     }
     
-    try SetTempStatus("SCROLL LAYER ON", 1500)
+    ; Start listening for keymaps (reuses keymap_registry system)
+    ; This replaces the #HotIf blocks - keymaps are now registered and executed dynamically
+    try {
+        ListenForLayerKeymaps("scroll", "isScrollLayerActive")
+    } catch Error as e {
+        OutputDebug("[ScrollLayer] ERROR in ListenForLayerKeymaps: " . e.Message)
+    }
+    
+    ; When listener exits, deactivate layer
+    isScrollLayerActive := false
+    try {
+        ShowScrollLayerStatus(false)
+        SetTempStatus("SCROLL LAYER OFF", 1500)
+    }
 }
 
 OnScrollLayerDeactivate() {
-    global scrollLayerActive, ScrollHelpActive
-    scrollLayerActive := false
+    global isScrollLayerActive, ScrollHelpActive
+    isScrollLayerActive := false
     
     ; Clean up help if active
     if (IsSet(ScrollHelpActive) && ScrollHelpActive) {
@@ -72,42 +86,27 @@ OnScrollLayerDeactivate() {
     }
     
     try ShowScrollLayerStatus(false)
-    try SetTempStatus("SCROLL LAYER OFF", 1500)
 }
 
 ; ==============================
-; HOTKEYS
+; LAYER-SPECIFIC ACTIONS
 ; ==============================
+; Actions specific to scroll layer control
+; Generic scroll actions (ScrollUp, ScrollDown, etc.) are in src/actions/scroll_actions.ahk
 
-#HotIf (scrollLayerEnabled ? (scrollLayerActive && !GetKeyState("CapsLock", "P")) : false)
-
-; === SCROLL NAVIGATION (hjkl) ===
-; Up / Down scroll
-k::Send("{WheelUp}")
-j::Send("{WheelDown}")
-
-; Left / Right scroll  
-h::Send("+{WheelUp}")
-l::Send("+{WheelDown}")
-
-; === LAYER EXIT ===
-; Exit with 's' key (toggle behavior)
-s:: {
+ScrollExit() {
+    global isScrollLayerActive
+    isScrollLayerActive := false
     try ReturnToPreviousLayer()
 }
 
-; Exit with Escape (consistent with other layers)
-*Esc:: {
-    try ReturnToPreviousLayer()
+ScrollToggleHelp() {
+    global ScrollHelpActive
+    if (ScrollHelpActive)
+        ScrollCloseHelp()
+    else
+        ScrollShowHelp()
 }
-
-; === HELP SYSTEM ===
-; Help toggle with '?' (multiple keycodes for compatibility)
-+vkBF:: (ScrollHelpActive ? ScrollCloseHelp() : ScrollShowHelp())
-+SC035:: (ScrollHelpActive ? ScrollCloseHelp() : ScrollShowHelp())
-?:: (ScrollHelpActive ? ScrollCloseHelp() : ScrollShowHelp())
-
-#HotIf
 
 ; ==============================
 ; HELP SYSTEM IMPLEMENTATION
@@ -133,16 +132,39 @@ ScrollHelpAutoClose() {
 }
 
 ScrollCloseHelp() {
-    global scrollLayerActive, ScrollHelpActive
+    global isScrollLayerActive, ScrollHelpActive
     try SetTimer(ScrollHelpAutoClose, 0)
     try HideCSharpTooltip()
     ScrollHelpActive := false
-    if (scrollLayerActive) {
+    if (isScrollLayerActive) {
         try ShowScrollLayerStatus(true)
     } else {
         try RemoveToolTip()
     }
 }
+
+; ==============================
+; KEYMAP REGISTRATION (RegisterKeymap system)
+; ==============================
+; Register all scroll layer keymaps - SINGLE SOURCE OF TRUTH
+; These are executed by ListenForLayerKeymaps() which uses ExecuteKeymapAtPath()
+
+; RegisterScrollKeymaps() {
+;     ; Scroll navigation
+;     RegisterKeymap("scroll", "k", "Scroll Up", ScrollUp, false, 1)
+;     RegisterKeymap("scroll", "j", "Scroll Down", ScrollDown, false, 2)
+;     RegisterKeymap("scroll", "h", "Scroll Left", ScrollLeft, false, 3)
+;     RegisterKeymap("scroll", "l", "Scroll Right", ScrollRight, false, 4)
+;
+;     ; Layer control
+;     RegisterKeymap("scroll", "s", "Exit Scroll Layer", ScrollExit, false, 10)
+;     RegisterKeymap("scroll", "Escape", "Exit Scroll Layer", ScrollExit, false, 11)
+;
+;     ; Help system
+;     RegisterKeymap("scroll", "?", "Toggle Help", ScrollToggleHelp, false, 20)
+;
+;     OutputDebug("[ScrollLayer] Keymaps registered successfully")
+; }
 
 ; ==============================
 ; TEMPORARY DEBUG HOTKEY (REMOVE AFTER TESTING)
