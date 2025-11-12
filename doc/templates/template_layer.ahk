@@ -104,6 +104,77 @@ LAYER_NAMEExit() {
 ; }
 
 ; ==============================
+; HELP SYSTEM (Optional but Recommended)
+; ==============================
+; Dynamic help system that reads keymaps from KeymapRegistry
+; Shows all registered keymaps for this layer with tooltips
+
+global LAYER_NAMEHelpActive := false
+
+LAYER_NAMEToggleHelp() {
+    global LAYER_NAMEHelpActive
+    if (LAYER_NAMEHelpActive)
+        LAYER_NAMECloseHelp()
+    else
+        LAYER_NAMEShowHelp()
+}
+
+LAYER_NAMEShowHelp() {
+    global tooltipConfig, LAYER_NAMEHelpActive
+    try HideCSharpTooltip()
+    Sleep 30
+    LAYER_NAMEHelpActive := true
+    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
+    try SetTimer(LAYER_NAMEHelpAutoClose, -to)
+    
+    ; Generate help dynamically from KeymapRegistry
+    try {
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            ; Use C# tooltip with dynamic items
+            items := GenerateCategoryItemsForPath("LAYER_ID")  ; ⚠️ Use lowercase LAYER_ID!
+            if (items = "")
+                items := "[No keymaps registered for LAYER_ID layer]"
+            ShowBottomRightListTooltip("LAYER_DISPLAY HELP", items, "?: Close", to)
+        } else {
+            ; Fallback: native tooltip with dynamic text
+            menuText := BuildMenuForPath("LAYER_ID", "LAYER_DISPLAY HELP")  ; ⚠️ Use lowercase LAYER_ID!
+            if (menuText = "")
+                menuText := "NO KEYMAPS REGISTERED"
+            ShowCenteredToolTip(menuText)
+        }
+    } catch Error as e {
+        OutputDebug("[LAYER_NAME] ERROR showing help: " . e.Message)
+        ShowCenteredToolTip("LAYER_DISPLAY HELP: See registered keymaps in config/keymap.ahk")
+    }
+}
+
+LAYER_NAMEHelpAutoClose() {
+    global LAYER_NAMEHelpActive
+    if (LAYER_NAMEHelpActive)
+        LAYER_NAMECloseHelp()
+}
+
+LAYER_NAMECloseHelp() {
+    global isLAYER_NAMELayerActive, LAYER_NAMEHelpActive
+    try SetTimer(LAYER_NAMEHelpAutoClose, 0)
+    try HideCSharpTooltip()
+    LAYER_NAMEHelpActive := false
+    if (isLAYER_NAMELayerActive) {
+        try {
+            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+                ; If you have a custom status tooltip, call it here
+                ; ShowLAYER_NAMELayerToggleCS(true)
+            } else {
+                ShowCenteredToolTip("◉ LAYER_DISPLAY")
+                SetTimer(() => RemoveToolTip(), -900)
+            }
+        }
+    } else {
+        try RemoveToolTip()
+    }
+}
+
+; ==============================
 ; KEYMAP REGISTRATION
 ; ==============================
 ; Register in config/keymap.ahk inside InitializeCategoryKeymaps():
@@ -115,6 +186,9 @@ LAYER_NAMEExit() {
 ;     ; Layer control
 ;     RegisterKeymap("LAYER_ID", "Escape", "Exit Layer", LAYER_NAMEExit, false, 10)
 ;     
+;     ; Help system (if implemented)
+;     RegisterKeymap("LAYER_ID", "?", "Toggle Help", LAYER_NAMEToggleHelp, false, 100)
+;     
 ;     OutputDebug("[LAYER_NAME] Keymaps registered successfully")
 ; }
 ;
@@ -123,6 +197,8 @@ LAYER_NAMEExit() {
 ; OR register directly in InitializeCategoryKeymaps() (simpler approach):
 ;     RegisterKeymap("LAYER_ID", "h", "Move Left", VimMoveLeft, false, 20)  ; ⚠️ lowercase LAYER_ID!
 ;     RegisterKeymap("LAYER_ID", "j", "Move Down", VimMoveDown, false, 21)
+;     RegisterKeymap("LAYER_ID", "Escape", "Exit Layer", LAYER_NAMEExit, false, 30)
+;     RegisterKeymap("LAYER_ID", "?", "Toggle Help", LAYER_NAMEToggleHelp, false, 100)  ; Help system
 ;     ; ... more keymaps
 
 ; ==============================
@@ -140,6 +216,8 @@ LAYER_NAMEExit() {
 ; □ 6. Implement layer-specific actions
 ; □ 7. Create action functions in src/actions/ if reusable
 ; □ 8. Register keymaps in config/keymap.ahk using lowercase LAYER_ID
+;       - Include help keymap: RegisterKeymap("LAYER_ID", "?", "Toggle Help", LAYER_NAMEToggleHelp, false, 100)
 ; □ 9. Register layer activation in leader menu if needed:
 ;       RegisterKeymap("leader", "key", "LAYER_DISPLAY", ActivateLAYER_NAMELayer, false)
 ; □ 10. Test activation, keymaps, and deactivation
+; □ 11. Test help system by pressing "?" while layer is active

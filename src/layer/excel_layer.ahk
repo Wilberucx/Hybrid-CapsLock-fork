@@ -77,6 +77,76 @@ ExcelExit() {
 ; }
 
 ; ==============================
+; HELP SYSTEM
+; ==============================
+; Dynamic help system that reads keymaps from KeymapRegistry
+
+global ExcelHelpActive := false
+
+ExcelToggleHelp() {
+    global ExcelHelpActive
+    if (ExcelHelpActive)
+        ExcelCloseHelp()
+    else
+        ExcelShowHelp()
+}
+
+ExcelShowHelp() {
+    global tooltipConfig, ExcelHelpActive
+    try HideCSharpTooltip()
+    Sleep 30
+    ExcelHelpActive := true
+    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
+    try SetTimer(ExcelHelpAutoClose, -to)
+    
+    ; Generate help dynamically from KeymapRegistry
+    try {
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            ; Use C# tooltip with dynamic items
+            items := GenerateCategoryItemsForPath("excel")
+            if (items = "")
+                items := "[No keymaps registered for excel layer]"
+            ShowBottomRightListTooltip("EXCEL LAYER HELP", items, "?: Close", to)
+        } else {
+            ; Fallback: native tooltip with dynamic text
+            menuText := BuildMenuForPath("excel", "EXCEL LAYER HELP")
+            if (menuText = "")
+                menuText := "NO KEYMAPS REGISTERED"
+            ShowCenteredToolTip(menuText)
+        }
+    } catch Error as e {
+        OutputDebug("[Excel] ERROR showing help: " . e.Message)
+        ShowCenteredToolTip("EXCEL LAYER HELP: See registered keymaps in config/keymap.ahk")
+    }
+}
+
+ExcelHelpAutoClose() {
+    global ExcelHelpActive
+    if (ExcelHelpActive)
+        ExcelCloseHelp()
+}
+
+ExcelCloseHelp() {
+    global isExcelLayerActive, ExcelHelpActive
+    try SetTimer(ExcelHelpAutoClose, 0)
+    try HideCSharpTooltip()
+    ExcelHelpActive := false
+    if (isExcelLayerActive) {
+        try {
+            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+                ; If you have a custom status tooltip, call it here
+                ; ShowExcelLayerToggleCS(true)
+            } else {
+                ShowCenteredToolTip("◉ EXCEL LAYER")
+                SetTimer(() => RemoveToolTip(), -900)
+            }
+        }
+    } else {
+        try RemoveToolTip()
+    }
+}
+
+; ==============================
 ; KEYMAP REGISTRATION
 ; ==============================
 ; Register in config/keymap.ahk:

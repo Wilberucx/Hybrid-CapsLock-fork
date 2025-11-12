@@ -108,9 +108,45 @@ Si tu capa no funciona, verifica:
    - `scroll_layer.ahk` usa `"scroll"` (minúscula)
    - `nvim_layer.ahk` usa `"nvim"` (minúscula)
 
+## 💡 Sistema de Tooltips Dinámicos
+
+El template ahora incluye un sistema de help dinámico que lee automáticamente todos los keymaps registrados.
+
+### Cómo funciona:
+
+1. **Registras tus keymaps** en `config/keymap.ahk`:
+   ```autohotkey
+   RegisterKeymap("excel", "h", "Move Left", VimMoveLeft, false, 20)
+   RegisterKeymap("excel", "?", "Toggle Help", ExcelToggleHelp, false, 100)
+   ```
+
+2. **El sistema genera el tooltip automáticamente** cuando presionas `?`:
+   - Lee todos los keymaps de `KeymapRegistry` para tu layer
+   - Genera un tooltip con C# (si está habilitado) o nativo
+   - Muestra: `h - Move Left`, `? - Toggle Help`, etc.
+
+3. **No necesitas escribir el menú manualmente** - se actualiza solo cuando agregas/modificas keymaps
+
+### Funciones clave:
+
+- `GenerateCategoryItemsForPath("layer_id")` - Genera items para tooltip C#
+- `BuildMenuForPath("layer_id", "Title")` - Genera texto para tooltip nativo
+- `ShowBottomRightListTooltip(title, items, footer, timeout)` - Muestra tooltip C#
+
+### Ejemplo completo en el template:
+
+```autohotkey
+ExcelShowHelp() {
+    global tooltipConfig, ExcelHelpActive
+    items := GenerateCategoryItemsForPath("excel")  // Lee keymaps automáticamente
+    ShowBottomRightListTooltip("EXCEL LAYER HELP", items, "?: Close", 8000)
+}
+```
+
 ## 📚 Referencias
 
 - Template: `doc/templates/template_layer.ahk`
-- Ejemplo funcional: `src/layer/scroll_layer.ahk`
+- Ejemplo funcional: `src/layer/scroll_layer.ahk`, `src/layer/nvim_layer.ahk`
 - Sistema de keymaps: `src/core/keymap_registry.ahk`
+- Sistema de tooltips: `src/ui/tooltip_csharp_integration.ahk`
 - Documentación: `doc/CREATING_NEW_LAYERS.md`

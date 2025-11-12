@@ -224,18 +224,26 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("nvim", "Escape", "Exit", NvimExit, false, 72)
     RegisterKeymap("nvim", "?", "Toggle Help", NvimToggleHelp, false, 73)
 
-    ;Excel Layer Keymaps
+    ; Excel Layer Keymaps
+    ; Navigation
     RegisterKeymap("excel", "h", "Move Left", VimMoveLeft, false, 20)
     RegisterKeymap("excel", "j", "Move Down", VimMoveDown, false, 21)
     RegisterKeymap("excel", "k", "Move Up", VimMoveUp, false, 22)
     RegisterKeymap("excel", "l", "Move Right", VimMoveRight, false, 23)
+    
+    ; Go to commands
     RegisterCategoryKeymap("excel", "g", "Go to", 1)
     RegisterKeymap("excel", "g", "g", "Go to Top", VimTopOfFile, false, 41)
-    RegisterKeymap("excel", "G", "Go to Bottom", VimBottomOfFile, false, 41)
+    RegisterKeymap("excel", "G", "Go to Bottom", VimBottomOfFile, false, 42)
+    
+    ; Edit operations
     RegisterKeymap("excel", "p", "Paste", VimPaste, false, 52)
     RegisterKeymap("excel", "u", "Undo", VimUndo, false, 55)
     RegisterKeymap("excel", "r", "Redo", VimRedo, false, 56)
+    
+    ; Layer control
     RegisterKeymap("excel", "Escape", "Exit", ExcelExit, false, 72)
+    RegisterKeymap("excel", "?", "Toggle Help", ExcelToggleHelp, false, 73)
     
     ; REMOVED (Complex logic moved to no_include/nvim_layer_LEGACY.ahk):
     ; - ColonLogic (:w, :q, :wq)
