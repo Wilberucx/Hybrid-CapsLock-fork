@@ -6,29 +6,29 @@ InitializeCategoryKeymaps() {
     ; ==============================
     ; 1. CATEGORÍAS PRINCIPALES EN LEADER
     ; ==============================
-    RegisterCategoryKeymap("h", "Hybrid Management", 1)
-    RegisterCategoryKeymap("t", "Timestamps", 2)
-    RegisterCategoryKeymap("c", "Commands", 3)
+    RegisterCategoryKeymap("leader", "h", "Hybrid Management", 1)
+    RegisterCategoryKeymap("leader", "t", "Timestamps", 2)
+    RegisterCategoryKeymap("leader", "c", "Commands", 3)
     RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
     RegisterKeymap("leader", "e", "Excel Layer", ActivateExcelLayer, false, 5)
-    RegisterCategoryKeymap("p", "Programs", 6)
-    RegisterCategoryKeymap("o", "Power Options", 7)
-    RegisterCategoryKeymap("i", "Information", 8)
+    RegisterCategoryKeymap("leader", "p", "Programs", 6)
+    RegisterCategoryKeymap("leader", "o", "Power Options", 7)
+    RegisterCategoryKeymap("leader", "i", "Information", 8)
     ; ==============================
     ; 2. SUBCATEGORÍAS 
     ; ==============================
     ; Leader → c
-    RegisterCategoryKeymap("c", "s", "System Commands", 1)
-    RegisterCategoryKeymap("c", "g", "Git Commands", 3)
-    RegisterCategoryKeymap("c", "m", "Monitoring Commands", 4)
-    RegisterCategoryKeymap("c", "n", "Network Commands", 5)
-    RegisterCategoryKeymap("c", "f", "Folder Access", 6)
-    RegisterCategoryKeymap("c", "a", "ADB Tools", 7)
-    RegisterCategoryKeymap("c", "v", "VaultFlow", 8)
+    RegisterCategoryKeymap("leader", "c", "s", "System Commands", 1)
+    RegisterCategoryKeymap("leader", "c", "g", "Git Commands", 3)
+    RegisterCategoryKeymap("leader", "c", "m", "Monitoring Commands", 4)
+    RegisterCategoryKeymap("leader", "c", "n", "Network Commands", 5)
+    RegisterCategoryKeymap("leader", "c", "f", "Folder Access", 6)
+    RegisterCategoryKeymap("leader", "c", "a", "ADB Tools", 7)
+    RegisterCategoryKeymap("leader", "c", "v", "VaultFlow", 8)
     ; Leader → t 
-    RegisterCategoryKeymap("t", "d", "Date Formats", 1)
-    RegisterCategoryKeymap("t", "t", "Time Formats", 2)
-    RegisterCategoryKeymap("t", "h", "Date+Time Formats", 3)
+    RegisterCategoryKeymap("leader", "t", "d", "Date Formats", 1)
+    RegisterCategoryKeymap("leader", "t", "t", "Time Formats", 2)
+    RegisterCategoryKeymap("leader", "t", "h", "Date+Time Formats", 3)
     ; Programas (leader → p → KEY)
     RegisterKeymap("leader", "p", "e", "Explorer", ShellExec("explorer.exe"), false, 1)
     RegisterKeymap("leader", "p", "i", "Settings", ShellExec("ms-settings:"), false, 1)

@@ -59,7 +59,6 @@ LayerConfig := {
 ; ===============================
 
 TooltipConfig := {
-    ; Core settings (from configuration.ini [Tooltips])
     enabled: true,
     handles_input: false,
     exe_path: "",  ; Empty = auto-detect

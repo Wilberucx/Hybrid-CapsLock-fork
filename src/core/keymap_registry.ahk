@@ -3,20 +3,25 @@
 ; ==============================
 ; Central registry Neovim which-key style with hierarchical support
 ; 
-; SOPORTA DOS SINTAXIS:
-; 1. Sintaxis flat (legacy):
-;    RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+; FILOSOFÍA: El layer/context SIEMPRE es explícito (primer parámetro)
+; Esto permite mapear teclas en cualquier layer (leader, scroll, nvim, excel, etc.)
 ;
-; 2. Sintaxis jerárquica (nueva):
-;    RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
-;    Crea: Leader → c → a → d (multinivel)
+; SINTAXIS CONSISTENTE:
+; 1. Keymaps de un nivel:
+;    RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
+;    RegisterKeymap("scroll", "h", "Scroll Up", WheelScrollUp, false, 1)
 ;
-; El sistema detecta automáticamente qué sintaxis se está usando.
+; 2. Keymaps multinivel (jerárquicos):
+;    RegisterKeymap("leader", "c", "a", "d", "List Devices", ADBListDevices, false, 1)
+;    Crea: leader → c → a → d
+;
+; 3. Categorías (submenu navigation):
+;    RegisterCategoryKeymap("leader", "h", "Hybrid Management", 1)
+;    RegisterCategoryKeymap("leader", "c", "s", "System Commands", 1)
 
-global KeymapRegistry := Map()      ; Keymaps jerárquicos y flat
-global CategoryRegistry := Map()    ; Categories with metadata
-global CategoryOrder := []          ; Orden de categorías
-global LeaderRoot := "leader"       ; Raíz del sistema jerárquico
+global KeymapRegistry := Map()      ; Keymaps jerárquicos: layer.path → Map de teclas
+global CategoryRegistry := Map()    ; Categories with metadata (legacy flat system)
+global CategoryOrder := []          ; Orden de categorías (legacy)
 
 ; ==============================
 ; REGISTRO DE CATEGORÍAS
@@ -83,19 +88,20 @@ GetSortedCategories() {
 }
 
 ; ==============================
-; REGISTRO DE KEYMAPS (DUAL SYNTAX)
+; REGISTRO DE KEYMAPS (SINTAXIS UNIFICADA)
 ; ==============================
 
-; RegisterKeymap(args*)
-; DETECTA AUTOMÁTICAMENTE LA SINTAXIS:
+; RegisterKeymap(layer, key(s)..., desc, action, [confirm], [order])
+; El layer/context SIEMPRE es el primer parámetro (explícito)
 ;
-; FLAT (2 keys + metadata):
-;   RegisterKeymap(category, key, desc, action, [confirm], [order])
-;   Ejemplo: RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
+; EJEMPLOS:
+; - Un nivel:
+;   RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
+;   RegisterKeymap("scroll", "h", "Scroll Up", WheelScrollUp, false, 1)
 ;
-; JERÁRQUICA (3+ keys + metadata):
-;   RegisterKeymap(key1, key2, key3, ..., desc, action, [confirm], [order])
-;   Ejemplo: RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
+; - Multinivel (jerárquico):
+;   RegisterKeymap("leader", "c", "a", "d", "List Devices", ADBListDevices, false, 1)
+;   Resultado: leader.c.a.d → List Devices
 ;
 ; Metadata siempre al final:
 ;   - desc (requerido)
@@ -106,13 +112,19 @@ GetSortedCategories() {
 RegisterKeymap(args*) {
     global KeymapRegistry
     
-    ; Validar mínimo (2 keys + desc + action = 4 args)
+    ; Validar mínimo (layer + 1 key + desc + action = 4 args)
     if (args.Length < 4) {
-        throw Error("RegisterKeymap requiere al menos: key1, key2, description, action")
+        throw Error("RegisterKeymap requiere al menos: layer, key, description, action")
     }
     
     ; ==============================
-    ; PASO 1: Detectar metadata al final
+    ; PASO 1: Extraer layer (SIEMPRE primer parámetro)
+    ; ==============================
+    
+    layer := args[1]
+    
+    ; ==============================
+    ; PASO 2: Detectar metadata al final
     ; ==============================
     
     metadataStart := args.Length - 1  ; Al menos desc + action
@@ -140,16 +152,18 @@ RegisterKeymap(args*) {
     }
     
     ; ==============================
-    ; PASO 2: Extraer path keys
+    ; PASO 3: Extraer path keys (desde arg 2 hasta antes de metadata)
     ; ==============================
     
     pathKeys := []
     Loop metadataStart - 1 {
-        pathKeys.Push(args[A_Index])
+        if (A_Index > 1) {  ; Saltar el layer (arg 1)
+            pathKeys.Push(args[A_Index])
+        }
     }
     
     ; ==============================
-    ; PASO 3: Extraer metadata
+    ; PASO 4: Extraer metadata
     ; ==============================
     
     description := args[metadataStart]
@@ -167,21 +181,17 @@ RegisterKeymap(args*) {
     }
     
     ; ==============================
-    ; PASO 4: Determinar sintaxis
+    ; PASO 5: Registrar en KeymapRegistry
     ; ==============================
     
-    if (pathKeys.Length = 2) {
-        ; SINTAXIS FLAT: RegisterKeymap("system", "s", ...)
-        RegisterKeymapFlat(pathKeys[1], pathKeys[2], description, actionFunc, needsConfirm, order)
-    } else {
-        ; SINTAXIS JERÁRQUICA: RegisterKeymap("c", "a", "d", ...)
-        RegisterKeymapHierarchical(pathKeys, description, actionFunc, needsConfirm, order)
-    }
+    RegisterKeymapHierarchical(layer, pathKeys, description, actionFunc, needsConfirm, order)
 }
 
 ; ==============================
-; REGISTRO FLAT (legacy compatible)
+; REGISTRO FLAT (DEPRECATED - Mantener por compatibilidad legacy)
 ; ==============================
+; NOTA: Esta función ya NO se usa en el sistema nuevo
+; Todo pasa por RegisterKeymapHierarchical con layer explícito
 
 RegisterKeymapFlat(category, key, description, actionFunc, needsConfirm, order) {
     global KeymapRegistry
@@ -211,36 +221,29 @@ RegisterKeymapFlat(category, key, description, actionFunc, needsConfirm, order) 
 }
 
 ; ==============================
-; REGISTRO JERÁRQUICO (nuevo)
+; REGISTRO JERÁRQUICO
 ; ==============================
 
-RegisterKeymapHierarchical(pathKeys, description, actionFunc, needsConfirm, order) {
-    global KeymapRegistry, LeaderRoot
+RegisterKeymapHierarchical(layer, pathKeys, description, actionFunc, needsConfirm, order) {
+    global KeymapRegistry
     
-    ; Detectar si ya comienza con "leader"
-    adjustedPathKeys := []
-    if (pathKeys[1] = LeaderRoot) {
-        ; Si ya comienza con "leader", usar sin duplicar
-        Loop pathKeys.Length - 1 {
-            adjustedPathKeys.Push(pathKeys[A_Index + 1])
-        }
-        fullPath := LeaderRoot . "." . JoinArray(adjustedPathKeys, ".")
+    ; Construir path completo: layer.key1.key2...
+    if (pathKeys.Length > 0) {
+        fullPath := layer . "." . JoinArray(pathKeys, ".")
         lastKey := pathKeys[pathKeys.Length]
     } else {
-        ; Comportamiento original para paths sin "leader"
-        fullPath := LeaderRoot . "." . JoinArray(pathKeys, ".")
-        lastKey := pathKeys[pathKeys.Length]
-        adjustedPathKeys := pathKeys
+        ; Si no hay keys (solo layer), error
+        throw Error("RegisterKeymapHierarchical requiere al menos una key")
     }
     
     ; Construir path del padre
-    parentPath := LeaderRoot
-    if (adjustedPathKeys.Length > 1) {
+    parentPath := layer
+    if (pathKeys.Length > 1) {
         parentKeys := []
-        Loop adjustedPathKeys.Length - 1 {
-            parentKeys.Push(adjustedPathKeys[A_Index])
+        Loop pathKeys.Length - 1 {
+            parentKeys.Push(pathKeys[A_Index])
         }
-        parentPath := LeaderRoot . "." . JoinArray(parentKeys, ".")
+        parentPath := layer . "." . JoinArray(parentKeys, ".")
     }
     
     ; Asegurar que el padre existe
@@ -272,15 +275,23 @@ RegisterKeymapHierarchical(pathKeys, description, actionFunc, needsConfirm, orde
 ; REGISTRO DE CATEGORÍAS JERÁRQUICAS
 ; ==============================
 
-; RegisterCategoryKeymap(path..., title, [order])
+; RegisterCategoryKeymap(layer, path..., title, [order])
 ; Registra una categoría que lleva a otro nivel
-; Ejemplo: RegisterCategoryKeymap("c", "a", "ADB Tools", 1)
+; El layer/context es SIEMPRE el primer parámetro (explícito)
+; 
+; Ejemplos:
+;   RegisterCategoryKeymap("leader", "h", "Hybrid Management", 1)
+;   RegisterCategoryKeymap("leader", "c", "a", "ADB Tools", 1)
+;   RegisterCategoryKeymap("scroll", "advanced", "Advanced Scroll", 1)
 RegisterCategoryKeymap(args*) {
-    global KeymapRegistry, LeaderRoot
+    global KeymapRegistry
     
-    if (args.Length < 2) {
-        throw Error("RegisterCategoryKeymap requiere: path..., title, [order]")
+    if (args.Length < 3) {
+        throw Error("RegisterCategoryKeymap requiere: layer, key(s)..., title, [order]")
     }
+    
+    ; PRIMER parámetro SIEMPRE es el layer/context
+    layer := args[1]
     
     pathKeys := []
     title := ""
@@ -290,27 +301,30 @@ RegisterCategoryKeymap(args*) {
     if (Type(args[args.Length]) = "Integer") {
         order := args[args.Length]
         title := args[args.Length - 1]
-        Loop args.Length - 2 {
-            pathKeys.Push(args[A_Index])
+        ; Extraer keys intermedias (desde arg 2 hasta Length-2)
+        Loop args.Length - 3 {
+            pathKeys.Push(args[A_Index + 1])
         }
     } else {
         title := args[args.Length]
-        Loop args.Length - 1 {
-            pathKeys.Push(args[A_Index])
+        ; Extraer keys intermedias (desde arg 2 hasta Length-1)
+        Loop args.Length - 2 {
+            pathKeys.Push(args[A_Index + 1])
         }
     }
     
-    fullPath := LeaderRoot . "." . JoinArray(pathKeys, ".")
+    ; Construir path completo: layer.key1.key2...
+    fullPath := layer . "." . JoinArray(pathKeys, ".")
     lastKey := pathKeys[pathKeys.Length]
     
     ; Path del padre
-    parentPath := LeaderRoot
+    parentPath := layer
     if (pathKeys.Length > 1) {
         parentKeys := []
         Loop pathKeys.Length - 1 {
             parentKeys.Push(pathKeys[A_Index])
         }
-        parentPath := LeaderRoot . "." . JoinArray(parentKeys, ".")
+        parentPath := layer . "." . JoinArray(parentKeys, ".")
     }
     
     ; Asegurar padre existe
