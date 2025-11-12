@@ -155,6 +155,15 @@ ShowVisualModeStatus(isActive) {
     }
 }
 
+ShowExcelLayerStatus(isActive) {
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowExcelLayerToggleCS(isActive)
+    } else {
+        ShowCenteredToolTip(isActive ? "◉ EXCEL" : "○ EXCEL")
+        SetTimer(() => RemoveToolTip(), -900)
+    }
+}
+
 ShowDeleteMenu() {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         ShowDeleteMenuCS()

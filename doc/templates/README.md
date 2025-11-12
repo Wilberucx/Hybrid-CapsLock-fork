@@ -1,260 +1,178 @@
-# Layer Templates
+# Templates para Layers
 
-Este directorio contiene plantillas reutilizables para crear nuevas capas persistentes en Hybrid-CapsLock.
+Este directorio contiene plantillas para crear nuevos layers en HybridCapslock.
 
----
+## 📄 Archivos Disponibles
 
-## 📦 Contenido
+### `template_layer.ahk`
+**Plantilla completa y documentada para crear layers dinámicos**
 
-### **1. `layer_template.ahk`**
-Plantilla genérica completamente funcional para crear capas persistentes.
+Este es el archivo principal que debes copiar para crear un nuevo layer. Incluye:
 
-**Características:**
-- ✅ Exit key configurable (Esc, Shift+n, toggle, etc.)
-- ✅ Sistema de ayuda integrado con `?`
-- ✅ Tooltips C# + fallback nativo
-- ✅ Whitelist/Blacklist de aplicaciones
-- ✅ Soporte para sub-modos (mini-capas)
-- ✅ Carga dinámica de configuración (opcional)
-- ✅ Comentarios instructivos detallados
+✓ **Documentación exhaustiva** de cada función y sección
+✓ **Explicaciones en español** de cómo funciona cada parte
+✓ **Ejemplos de uso** para cada función
+✓ **Diagramas de flujo** explicando la ejecución
+✓ **Sistema de ayuda automático** que lee keymaps del registry
+✓ **Compatibilidad completa** con SwitchToLayer y auto_loader
 
-**Uso:**
+### Características Incluidas
+
+1. **Configuración:** Variables globales y feature flags
+2. **Función de Activación:** Punto de entrada público (`ActivateLayer`)
+3. **Hooks de Activación/Desactivación:** Funciones automáticas del sistema
+4. **Acciones Específicas:** Funciones de control del layer (Exit, etc.)
+5. **Sistema de Ayuda:** Help dinámico que lee KeymapRegistry automáticamente
+6. **Registro de Keymaps:** Ejemplos de cómo registrar teclas
+
+## 🚀 Inicio Rápido
+
+### Paso 1: Copiar Template
 ```bash
-# Copiar plantilla a src/layer/
-cp doc/templates/layer_template.ahk src/layer/my_layer.ahk
-
-# Editar y cambiar LAYER_NAME
-# Definir hotkeys específicos
-# Incluir en init.ahk
-# Registrar en command_system_init.ahk
+cp doc/templates/template_layer.ahk src/layer/mi_layer.ahk
 ```
 
----
+### Paso 2: Reemplazar Placeholders
 
-### **2. `example_browser_layer.ahk`**
-Ejemplo práctico de una capa para navegación en navegadores web.
+Buscar y reemplazar en tu editor:
 
-**Demuestra:**
-- ✅ Cómo seguir la plantilla paso a paso
-- ✅ Navegación estilo Vim (hjkl, gg, G)
-- ✅ Gestión de pestañas (t, w, [, ])
-- ✅ Acciones de navegador (r reload, f find, b bookmark)
-- ✅ Múltiples exit keys (Esc y q)
-- ✅ Sistema de ayuda personalizado
-- ✅ Filtrado por aplicaciones (solo navegadores)
+| Buscar | Reemplazar | Ejemplo |
+|--------|-----------|---------|
+| `LAYER_ID` | Tu identificador (lowercase) | `excel`, `scroll`, `myfeature` |
+| `LAYER_NAME` | Tu nombre (PascalCase) | `Excel`, `Scroll`, `MyFeature` |
+| `LAYER_DISPLAY` | Texto para mostrar | `EXCEL LAYER`, `MY FEATURE` |
 
-**Uso como referencia:**
-```bash
-# Ver el ejemplo para entender la estructura
-cat doc/templates/example_browser_layer.ahk
+### Paso 3: Registrar Keymaps
 
-# Copiar y adaptar para tu caso de uso
-cp doc/templates/example_browser_layer.ahk src/layer/my_custom_layer.ahk
-```
+En `config/keymap.ahk`, agregar:
 
----
-
-## 📚 Documentación Completa
-
-Para guía detallada, ver:
-- **[doc/develop/PERSISTENT_LAYER_TEMPLATE.md](../develop/PERSISTENT_LAYER_TEMPLATE.md)** - Documentación exhaustiva
-  - Arquitectura de capas persistentes
-  - Guía paso a paso
-  - Patrones de diseño
-  - Ejemplos completos
-  - Checklist para crear capas
-
----
-
-## 🎯 Quick Start
-
-### **Crear una nueva capa en 5 pasos:**
-
-1. **Copiar plantilla**
-   ```bash
-   cp doc/templates/layer_template.ahk src/layer/database_layer.ahk
-   ```
-
-2. **Cambiar nombre de capa**
-   ```ahk
-   LAYER_NAME := "Database"  ; Línea 23
-   ```
-
-3. **Definir hotkeys**
-   ```ahk
-   ; En la sección "DEFINE YOUR LAYER'S HOTKEYS HERE"
-   h::Send("{Left}")
-   j::Send("{Down}")
-   c::ConnectToDatabase()
-   ```
-
-4. **Incluir en init.ahk**
-   ```ahk
-   #Include src/layer/database_layer.ahk
-   ```
-
-5. **Registrar activación**
-   ```ahk
-   ; En command_system_init.ahk
-   RegisterKeymapFlat("leader", "d", "Database Layer", ActivateMyLayer, false, 5)
-   ```
-
----
-
-## 🔍 Comparación: Template vs Ejemplo
-
-| Aspecto | `layer_template.ahk` | `example_browser_layer.ahk` |
-|---------|---------------------|----------------------------|
-| **Propósito** | Base reutilizable | Referencia práctica |
-| **Hotkeys** | Comentados (ejemplos) | Implementados (navegador) |
-| **LAYER_NAME** | "MyLayer" (cambiar) | "Browser" (ejemplo) |
-| **Exit Key** | Esc (configurable) | Esc + q (dos opciones) |
-| **Funciones** | Genéricas (ActivateMyLayer) | Genéricas (mismo patrón) |
-| **Comentarios** | Instrucciones detalladas | Menos comentarios |
-| **Uso** | Copiar y personalizar | Ver y aprender |
-
----
-
-## 💡 Casos de Uso
-
-### **Cuándo usar `layer_template.ahk`:**
-- ✅ Crear una capa completamente nueva desde cero
-- ✅ Necesitas máxima flexibilidad
-- ✅ Quieres entender toda la estructura
-
-### **Cuándo usar `example_browser_layer.ahk`:**
-- ✅ Crear una capa similar al ejemplo (navegador, editor, IDE)
-- ✅ Ver implementación real y funcional
-- ✅ Copiar y adaptar rápidamente
-
----
-
-## 🎨 Patrones de Exit Key
-
-Ambas plantillas soportan diferentes estrategias de salida:
-
-### **Patrón 1: Escape (por defecto)**
-```ahk
-Esc:: {
-    DeactivateMyLayer()
+```autohotkey
+RegisterMyFeatureKeymaps() {
+    ; Acciones básicas
+    RegisterKeymap("myfeature", "h", "Move Left", VimMoveLeft, false, 1)
+    RegisterKeymap("myfeature", "j", "Move Down", VimMoveDown, false, 2)
+    
+    ; Salir del layer
+    RegisterKeymap("myfeature", "Escape", "Exit", MyFeatureExit, false, 10)
+    
+    ; Sistema de ayuda
+    RegisterKeymap("myfeature", "?", "Toggle Help", MyFeatureToggleHelp, false, 100)
 }
+
+; Llamar dentro de InitializeCategoryKeymaps():
+RegisterMyFeatureKeymaps()
 ```
 
-### **Patrón 2: Custom Key (e.g., Shift+n)**
-```ahk
-+n:: {
-    DeactivateMyLayer()
-    SetTempStatus("LAYER OFF", 1500)
-}
+### Paso 4: Activar desde Leader
+
+```autohotkey
+RegisterKeymap("leader", "m", "My Feature", ActivateMyFeatureLayer, false)
 ```
 
-### **Patrón 3: Same-Key Toggle**
-```ahk
-s:: {
-    ToggleMyLayer()
-}
-```
+## 📚 Documentación Adicional
 
-### **Patrón 4: Multiple Options (ejemplo)**
-```ahk
-Esc:: DeactivateMyLayer()
-q:: DeactivateMyLayer()
-```
+### Dentro del Template
+El archivo `template_layer.ahk` incluye documentación detallada inline:
+
+- **Sección 1:** Configuración y variables globales
+- **Sección 2:** Función de activación (punto de entrada)
+- **Sección 3:** Hooks de activación/desactivación
+- **Sección 4:** Acciones específicas del layer
+- **Sección 5:** Sistema de ayuda dinámico
+
+### Referencia de Funciones
+Ver `doc/LAYER_FUNCTIONS_REFERENCE.md` para:
+- Lista completa de funciones del sistema
+- Parámetros y valores de retorno
+- Ejemplos de uso
+- Flujos de ejecución completos
+
+### Guías Adicionales
+- `doc/CREATING_NEW_LAYERS.md` - Guía paso a paso
+- `doc/KEYMAP_SYSTEM_UNIFIED.md` - Sistema de keymaps
+- `doc/DEBUG_SYSTEM.md` - Debugging de layers
+
+## ❓ Preguntas Frecuentes
+
+### ¿Qué es LAYER_ID vs LAYER_NAME?
+
+- **LAYER_ID** (lowercase): Identificador técnico usado en funciones del sistema
+  - Ejemplo: `"excel"`, `"scroll"`, `"myfeature"`
+  - Usado en: `SwitchToLayer()`, `ListenForLayerKeymaps()`, `RegisterKeymap()`
+
+- **LAYER_NAME** (PascalCase): Nombre usado en funciones y variables
+  - Ejemplo: `"Excel"`, `"Scroll"`, `"MyFeature"`
+  - Usado en: `ActivateExcelLayer()`, `isExcelLayerActive`
+
+### ¿Por qué ListenForLayerKeymaps() es bloqueante?
+
+Esta función mantiene un loop infinito que:
+1. Espera inputs del usuario
+2. Ejecuta keymaps registrados
+3. Continúa hasta que la variable de estado sea false
+
+El código después de `ListenForLayerKeymaps()` NO se ejecuta hasta que el layer se desactive.
+
+### ¿Cómo funciona el sistema de ayuda automático?
+
+El sistema de ayuda:
+1. Lee `KeymapRegistry[LAYER_ID]` automáticamente
+2. Genera el menú con todos los keymaps registrados
+3. Muestra tooltip (C# o nativo)
+4. Se actualiza automáticamente cuando registras nuevos keymaps
+
+**NO necesitas escribir el menú manualmente** - el sistema lo genera por ti.
+
+### ¿Dónde van las acciones genéricas vs específicas?
+
+- **Específicas del layer** → `src/layer/{nombre}_layer.ahk`
+  - Ejemplo: `ExcelExit()`, `ScrollToggleHelp()`
+  
+- **Genéricas/reutilizables** → `src/actions/`
+  - Ejemplo: `VimMoveLeft()`, `ScrollUp()`, `GitCommit()`
+
+## 🔗 Ejemplos Reales
+
+Ver layers existentes como referencia:
+
+- **Excel Layer:** `src/layer/excel_layer.ahk`
+  - Layer completo con sistema de ayuda
+  - Keymaps de navegación estilo Vim
+  
+- **Scroll Layer:** `src/layer/scroll_layer.ahk`
+  - Layer simple de scroll
+  - Ejemplo de tooltip persistente
+  
+- **Nvim Layer:** `src/layer/nvim_layer.ahk`
+  - Layer complejo con múltiples modos
+  - Navegación jerárquica avanzada
+
+## ✅ Checklist de Integración
+
+Antes de considerar tu layer completo:
+
+- [ ] Template copiado y placeholders reemplazados
+- [ ] LAYER_ID (lowercase) usado en todas las funciones del sistema
+- [ ] LAYER_NAME (PascalCase) usado en nombres de funciones
+- [ ] Acciones específicas implementadas
+- [ ] Keymaps registrados en `config/keymap.ahk`
+- [ ] Sistema de ayuda funcional (tecla `?`)
+- [ ] Status tooltips implementados
+- [ ] Activación desde leader menu configurada
+- [ ] Probado: activación, keymaps, desactivación
+- [ ] Probado: sistema de ayuda muestra keymaps correctos
+- [ ] Probado: navegación entre layers funciona
+
+## 🎯 Próximos Pasos
+
+Después de crear tu layer:
+
+1. **Testear exhaustivamente** todas las funciones
+2. **Documentar** keymaps en comentarios
+3. **Agregar ejemplos** de uso si es complejo
+4. **Considerar** si necesitas tooltips customizados
+5. **Optimizar** performance si tiene muchas acciones
 
 ---
 
-## 🏗️ Estructura de Archivos
-
-```
-Hybrid-CapsLock-fork/
-├── doc/
-│   ├── templates/              ← Plantillas aquí
-│   │   ├── README.md           ← Este archivo
-│   │   ├── layer_template.ahk  ← Plantilla base
-│   │   └── example_browser_layer.ahk  ← Ejemplo funcional
-│   └── develop/
-│       └── PERSISTENT_LAYER_TEMPLATE.md  ← Documentación completa
-├── src/
-│   ├── layer/                  ← Capas implementadas
-│   │   ├── excel_layer.ahk
-│   │   ├── nvim_layer.ahk
-│   │   ├── scroll_layer.ahk
-│   │   └── [tu_nueva_capa.ahk]  ← Copia aquí desde templates
-│   └── actions/                ← Funciones reutilizables
-├── config/                     ← Archivos de configuración
-│   ├── excel_layer.ini
-│   └── [tu_capa_layer.ini]     ← Config opcional
-└── init.ahk                    ← Incluir nuevas capas aquí
-```
-
----
-
-## ⚡ Pro Tips
-
-1. **Mantén el patrón de nombres consistente:**
-   - Template usa funciones genéricas (`ActivateMyLayer()`)
-   - Esto permite copy-paste directo
-   - Solo cambia `LAYER_NAME` y hotkeys
-
-2. **Usa el ejemplo como referencia visual:**
-   - Abre ambos archivos lado a lado
-   - Compara estructura vs implementación
-   - Entiende dónde personalizar
-
-3. **No modifiques los templates:**
-   - Siempre copia a `src/layer/`
-   - Los templates deben permanecer puros
-   - Facilita mantener consistencia
-
-4. **Prueba incrementalmente:**
-   - Define 2-3 hotkeys primero
-   - Prueba activación y exit
-   - Agrega más hotkeys gradualmente
-
----
-
-## 🤝 Contribuir
-
-Si creas una capa genérica útil, considera:
-1. Documentarla
-2. Crear un ejemplo en `doc/templates/`
-3. Agregar a la documentación
-
-**Ejemplos de capas genéricas útiles:**
-- Editor layer (Vim navigation in any text editor)
-- IDE layer (Code navigation shortcuts)
-- Database layer (SQL client shortcuts)
-- Media layer (Player controls)
-- Terminal layer (Shell navigation)
-
----
-
-## 📖 Ver También
-
-- **[PERSISTENT_LAYER_TEMPLATE.md](../develop/PERSISTENT_LAYER_TEMPLATE.md)** - Documentación completa
-- **[GENERIC_ROUTER_ARCHITECTURE.md](../develop/GENERIC_ROUTER_ARCHITECTURE.md)** - Leader menu system
-- **[src/layer/excel_layer.ahk](../../src/layer/excel_layer.ahk)** - Ejemplo de capa compleja con sub-modos
-- **[src/layer/nvim_layer.ahk](../../src/layer/nvim_layer.ahk)** - Ejemplo de sistema de modos múltiples
-
----
-
-## ✅ Checklist Rápido
-
-Antes de usar una plantilla:
-- [ ] Leer [PERSISTENT_LAYER_TEMPLATE.md](../develop/PERSISTENT_LAYER_TEMPLATE.md)
-- [ ] Decidir qué plantilla usar (base o ejemplo)
-- [ ] Definir exit key strategy
-- [ ] Planear hotkeys principales
-- [ ] Verificar conflictos con capas existentes
-
-Después de crear tu capa:
-- [ ] Incluir en `init.ahk`
-- [ ] Registrar activación
-- [ ] Crear config INI (opcional)
-- [ ] Probar todos los hotkeys
-- [ ] Probar sistema de ayuda (`?`)
-- [ ] Documentar (opcional)
-
----
-
-**¡Feliz creación de capas!** 🚀
+**¿Necesitas ayuda?** Consulta `doc/LAYER_FUNCTIONS_REFERENCE.md` para referencia completa de funciones.

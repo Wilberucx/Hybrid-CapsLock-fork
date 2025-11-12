@@ -54,9 +54,9 @@ OnLAYER_NAMELayerActivate() {
     
     OutputDebug("[LAYER_NAME] OnLAYER_NAMELayerActivate() - Activating layer")
     
-    ; Show status (optional - implement ShowLAYER_NAMELayerStatus if needed)
+    ; Show status tooltip (persistent indicator)
     try {
-        ; ShowLAYER_NAMELayerStatus(true)
+        ShowLAYER_NAMELayerStatus(true)
         SetTempStatus("LAYER_DISPLAY ON", 1500)
     } catch Error as e {
         OutputDebug("[LAYER_NAME] ERROR showing status: " . e.Message)
@@ -72,16 +72,22 @@ OnLAYER_NAMELayerActivate() {
     ; When listener exits, deactivate layer
     isLAYER_NAMELayerActive := false
     try {
-        ; ShowLAYER_NAMELayerStatus(false)
+        ShowLAYER_NAMELayerStatus(false)
         SetTempStatus("LAYER_DISPLAY OFF", 1500)
     }
 }
 
 OnLAYER_NAMELayerDeactivate() {
-    global isLAYER_NAMELayerActive
+    global isLAYER_NAMELayerActive, LAYER_NAMEHelpActive
     isLAYER_NAMELayerActive := false
     
-    ; Clean up any layer-specific state here
+    ; Clean up help if active
+    if (IsSet(LAYER_NAMEHelpActive) && LAYER_NAMEHelpActive) {
+        try LAYER_NAMECloseHelp()
+    }
+    
+    try ShowLAYER_NAMELayerStatus(false)
+    
     OutputDebug("[LAYER_NAME] Layer deactivated")
 }
 
@@ -202,6 +208,62 @@ LAYER_NAMECloseHelp() {
 ;     ; ... more keymaps
 
 ; ==============================
+; STATUS TOOLTIP FUNCTIONS (To implement in UI files)
+; ==============================
+; These functions need to be implemented in the UI wrapper files:
+;
+; 1. In src/ui/tooltips_native_wrapper.ahk (native fallback):
+;    ShowLAYER_NAMELayerStatus(isActive) {
+;        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+;            try ShowLAYER_NAMELayerToggleCS(isActive)
+;        } else {
+;            ShowCenteredToolTip(isActive ? "◉ LAYER_DISPLAY" : "○ LAYER_DISPLAY")
+;            SetTimer(() => RemoveToolTip(), -900)
+;        }
+;    }
+;
+; 2. In src/ui/tooltip_csharp_integration.ahk (C# tooltip):
+;    ShowLAYER_NAMELayerToggleCS(isActive) {
+;        try HideCSharpTooltip()
+;        Sleep 30
+;        StartTooltipApp()
+;        if (!isActive) {
+;            try HideCSharpTooltip()
+;            return
+;        }
+;        theme := ReadTooltipThemeDefaults()
+;        cmd := Map()
+;        cmd["show"] := true
+;        cmd["title"] := "LAYER_DISPLAY"
+;        cmd["layout"] := "list"
+;        cmd["tooltip_type"] := "bottom_right_list"
+;        cmd["timeout_ms"] := 0  ; persistent while layer is active
+;        items := []
+;        it := Map()
+;        it["key"] := "?"
+;        it["description"] := "help"
+;        items.Push(it)
+;        cmd["items"] := items
+;        if (theme.style.Count)
+;            cmd["style"] := theme.style
+;        if (theme.position.Count)
+;            cmd["position"] := theme.position
+;        if (theme.window.Has("topmost"))
+;            cmd["topmost"] := theme.window["topmost"]
+;        if (theme.window.Has("click_through"))
+;            cmd["click_through"] := theme.window["click_through"]
+;        if (theme.window.Has("opacity"))
+;            cmd["opacity"] := theme.window["opacity"]
+;        json := SerializeJson(cmd)
+;        ScheduleTooltipJsonWrite(json)
+;    }
+;
+; See examples in:
+; - ShowScrollLayerStatus() in src/ui/scroll_tooltip_integration.ahk
+; - ShowNvimLayerToggleCS() in src/ui/tooltip_csharp_integration.ahk
+; - ShowExcelLayerStatus() in src/ui/tooltips_native_wrapper.ahk
+
+; ==============================
 ; INTEGRATION CHECKLIST
 ; ==============================
 ; □ 1. Copy and rename this file to {layerName}_layer.ahk
@@ -217,7 +279,12 @@ LAYER_NAMECloseHelp() {
 ; □ 7. Create action functions in src/actions/ if reusable
 ; □ 8. Register keymaps in config/keymap.ahk using lowercase LAYER_ID
 ;       - Include help keymap: RegisterKeymap("LAYER_ID", "?", "Toggle Help", LAYER_NAMEToggleHelp, false, 100)
-; □ 9. Register layer activation in leader menu if needed:
+; □ 9. Implement status tooltip functions in UI files:
+;       - Add ShowLAYER_NAMELayerStatus() in src/ui/tooltips_native_wrapper.ahk
+;       - Add ShowLAYER_NAMELayerToggleCS() in src/ui/tooltip_csharp_integration.ahk
+;       - See "STATUS TOOLTIP FUNCTIONS" section above for code templates
+; □ 10. Register layer activation in leader menu if needed:
 ;       RegisterKeymap("leader", "key", "LAYER_DISPLAY", ActivateLAYER_NAMELayer, false)
-; □ 10. Test activation, keymaps, and deactivation
-; □ 11. Test help system by pressing "?" while layer is active
+; □ 11. Test activation, keymaps, and deactivation
+; □ 12. Test help system by pressing "?" while layer is active
+; □ 13. Test status tooltip appears when layer activates (persistent indicator)

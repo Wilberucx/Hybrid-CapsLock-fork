@@ -27,10 +27,10 @@ OnExcelLayerActivate() {
     
     OutputDebug("[Excel] OnExcelLayerActivate() - Activating layer")
     
-    ; Show status (optional - implement ShowExcelLayerStatus if needed)
+    ; Show status
     try {
-        ; ShowExcelLayerStatus(true)
-        SetTempStatus("EXCEL ON", 1500)
+        ShowExcelLayerStatus(true)
+        SetTempStatus("EXCEL LAYER ON", 1500)
     } catch Error as e {
         OutputDebug("[Excel] ERROR showing status: " . e.Message)
     }
@@ -45,16 +45,22 @@ OnExcelLayerActivate() {
     ; When listener exits, deactivate layer
     isExcelLayerActive := false
     try {
-        ; ShowExcelLayerStatus(false)
-        SetTempStatus("EXCEL OFF", 1500)
+        ShowExcelLayerStatus(false)
+        SetTempStatus("EXCEL LAYER OFF", 1500)
     }
 }
 
 OnExcelLayerDeactivate() {
-    global isExcelLayerActive
+    global isExcelLayerActive, ExcelHelpActive
     isExcelLayerActive := false
     
-    ; Clean up any layer-specific state here
+    ; Clean up help if active
+    if (IsSet(ExcelHelpActive) && ExcelHelpActive) {
+        try ExcelCloseHelp()
+    }
+    
+    try ShowExcelLayerStatus(false)
+    
     OutputDebug("[Excel] Layer deactivated")
 }
 
@@ -132,15 +138,7 @@ ExcelCloseHelp() {
     try HideCSharpTooltip()
     ExcelHelpActive := false
     if (isExcelLayerActive) {
-        try {
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-                ; If you have a custom status tooltip, call it here
-                ; ShowExcelLayerToggleCS(true)
-            } else {
-                ShowCenteredToolTip("◉ EXCEL LAYER")
-                SetTimer(() => RemoveToolTip(), -900)
-            }
-        }
+        try ShowExcelLayerStatus(true)
     } else {
         try RemoveToolTip()
     }

@@ -110,9 +110,13 @@ Si tu capa no funciona, verifica:
 
 ## 💡 Sistema de Tooltips Dinámicos
 
-El template ahora incluye un sistema de help dinámico que lee automáticamente todos los keymaps registrados.
+El template incluye DOS tipos de tooltips:
 
-### Cómo funciona:
+### 1. **Help Tooltip** (Dinánico - Muestra todos los keymaps)
+
+Lee automáticamente todos los keymaps registrados y los muestra cuando presionas `?`.
+
+#### Cómo funciona:
 
 1. **Registras tus keymaps** en `config/keymap.ahk`:
    ```autohotkey
@@ -127,19 +131,104 @@ El template ahora incluye un sistema de help dinámico que lee automáticamente 
 
 3. **No necesitas escribir el menú manualmente** - se actualiza solo cuando agregas/modificas keymaps
 
-### Funciones clave:
+#### Funciones clave:
 
 - `GenerateCategoryItemsForPath("layer_id")` - Genera items para tooltip C#
 - `BuildMenuForPath("layer_id", "Title")` - Genera texto para tooltip nativo
 - `ShowBottomRightListTooltip(title, items, footer, timeout)` - Muestra tooltip C#
 
-### Ejemplo completo en el template:
+#### Ejemplo:
 
 ```autohotkey
 ExcelShowHelp() {
     global tooltipConfig, ExcelHelpActive
     items := GenerateCategoryItemsForPath("excel")  // Lee keymaps automáticamente
     ShowBottomRightListTooltip("EXCEL LAYER HELP", items, "?: Close", 8000)
+}
+```
+
+### 2. **Status Tooltip** (Persistente - Indicador de estado activo)
+
+Muestra un indicador persistente en la esquina inferior derecha mientras la capa está activa.
+
+#### Cómo funciona:
+
+1. **Cuando la capa se activa**, muestra tooltip persistente:
+   - **C# Tooltip** (si está habilitado): `[Excel] ? help` - permanece visible (timeout=0)
+   - **Native Tooltip** (fallback): `◉ EXCEL` - desaparece después de 900ms
+
+2. **Cuando la capa se desactiva**, oculta el tooltip
+
+3. **Después de cerrar el help**, restaura el tooltip de estado
+
+#### Estructura:
+
+Necesitas implementar DOS funciones en los archivos de UI:
+
+**En `src/ui/tooltips_native_wrapper.ahk`** (fallback nativo):
+```autohotkey
+ShowExcelLayerStatus(isActive) {
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowExcelLayerToggleCS(isActive)
+    } else {
+        ShowCenteredToolTip(isActive ? "◉ EXCEL" : "○ EXCEL")
+        SetTimer(() => RemoveToolTip(), -900)
+    }
+}
+```
+
+**En `src/ui/tooltip_csharp_integration.ahk`** (C# tooltip):
+```autohotkey
+ShowExcelLayerToggleCS(isActive) {
+    try HideCSharpTooltip()
+    Sleep 30
+    StartTooltipApp()
+    if (!isActive) {
+        try HideCSharpTooltip()
+        return
+    }
+    theme := ReadTooltipThemeDefaults()
+    cmd := Map()
+    cmd["show"] := true
+    cmd["title"] := "Excel"
+    cmd["layout"] := "list"
+    cmd["tooltip_type"] := "bottom_right_list"
+    cmd["timeout_ms"] := 0  ; persistent while layer is active
+    items := []
+    it := Map()
+    it["key"] := "?"
+    it["description"] := "help"
+    items.Push(it)
+    cmd["items"] := items
+    if (theme.style.Count)
+        cmd["style"] := theme.style
+    if (theme.position.Count)
+        cmd["position"] := theme.position
+    if (theme.window.Has("topmost"))
+        cmd["topmost"] := theme.window["topmost"]
+    if (theme.window.Has("click_through"))
+        cmd["click_through"] := theme.window["click_through"]
+    if (theme.window.Has("opacity"))
+        cmd["opacity"] := theme.window["opacity"]
+    json := SerializeJson(cmd)
+    ScheduleTooltipJsonWrite(json)
+}
+```
+
+#### Uso en la capa:
+
+```autohotkey
+OnExcelLayerActivate() {
+    ShowExcelLayerStatus(true)  // Muestra indicador persistente
+    ListenForLayerKeymaps("excel", "isExcelLayerActive")
+    ShowExcelLayerStatus(false)  // Oculta cuando termina
+}
+
+ExcelCloseHelp() {
+    HideCSharpTooltip()
+    if (isExcelLayerActive) {
+        ShowExcelLayerStatus(true)  // Restaura indicador después del help
+    }
 }
 ```
 
