@@ -1,6 +1,11 @@
 ; ==============================
-; Keymap Configuration - Configuración de Categorías y Navegación
+; Keymap Configuration - Configuration of keymaps and categories and laers activation
 ; ==============================
+#SuspendExempt
+#HotIf (leaderLayerEnabled)
+F24:: ActivateLeaderLayer()
+#HotIf
+#SuspendExempt False
 
 InitializeCategoryKeymaps() {
     ; ==============================

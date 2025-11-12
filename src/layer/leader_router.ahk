@@ -9,27 +9,44 @@
 ; - Multi-level navigation with breadcrumb (back working)
 ; - Compatible with categories registered in command_system_init.ahk
 ;
+; IMPORTANT: F24 hotkey CANNOT be moved to RegisterKeymap()
+; - F24 is a GLOBAL TRIGGER from Kanata (external)
+; - RegisterKeymap() is for keys INSIDE layers (internal)
+; - F24 is the entry point that ACTIVATES leader
+; - Keymaps are for actions WITHIN activated layers
+;
 ; Dependencies: 
 ;   - core/keymap_registry (ExecuteKeymapAtPath, GetSortedKeymapsForPath)
 ;   - core/config (GetEffectiveTimeout)
 ;   - ui/tooltips
 
-#SuspendExempt
-#HotIf (leaderLayerEnabled)
-F24:: {
-    ; F24 sent by Kanata when CapsLock is held and Space is pressed
-    TryActivateLeader()
-}
-#HotIf
-
-#SuspendExempt False
-
 ; ==============================
-; UNIVERSAL HIERARCHICAL NAVIGATION
+; CONFIGURATION
 ; ==============================
 
-TryActivateLeader() {
+global leaderLayerEnabled := true  ; Feature flag for leader layer
+
+; ==============================
+; GLOBAL TRIGGER HOTKEY
+; ==============================
+; F24 is sent by Kanata when CapsLock is held and Space is pressed
+; This MUST remain a direct hotkey (cannot use RegisterKeymap)
+; because it's the external trigger that activates the leader system
+
+
+; ==============================
+; ACTIVATION FUNCTION
+; ==============================
+; ActivateLeaderLayer() - Main entry point for leader system
+; Can be called from:
+;   - F24 hotkey (Kanata trigger)
+;   - Other scripts/layers if needed
+; Similar to ActivateScrollLayer(), ActivateExcelLayer(), etc.
+
+ActivateLeaderLayer() {
     global leaderActive, isNvimLayerActive, hybridPauseActive
+    
+    OutputDebug("[Leader] ActivateLeaderLayer() - Activating leader")
     
     ; Resume script if suspended
     if (A_IsSuspended) {
@@ -57,7 +74,11 @@ TryActivateLeader() {
     NavigateHierarchical("leader")
     
     leaderActive := false
+    OutputDebug("[Leader] ActivateLeaderLayer() - Deactivated")
 }
+
+; Legacy alias for backward compatibility
+TryActivateLeader() => ActivateLeaderLayer()
 
 ; ==============================
 ; GENERIC HIERARCHICAL NAVIGATOR

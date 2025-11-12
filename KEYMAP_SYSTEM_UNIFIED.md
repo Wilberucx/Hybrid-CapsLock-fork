@@ -215,3 +215,33 @@ Revisar logs en OutputDebug:
 [LayerListener] Key pressed: j in layer: scroll
 [LayerListener] Stopped listener for layer: scroll
 ```
+
+## Hotkeys vs Keymaps
+
+### ¿Por qué F24 no puede ser un keymap?
+
+**F24 es el TRIGGER EXTERNO** que activa leader desde fuera del sistema:
+
+```
+Kanata (hardware) → F24 → ActivateLeaderLayer() → NavigateHierarchical()
+                    ↑                               ↑
+                 HOTKEY                         USA KEYMAPS
+```
+
+**Keymaps solo funcionan DENTRO de layers activos:**
+
+```ahk
+; F24 DEBE ser hotkey (global trigger)
+F24:: ActivateLeaderLayer()  // ← Activa el sistema
+
+; 's' PUEDE ser keymap (acción dentro de leader)
+RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false)  // ← Usa el sistema
+```
+
+**Regla:** 
+- **Hotkeys = Entry points** (activan layers)
+- **Keymaps = Actions** (funcionan dentro de layers)
+
+F24 es la puerta de entrada. La puerta no puede estar dentro de la casa que abre.
+
+**Ver:** `doc/HOTKEYS_VS_KEYMAPS.md` para explicación detallada
