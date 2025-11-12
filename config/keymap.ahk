@@ -1,9 +1,19 @@
 ; ==============================
-; Keymap Configuration - Configuration of keymaps and categories and laers activation
+; Keymap Configuration - Configuration of keymaps and categories and layers activation
 ; ==============================
+
+; ==============================
+; GLOBAL LAYER ACTIVATION HOTKEYS
+; ==============================
+; External triggers from Kanata
+
 #SuspendExempt
 #HotIf (leaderLayerEnabled)
-F24:: ActivateLeaderLayer()
+F24:: ActivateLeaderLayer()    ; CapsLock+Space → Leader
+#HotIf
+
+#HotIf (nvimLayerEnabled)
+F23:: ActivateNvimLayer()       ; CapsLock Tap → Nvim (toggle)
 #HotIf
 #SuspendExempt False
 
@@ -15,7 +25,6 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("leader", "t", "Timestamps", 2)
     RegisterCategoryKeymap("leader", "c", "Commands", 3)
     RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
-    RegisterKeymap("leader", "e", "Excel Layer", ActivateExcelLayer, false, 5)
     RegisterCategoryKeymap("leader", "p", "Programs", 6)
     RegisterCategoryKeymap("leader", "o", "Power Options", 7)
     RegisterCategoryKeymap("leader", "i", "Information", 8)
@@ -146,18 +155,65 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("leader", "i", "t", "Thanks", SendInfo("Muchas gracias por tu ayuda!", "TEXT INSERTED"), false, 6)
     RegisterKeymap("leader", "i", "g", "Good morning", SendInfo("Good morning! How are you?", "TEXT INSERTED"), false, 7)
     RegisterKeymap("leader", "i", "s", "Signature", SendInfoMultiline(["Saludos cordiales,", "Tu Nombre", "Tu Cargo/Empresa"], "SIGNATURE INSERTED"), false, 8)
-    ; Keymaps for Scroll Layer (leader → s) 
+    ; ==============================
+    ; PERSISTENT LAYERS KEYMAPS
+    ; ==============================
+    
+    ; === SCROLL LAYER ===
     RegisterKeymap("scroll", "k", "Scroll Up", ScrollUp, false, 1)
     RegisterKeymap("scroll", "j", "Scroll Down", ScrollDown, false, 2)
     RegisterKeymap("scroll", "h", "Scroll Left", ScrollLeft, false, 3)
     RegisterKeymap("scroll", "l", "Scroll Right", ScrollRight, false, 4)
-    RegisterKeymap("scroll", "s", "Exit Scroll Layer", ScrollExit, true, 10)
-    RegisterKeymap("scroll", "Escape", "Exit Scroll Layer", ScrollExit, true, 11)
+    RegisterKeymap("scroll", "s", "Exit Scroll Layer", ScrollExit, false, 10)
+    RegisterKeymap("scroll", "Escape", "Exit Scroll Layer", ScrollExit, false, 11)
     RegisterKeymap("scroll", "?", "Toggle Help", ScrollToggleHelp, false, 20)
-    ; ==============================
-    ; PERSISTENT LAYERS KEYMAPS
-    ; ==============================
-    ; Register keymaps for persistent layers (scroll, nvim, excel, etc.)
+    
+    ; === NVIM LAYER (Basic keymaps - Complex logic moved to no_include/) ===
+    ; Layer switching
+    RegisterKeymap("nvim", "v", "Visual Mode", () => SwitchToLayer("visual", "nvim"), false, 1)
+    RegisterKeymap("nvim", "i", "Insert Mode", () => SwitchToLayer("insert", "nvim"), false, 2)
+    RegisterKeymap("nvim", "I", "Insert at Beginning", NvimInsertAtBeginning, false, 3)
+    
+    ; Line navigation
+    RegisterKeymap("nvim", "0", "Start of Line", VimStartOfLine, false, 10)
+    RegisterKeymap("nvim", "$", "End of Line", VimEndOfLine, false, 11)
+    
+    ; Basic navigation (hjkl)
+    RegisterKeymap("nvim", "h", "Move Left", VimMoveLeft, false, 20)
+    RegisterKeymap("nvim", "j", "Move Down", VimMoveDown, false, 21)
+    RegisterKeymap("nvim", "k", "Move Up", VimMoveUp, false, 22)
+    RegisterKeymap("nvim", "l", "Move Right", VimMoveRight, false, 23)
+    
+    ; Word navigation
+    RegisterKeymap("nvim", "w", "Word Forward", VimWordForward, false, 30)
+    RegisterKeymap("nvim", "b", "Word Backward", VimWordBackward, false, 31)
+    RegisterKeymap("nvim", "e", "End of Word", VimEndOfWord, false, 32)
+    
+    ; Document navigation
+    RegisterCategoryKeymap("nvim", "g", "Go to", 1)
+    RegisterKeymap("nvim", "g", "g", "Go to Top", VimTopOfFile, false, 41)
+    RegisterKeymap("nvim", "G", "Go to Bottom", VimBottomOfFile, false, 41)
+    
+    ; Edit operations
+    RegisterKeymap("nvim", "d", "Delete", () => Send("{Delete}"), false, 50)
+    RegisterKeymap("nvim", "y", "Yank", NvimYankWithNotification, false, 51)
+    RegisterKeymap("nvim", "p", "Paste", VimPaste, false, 52)
+    RegisterKeymap("nvim", "P", "Paste Plain", VimPastePlain, false, 53)
+    RegisterKeymap("nvim", "x", "Cut", () => Send("^x"), false, 54)
+    RegisterKeymap("nvim", "u", "Undo", VimUndo, false, 55)
+    RegisterKeymap("nvim", "r", "Redo", VimRedo, false, 56)
+    
+    ; Special
+    RegisterKeymap("nvim", "f", "Quick Exit", NvimExit, false, 71)
+    RegisterKeymap("nvim", "Escape", "Exit", NvimExit, false, 72)
+    RegisterKeymap("nvim", "?", "Toggle Help", NvimToggleHelp, false, 73)
+    
+    ; REMOVED (Complex logic moved to no_include/nvim_layer_LEGACY.ahk):
+    ; - ColonLogic (:w, :q, :wq)
+    ; - GLogic (gg for top)
+    ; - Alt-modified (!h, !j, !k, !l)
+    ; - Ctrl-modified (^u, ^d)
+    ; - Conditional key behavior
     
     ; LoadActionKeymapFallbacks()
 }

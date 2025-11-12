@@ -66,55 +66,55 @@ NormalizeSendSpec(s) {
 }
 
 ; ---- Execute action spec ----
-ExecuteAction(layer, action) {
-    if (!IsObject(action))
-        action := ParseActionSpec(action)
-    switch action.type {
-        case "send":
-            Send(NormalizeSendSpec(action.payload))
-        case "func":
-            fn := action.payload
-            %fn%()
-        case "notify":
-            if (StrLower(action.payload) = "copy")
-                ShowCopyNotification()
-        case "macro":
-            for step in action.steps {
-                sColon := InStr(step, ":")
-                if (!sColon) {
-                    continue
-                }
-                sk := StrLower(Trim(SubStr(step, 1, sColon - 1)))
-                sv := Trim(SubStr(step, sColon + 1))
-                if (sk = "send")
-                    Send(NormalizeSendSpec(sv))
-                else if (sk = "sleep")
-                    Sleep(Integer(sv))
-                else if (sk = "tooltip") {
-                    ShowCenteredToolTip(sv)
-                    SetTimer(() => RemoveToolTip(), -1200)
-                } else if (sk = "notify") {
-                    if (StrLower(sv) = "copy")
-                        ShowCopyNotification()
-                } else if (sk = "func") {
-                    fn := sv
-                    %fn%()
-                }
-            }
-        case "showmenu":
-            if (SubStr(layer, 1, 4) = "nvim") {
-                if (StrLower(action.payload) = "delete")
-                    NvimHandleDeleteMenu()
-                else if (StrLower(action.payload) = "yank")
-                    NvimHandleYankMenu()
-            } else {
-                ; Unknown menu for this layer - no-op
-            }
-        default:
-            ; Unknown: no-op
-            return
-    }
-}
+; ExecuteAction(layer, action) {
+;     if (!IsObject(action))
+;         action := ParseActionSpec(action)
+;     switch action.type {
+;         case "send":
+;             Send(NormalizeSendSpec(action.payload))
+;         case "func":
+;             fn := action.payload
+;             %fn%()
+;         case "notify":
+;             if (StrLower(action.payload) = "copy")
+;                 ShowCopyNotification()
+;         case "macro":
+;             for step in action.steps {
+;                 sColon := InStr(step, ":")
+;                 if (!sColon) {
+;                     continue
+;                 }
+;                 sk := StrLower(Trim(SubStr(step, 1, sColon - 1)))
+;                 sv := Trim(SubStr(step, sColon + 1))
+;                 if (sk = "send")
+;                     Send(NormalizeSendSpec(sv))
+;                 else if (sk = "sleep")
+;                     Sleep(Integer(sv))
+;                 else if (sk = "tooltip") {
+;                     ShowCenteredToolTip(sv)
+;                     SetTimer(() => RemoveToolTip(), -1200)
+;                 } else if (sk = "notify") {
+;                     if (StrLower(sv) = "copy")
+;                         ShowCopyNotification()
+;                 } else if (sk = "func") {
+;                     fn := sv
+;                     %fn%()
+;                 }
+;             }
+;         case "showmenu":
+;             if (SubStr(layer, 1, 4) = "nvim") {
+;                 if (StrLower(action.payload) = "delete")
+;                     NvimHandleDeleteMenu()
+;                 else if (StrLower(action.payload) = "yank")
+;                     NvimHandleYankMenu()
+;             } else {
+;                 ; Unknown menu for this layer - no-op
+;             }
+;         default:
+;             ; Unknown: no-op
+;             return
+;     }
+; }
 
 ; ---- Generic layer mappings ----
 _layerRegisteredHotkeys := {}
@@ -141,30 +141,30 @@ LoadSimpleMappings(iniPath, mapSection := "Map", orderKey := "order") {
     return mappings
 }
 
-ApplyGenericMappings(layerName, mappings, contextFn, keyPrefix := "") {
-    global debug_mode
-    global _layerRegisteredHotkeys
-    UnregisterGenericMappings(layerName)
-    if (!IsSet(mappings) || mappings.Count = 0)
-        return
-    ; disable static per-layer if applicable
-    if (layerName = "excel") {
-        global excelStaticEnabled
-        excelStaticEnabled := false
-    } else if (SubStr(layerName, 1, 4) = "nvim") {
-        global nvimStaticEnabled
-        try nvimStaticEnabled := false
-    }
-    HotIf(contextFn)
-    for key, action in mappings.OwnProps() {
-        hk := (keyPrefix = "") ? key : (keyPrefix . key)
-        Hotkey(hk, (*) => ExecuteAction(layerName, action), "On")
-        if (!_layerRegisteredHotkeys.Has(layerName))
-            _layerRegisteredHotkeys[layerName] := []
-        _layerRegisteredHotkeys[layerName].Push(hk)
-    }
-    HotIf()
-}
+; ApplyGenericMappings(layerName, mappings, contextFn, keyPrefix := "") {
+;     global debug_mode
+;     global _layerRegisteredHotkeys
+;     UnregisterGenericMappings(layerName)
+;     if (!IsSet(mappings) || mappings.Count = 0)
+;         return
+;     ; disable static per-layer if applicable
+;     if (layerName = "excel") {
+;         global excelStaticEnabled
+;         excelStaticEnabled := false
+;     } else if (SubStr(layerName, 1, 4) = "nvim") {
+;         global nvimStaticEnabled
+;         try nvimStaticEnabled := false
+;     }
+;     HotIf(contextFn)
+;     for key, action in mappings.OwnProps() {
+;         hk := (keyPrefix = "") ? key : (keyPrefix . key)
+;         Hotkey(hk, (*) => ExecuteAction(layerName, action), "On")
+;         if (!_layerRegisteredHotkeys.Has(layerName))
+;             _layerRegisteredHotkeys[layerName] := []
+;         _layerRegisteredHotkeys[layerName].Push(hk)
+;     }
+;     HotIf()
+; }
 
 UnregisterGenericMappings(layerName) {
     global debug_mode
@@ -204,31 +204,31 @@ ReloadExcelMappings() {
     }
 }
 
-ReloadNvimMappings() {
-    ; Unregister previous nvim mappings (all subcontexts)
-    UnregisterGenericMappings("nvim_normal")
-    UnregisterGenericMappings("nvim_visual")
-    UnregisterGenericMappings("nvim_insert")
-    try {
-        iniPath := A_ScriptDir . "\\config\\nvim_layer.ini"
-        normal := LoadSimpleMappings(iniPath, "Normal", "order")
-        visual := LoadSimpleMappings(iniPath, "Visual", "order")
-        insert := LoadSimpleMappings(iniPath, "Insert", "order")
-        if (normal.Count > 0)
-            ApplyGenericMappings("nvim_normal", normal, (*) => (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()))
-        if (visual.Count > 0)
-            ApplyGenericMappings("nvim_visual", visual, (*) => (isNvimLayerActive && VisualMode && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()))
-        if (insert.Count > 0)
-            ApplyGenericMappings("nvim_insert", insert, (*) => (_tempEditMode && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()))
-        if (normal.Count = 0 && visual.Count = 0 && insert.Count = 0) {
-            ; fall back to static
-            global nvimStaticEnabled
-            nvimStaticEnabled := true
-        }
-    } catch {
-        UnregisterGenericMappings("nvim")
-    }
-}
+; ReloadNvimMappings() {
+;     ; Unregister previous nvim mappings (all subcontexts)
+;     UnregisterGenericMappings("nvim_normal")
+;     UnregisterGenericMappings("nvim_visual")
+;     UnregisterGenericMappings("nvim_insert")
+;     try {
+;         iniPath := A_ScriptDir . "\\config\\nvim_layer.ini"
+;         normal := LoadSimpleMappings(iniPath, "Normal", "order")
+;         visual := LoadSimpleMappings(iniPath, "Visual", "order")
+;         insert := LoadSimpleMappings(iniPath, "Insert", "order")
+;         if (normal.Count > 0)
+;             ApplyGenericMappings("nvim_normal", normal, (*) => (isNvimLayerActive && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()))
+;         if (visual.Count > 0)
+;             ApplyGenericMappings("nvim_visual", visual, (*) => (isNvimLayerActive && VisualMode && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()))
+;         if (insert.Count > 0)
+;             ApplyGenericMappings("nvim_insert", insert, (*) => (_tempEditMode && !GetKeyState("CapsLock", "P") && NvimLayerAppAllowed()))
+;         if (normal.Count = 0 && visual.Count = 0 && insert.Count = 0) {
+;             ; fall back to static
+;             global nvimStaticEnabled
+;             nvimStaticEnabled := true
+;         }
+;     } catch {
+;         UnregisterGenericMappings("nvim")
+;     }
+; }
 
 ; ---- Excel mappings ----
 _excelRegisteredHotkeys := []
@@ -263,27 +263,27 @@ LoadExcelMappings(iniPath) {
 }
 
 ; register dynamic Excel hotkeys with context
-ApplyExcelMappings(mappings) {
-    global _excelRegisteredHotkeys
-    ; unregister previous
-    UnregisterExcelMappings()
-    if (mappings.Count = 0)
-        return
-    ; disable static
-    global excelStaticEnabled
-    excelStaticEnabled := false
-    ; Use InputLevel 1 to match static Excel hotkeys and allow minicapa V Logic (InputLevel 2) to override
-    #InputLevel 1
-    ; context: excelLayerActive and CapsLock not physically pressed
-    HotIf((*) => (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelAppAllowedGuard()))
-    for key, action in mappings.OwnProps() {
-        hk := key
-        Hotkey(hk, (*) => ExecuteAction("excel", action), "On")  ; Excel actions also go through NormalizeSendSpec via ExecuteAction
-        _excelRegisteredHotkeys.Push(hk)
-    }
-    HotIf()
-    #InputLevel 0
-}
+; ApplyExcelMappings(mappings) {
+;     global _excelRegisteredHotkeys
+;     ; unregister previous
+;     UnregisterExcelMappings()
+;     if (mappings.Count = 0)
+;         return
+;     ; disable static
+;     global excelStaticEnabled
+;     excelStaticEnabled := false
+;     ; Use InputLevel 1 to match static Excel hotkeys and allow minicapa V Logic (InputLevel 2) to override
+;     #InputLevel 1
+;     ; context: excelLayerActive and CapsLock not physically pressed
+;     HotIf((*) => (excelLayerActive && !GetKeyState("CapsLock", "P") && ExcelAppAllowedGuard()))
+;     for key, action in mappings.OwnProps() {
+;         hk := key
+;         Hotkey(hk, (*) => ExecuteAction("excel", action), "On")  ; Excel actions also go through NormalizeSendSpec via ExecuteAction
+;         _excelRegisteredHotkeys.Push(hk)
+;     }
+;     HotIf()
+;     #InputLevel 0
+; }
 
 UnregisterExcelMappings() {
     global _excelRegisteredHotkeys, excelStaticEnabled

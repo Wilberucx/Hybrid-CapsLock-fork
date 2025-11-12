@@ -46,7 +46,10 @@ ShowScrollLayerStatusCS(isActive) {
 
 ShowScrollHelpCS() {
     global tooltipConfig
-    items := "k:Scroll up|j:Scroll down|h:Scroll left|l:Scroll right|s:Exit scroll layer"
+    ; Generate items dynamically from KeymapRegistry
+    items := GenerateCategoryItemsForPath("scroll")
+    if (items = "")
+        items := "[No keymaps registered for scroll layer]"
     to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
     if (to < 8000)
         to := 8000

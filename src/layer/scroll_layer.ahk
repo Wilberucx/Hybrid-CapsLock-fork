@@ -22,7 +22,6 @@
 ; ==============================
 ; CONFIGURATION
 ; ==============================
-
 global scrollLayerEnabled := true        ; Feature flag
 global isScrollLayerActive := false      ; Layer state (managed by SwitchToLayer)
                                           ; Renamed to isScrollLayerActive for consistency
@@ -166,15 +165,6 @@ ScrollCloseHelp() {
 ;     OutputDebug("[ScrollLayer] Keymaps registered successfully")
 ; }
 
-; ==============================
-; TEMPORARY DEBUG HOTKEY (REMOVE AFTER TESTING)
-; ==============================
-
-; Test hotkey: Ctrl+Shift+S para probar ActivateScrollLayer directamente
-^+s:: {
-    OutputDebug("[SCROLL DEBUG] Manual test hotkey pressed - calling ActivateScrollLayer()")
-    ActivateScrollLayer("manual_test")
-}
 
 ; ==============================
 ; REFACTORING NOTES

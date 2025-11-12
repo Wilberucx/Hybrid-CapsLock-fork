@@ -959,7 +959,10 @@ ShowCommandExecutedCS(category, command) {
 
 ShowNvimHelpCS() {
     global tooltipConfig
-    items := "h:Move left|j:Move down|k:Move up|l:Move right|v:Visual Mode|y:Copy|p:Paste|u:Undo|x:Cut|i:Insert |I:Insert+|w:Word right|b:Word left|e:End of word|r:Redo|C-u:Scroll up 6|C-d:Scroll down 6|0:Line start|$:Line end|gg:First Line|G:Bottom Line|f:Find|::Cmd (w/q/wq)"
+    ; Generate items dynamically from KeymapRegistry
+    items := GenerateCategoryItemsForPath("nvim")
+    if (items = "")
+        items := "[No keymaps registered for nvim layer]"
     to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
     if (to < 8000)
         to := 8000
