@@ -55,19 +55,21 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 - **🏠 Homerow Mods:** Modificadores sin salir de la home row
   - **Mano izquierda**: `a`=Ctrl, `s`=Alt, `d`=Win, `f`=Shift
   - **Mano derecha**: `j`=Shift, `k`=Win, `l`=Alt, `;`=Ctrl
-  - [**📖 Guía Completa de Homerow Mods**](doc/HOMEROW_MODS.md)
+  - [**📖 Guía Completa de Homerow Mods**](doc/en/user-guide/homerow-mods.md) | [ES](doc/es/guia-usuario/homerow-mods.md)
 - **🧭 Navegación Rápida (Hold CapsLock):** Navegación hjkl instantánea mientras mantienes CapsLock presionado (sin persistencia, desaparece al soltar)
 
 - **🔢 Numpad (Hold O):** Teclado numérico completo en mano izquierda
 - **🎵 Media (Hold E):** Controles multimedia (play/pause/volume)
 - **🖱️ Mouse (Hold N/M/B):** Clicks de mouse desde teclado
-- [**📖 Guía de Numpad y Media Layers**](doc/NUMPAD_MEDIA_LAYERS.md)
+- [**📖 Guía de Numpad y Media Layers**](doc/en/user-guide/numpad-media-layers.md)
 
 #### AutoHotkey (Lógica Context-Aware)
 
 - **📝 Nvim Layer (Tap CapsLock):** Toggle persistente de navegación Vim con lógica avanzada (visual mode, comandos :wq, gg/G, etc). A diferencia de `Hold CapsLock`, esta capa permanece activa hasta que vuelvas a tocar CapsLock.
+  - [**📖 Guía de Nvim Layer**](doc/en/user-guide/nvim-layer.md)
 
 - **🎯 Modo Líder (Hold CapsLock + Space):** Menús contextuales inteligentes para programas, ventanas, comandos del sistema, timestamps, información personal y más. Configurable como atajo en `kanata.kbd` (F24 en capa vim-nav).
+  - [**📖 Guía de Modo Líder**](doc/en/user-guide/leader-mode.md)
 
 ## ⚙️ Instalación y Uso
 
@@ -111,12 +113,27 @@ Después de editar cualquier archivo de configuración (`kanata.kbd`, `.ini`, `.
 
 Para una guía detallada sobre todos los atajos, capas, configuración avanzada y desarrollo, consulta nuestro portal de documentación:
 
-- **[➡️ Ir a la Documentación Completa (Carpeta `/doc`)](doc/README.md)**
+### 🌍 Documentación Bilingüe / Bilingual Documentation
+
+- **[📖 English Documentation](doc/en/README.md)** - Complete documentation in English
+- **[📖 Documentación en Español](doc/es/README.md)** - Documentación completa en español
+- **[🏠 Documentation Hub](doc/README.md)** - Portal principal con selector de idioma
+
+### 🚀 Enlaces Rápidos / Quick Links
+
+| Tema | English | Español |
+|------|---------|---------|
+| **Inicio Rápido** | [Quick Start](doc/en/getting-started/quick-start.md) | [Inicio Rápido](doc/es/primeros-pasos/inicio-rapido.md) |
+| **Configuración** | [Configuration](doc/en/getting-started/configuration.md) | En progreso |
+| **Crear Capas** | [Creating Layers](doc/en/developer-guide/creating-layers.md) | En progreso |
+| **Sistema de Debug** | [Debug System](doc/en/reference/debug-system.md) | En progreso |
 
 ## 🚧 Desarrollo y Versiones
 
-- Para ver el historial de cambios y versiones, revisa el archivo **[CHANGELOG.md](CHANGELOG.md)**.
-- Las características en desarrollo y planes futuros se detallan en la documentación.
+- **[CHANGELOG.md](CHANGELOG.md)** - Historial de cambios y versiones
+- **[DOCUMENTATION_I18N_PLAN.md](DOCUMENTATION_I18N_PLAN.md)** - Plan de internacionalización de documentación
+- **[Architecture Overview](doc/en/reference/declarative-system.md)** - Sistema declarativo y arquitectura
+- **[Developer Guide](doc/en/developer-guide/creating-layers.md)** - Guía para crear nuevas capas
 
 ## 👥 Créditos
 

@@ -131,6 +131,7 @@ Cuando el usuario presiona `<leader> → c → a → d`:
    ```
 
 3. **Ejecutar comando** (usuario presiona `d`):
+
    ```ahk
    ExecuteKeymap("adb", "d")
        → FindKeymap("adb", "d")  // Busca en KeymapRegistry

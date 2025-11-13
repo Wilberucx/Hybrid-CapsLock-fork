@@ -136,7 +136,7 @@ Los homerow mods funcionan **fuera de Nvim Layer** pero **NO dentro** de Nvim La
 
 Si sientes que se activan por error:
 
-1. Ajusta los valores en `kanata.kbd`:
+1. Ajusta los valores en `../../../config/kanata.kbd`:
 
    ```lisp
    ;; Ejemplo: aumentar el tiempo de hold a 250ms
@@ -173,7 +173,7 @@ Al principio puede sentirse antinatural. Dale **1-2 semanas de práctica constan
 
 ### Cambiar el timing de tap-hold
 
-Edita `kanata.kbd`:
+Edita `../../../config/kanata.kbd`:
 
 ```lisp
 ;; Formato: (tap-hold tap-timeout hold-timeout tap-action hold-action)
@@ -196,7 +196,7 @@ Después de editar, recarga el sistema usando el Leader menu:
 
 ### Desactivar homerow mods específicos
 
-Si no quieres usar alguna tecla como modificador, edita `kanata.kbd`:
+Si no quieres usar alguna tecla como modificador, edita `../../../config/kanata.kbd`:
 
 ```lisp
 ;; Desactivar "D" como Win (solo dejar como letra normal)
@@ -256,7 +256,7 @@ h (tap-hold 200 200 h lsft)
 
 ## 🔗 Ver También
 
-- **[Nvim Layer](NVIM_LAYER.md)**: Navegación persistente estilo Vim
-- **[Modo Líder](LEADER_MODE.md)**: Menús contextuales avanzados
-- **[Kanata Configuration](../kanata.kbd)**: Archivo de configuración de Kanata
-- **[Configuración General](CONFIGURATION.md)**: Opciones globales del sistema
+- **[Nvim Layer](capa-nvim.md)**: Navegación persistente estilo Vim
+- **[Modo Líder](modo-lider.md)**: Menús contextuales avanzados
+- **[Kanata Configuration](../../../config/kanata.kbd)**: Archivo de configuración de Kanata
+- **[Configuración General](../primeros-pasos/configuracion.md)**: Opciones globales del sistema

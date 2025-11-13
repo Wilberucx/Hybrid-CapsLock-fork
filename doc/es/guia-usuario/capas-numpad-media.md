@@ -149,7 +149,7 @@ Hold E + M → Mute/Unmute
 | **Timing** | <10ms (driver-level) | ~50-100ms (software) |
 | **Context-aware** | ❌ No (universales) | ✅ Sí (por app) |
 | **Complejidad** | ⭐ Simple (tecla=acción) | ⭐⭐⭐ Compleja (menús, lógica) |
-| **Edición** | Editar `kanata.kbd` | Editar archivos `.ahk` + `.ini` |
+| **Edición** | Editar `../../../config/kanata.kbd` | Editar archivos `.ahk` + `.ini` |
 
 ---
 
@@ -157,7 +157,7 @@ Hold E + M → Mute/Unmute
 
 ### Modificar la Capa Numpad
 
-Edita `kanata.kbd`, busca la sección `(deflayer numpad)`:
+Edita `../../../config/kanata.kbd`, busca la sección `(deflayer numpad)`:
 
 ```lisp
 ;; Ejemplo: Cambiar Q de "4" a "*" (multiplicación)
@@ -171,7 +171,7 @@ Edita `kanata.kbd`, busca la sección `(deflayer numpad)`:
 
 ### Modificar la Capa Media
 
-Edita `kanata.kbd`, busca la sección `(deflayer media)`:
+Edita `../../../config/kanata.kbd`, busca la sección `(deflayer media)`:
 
 ```lisp
 ;; Ejemplo: Agregar controles adicionales
@@ -250,7 +250,7 @@ A diferencia de Nvim Layer o Leader Mode, estas capas no muestran menús en pant
 **Solución**: Imprime un cheatsheet físico o guárdalo como fondo de pantalla.
 
 ### 3. Requieren recargar Kanata para cambios
-Después de editar `kanata.kbd`, usa el Leader menu para recargar:
+Después de editar `../../../config/kanata.kbd`, usa el Leader menu para recargar:
 - **Leader → c → h → R**: Reload completo (AHK + Kanata)
 - **Leader → c → h → k**: Restart Kanata solamente
 
@@ -282,7 +282,7 @@ Estas capas funcionan mejor cuando **Nvim Layer está desactivado** para evitar 
 
 ## 🔗 Ver También
 
-- **[Homerow Mods](HOMEROW_MODS.md)**: Modificadores en la home row
-- **[Configuración de Kanata](../kanata.kbd)**: Archivo de configuración completo
-- **[Nvim Layer](NVIM_LAYER.md)**: Navegación persistente estilo Vim
+- **[Homerow Mods](homerow-mods.md)**: Modificadores en la home row
+- **[Configuración de Kanata](../../../config/kanata.kbd)**: Archivo de configuración completo
+- **[Nvim Layer](capa-nvim.md)**: Navegación persistente estilo Vim
 - **[Documentación de Kanata](https://github.com/jtroo/kanata/blob/main/docs/config.adoc)**: Referencia oficial

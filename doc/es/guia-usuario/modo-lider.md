@@ -1,8 +1,8 @@
 # Modo Líder
 
 > Referencia rápida
-> - Configuración general: ver doc/CONFIGURATION.md (secciones [Behavior], [Layers], [Tooltips])
-> - Configuración por capa: PROGRAM_LAYER.md / TIMESTAMP_LAYER.md / COMMAND_LAYER.md / INFORMATION_LAYER.md / EXCEL_LAYER.md / WINDOWS_LAYER.md
+> - Configuración general: ver doc/configuration.md (secciones [Behavior], [Layers], [Tooltips])
+> - Configuración por capa:  /  /  / INFORMATION_LAYER.md / excel-layer.md / 
 
 El Modo Líder es un sistema de menús contextuales que organiza funciones avanzadas en sub-capas especializadas. Proporciona acceso rápido a herramientas de gestión de ventanas, lanzamiento de programas y utilidades de timestamp.
 
@@ -15,10 +15,10 @@ El Modo Líder es un sistema de menús contextuales que organiza funciones avanz
 > 2. Mientras lo mantienes, presiona `Space`
 > 3. Se abrirá el menú de Leader
 
-**Personalización del atajo:** El atajo es configurable editando `kanata.kbd`. Por defecto, cuando mantienes CapsLock, se activa la capa `vim-nav` donde `Space` envía `F24` (que AutoHotkey detecta como Leader). Puedes cambiar esto a cualquier otra tecla:
+**Personalización del atajo:** El atajo es configurable editando `../../../config/kanata.kbd`. Por defecto, cuando mantienes CapsLock, se activa la capa `vim-nav` donde `Space` envía `F24` (que AutoHotkey detecta como Leader). Puedes cambiar esto a cualquier otra tecla:
 
 ```lisp
-;; En kanata.kbd, busca la capa vim-nav:
+;; En ../../../config/kanata.kbd, busca la capa vim-nav:
 (deflayer vim-nav
   _    f13  _    _   end   _    _    _    _    _   home  _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _    _    _
@@ -57,7 +57,7 @@ n - Excel
 
 ## 🌟 Sub-Capas Disponibles
 
-### 🪟 [Capa Windows](WINDOWS_LAYER.md) - Tecla `w`
+### 🪟 [Capa Windows]() - Tecla `w`
 Gestión avanzada de ventanas y herramientas de zoom.
 
 **Funciones principales:**
@@ -66,7 +66,7 @@ Gestión avanzada de ventanas y herramientas de zoom.
 - Herramientas de zoom (Draw, Zoom, Zoom with cursor)
 - Cambio de ventanas persistente (blind/visual switch)
 
-### 🚀 [Capa Programas](PROGRAM_LAYER.md) - Tecla `p`
+### 🚀 [Capa Programas]() - Tecla `p`
 Lanzador rápido de aplicaciones comunes.
 
 **Aplicaciones disponibles:**
@@ -75,7 +75,7 @@ Lanzador rápido de aplicaciones comunes.
 - Bitwarden, Configuración de Windows
 - Y más...
 
-### ⏰ [Capa Timestamp](TIMESTAMP_LAYER.md) - Tecla `t`
+### ⏰ [Capa Timestamp]() - Tecla `t`
 Herramientas para insertar y formatear fechas/horas.
 
 **Funciones principales:**
@@ -84,7 +84,7 @@ Herramientas para insertar y formatear fechas/horas.
 - Configuración de separadores
 - Formatos persistentes entre sesiones
 
-### ⚡ [Capa Comandos](COMMAND_LAYER.md) - Tecla `c`
+### ⚡ [Capa Comandos]() - Tecla `c`
 Paleta de comandos jerárquica para ejecutar scripts y herramientas del sistema.
 
 **Funciones principales:**
@@ -104,7 +104,7 @@ Inserción rápida de información personal y snippets configurables desde archi
 - Snippets personalizados y plantillas
 - Configuración fácil desde information.ini
 
-### 📊 [Capa Excel](EXCEL_LAYER.md) - Tecla `n`
+### 📊 [Capa Excel](capa-excel.md) - Tecla `n`
 Capa persistente especializada para trabajo con hojas de cálculo y aplicaciones contables.
 
 **Funciones principales:**

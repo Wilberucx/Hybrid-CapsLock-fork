@@ -3,7 +3,7 @@
 > Referencia rápida
 >
 > - Confirmaciones: no aplica (acciones inmediatas)
-> - Tooltips (C#): sección [Tooltips] en config/configuration.ini (CONFIGURATION.md)
+> - Tooltips (C#): sección [Tooltips] en config/configuration.ini (configuration.md)
 
 La Capa Excel es una capa persistente especializada para trabajo con hojas de cálculo y aplicaciones contables. Combina un numpad completo (numpad que también se puede acceder de manera rápida y temporal manteniendo presionada la tecla O) con navegación optimizada y atajos específicos de Excel para máxima productividad.
 
@@ -118,7 +118,7 @@ La tecla `v` activa una **mini-capa temporal** (V Logic) que permite acceder a c
 2. Presiona `r`, `c` o `v` → Ejecuta la acción y sale de la mini-capa
 3. Si no presionas nada en ~3s, la mini-capa se cancela automáticamente
 
-**Nota técnica:** Esta mini-capa usa InputLevel 2 para tener prioridad sobre los hotkeys normales de Excel. Ver [implementación técnica](develop/excel_v_logic_mini_layer.md) para detalles.
+**Nota técnica:** Esta mini-capa usa InputLevel 2 para tener prioridad sobre los hotkeys normales de Excel. Ver [implementación técnica](../../develop/excel_v_logic_mini_layer.md) para detalles.
 
 _Nota: Enter y Space mantienen su comportamiento normal_
 

@@ -108,7 +108,7 @@ Tooltip: "d:List Devices|x:Disconnect|..."
 
 ### **Nuevos documentos:**
 
-- `COMMAND_LAYER.md` - Guía completa (reescrita)
+- `` - Guía completa (reescrita)
 - `DECLARATIVE_SYSTEM.md` - Arquitectura del sistema
 - `COMO_FUNCIONA_REGISTER.md` - Explicación técnica detallada
 - `CHANGELOG_DECLARATIVE_SYSTEM.md` - Historial de cambios
@@ -160,7 +160,7 @@ Control explícito con números (antes: orden de aparición en INI)
 
 ### **Documentación para referencia:**
 
-- **Guía rápida**: `COMMAND_LAYER.md` (cómo agregar comandos)
+- **Guía rápida**: `` (cómo agregar comandos)
 - **Técnica**: `COMO_FUNCIONA_REGISTER.md` (flujo interno)
 - **Arquitectura**: `DECLARATIVE_SYSTEM.md` (diseño completo)
 

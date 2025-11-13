@@ -2,7 +2,7 @@
 
 > Referencia rápida
 > - Confirmaciones: no aplica (acciones inmediatas)
-> - Tooltips (C#): sección [Tooltips] en config/configuration.ini (CONFIGURATION.md)
+> - Tooltips (C#): sección [Tooltips] en config/configuration.ini (configuration.md)
 
 La Capa Nvim transforma tu teclado en un entorno de navegación y edición inspirado en Vim, proporcionando control preciso sin necesidad de mantener teclas modificadoras.
 

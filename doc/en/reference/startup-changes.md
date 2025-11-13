@@ -59,6 +59,6 @@ Si tienes un acceso directo en la carpeta de inicio (`shell:startup`), **actual�
 
 ## 🔗 **Documentación relacionada:**
 
-- **[Auto-Loader Usage Guide](AUTO_LOADER_USAGE.md)** - Guía completa del sistema
-- **[Getting Started](GETTING_STARTED.md)** - Actualizado con nuevos comandos
+- **[Auto-Loader Usage Guide](../developer-guide/auto-loader-system.md)** - Guía completa del sistema
+- **[Getting Started](../getting-started/quick-start.md)** - Actualizado con nuevos comandos
 - **[README principal](../README.md)** - Actualizado con nuevo punto de entrada
