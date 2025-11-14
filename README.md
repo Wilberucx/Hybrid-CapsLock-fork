@@ -1,6 +1,5 @@
 # Hybrid CapsLock + Kanata - Sistema de Productividad Ergonómico
 
-![HybridCapsLock logo](img/Logo%20HybridCapsLock.png)
 
 Este proyecto combina lo mejor de dos mundos: **[Kanata](https://github.com/jtroo/kanata)** (remapper de teclado a nivel bajo con timing perfecto para tap-hold y homerow mods) con **AutoHotkey** (inteligencia context-aware y lógica compleja). El resultado es un sistema de productividad ergonómico que transforma la tecla `CapsLock` y las teclas de la home row en una potente herramienta de navegación y edición, inspirado en editores como Vim.
 
