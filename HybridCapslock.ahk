@@ -4,15 +4,15 @@
 ; This is the MAIN FILE to execute HybridCapsLock.
 ; 
 ; What this file does:
-; 1. Runs the auto-loader preprocessor to scan src/actions and src/layers
-; 2. Updates init.ahk with the latest #Include statements
-; 3. Launches the main application (init.ahk)
+; 1. Verifies that all dependencies are installed (AutoHotkey, Kanata, config files)
+; 2. Shows helpful error messages if dependencies are missing
+; 3. Launches the main application (init.ahk) if everything is OK
 ; 
 ; Usage:
 ; - Execute this file to start HybridCapsLock
-; - The auto-loader will automatically detect new .ahk files
-; - Files in no_include/ folders are ignored
-; - Hardcoded #Includes in init.ahk are preserved
+; - If dependencies are missing, helpful dialogs will guide you
+; - The actual application logic is in init.ahk
+; - This file exits after launching init.ahk
 ; ===================================================================
 
 #Requires AutoHotkey v2.0
@@ -24,21 +24,33 @@
 ; ===================================================================
 
 try {
-    OutputDebug("[HybridCapsLock] Starting auto-loader preprocessor...")
+    OutputDebug("[HybridCapsLock] Starting dependency check...")
     
-    ; Load auto-loader functions
-    #Include src\core\auto_loader.ahk
+    ; Load dependency checker
+    #Include src\core\dependency_checker.ahk
     
-    ; Run auto-loader to update init.ahk BEFORE execution
-    AutoLoaderPreprocessor()
+    ; Check all dependencies before proceeding
+    if (!CheckDependencies()) {
+        OutputDebug("[HybridCapsLock] Dependency check failed, exiting...")
+        ExitApp(1)
+    }
     
-    OutputDebug("[HybridCapsLock] Auto-loader complete, launching main application...")
+    OutputDebug("[HybridCapsLock] Dependencies OK, launching main application...")
     
-    ; Execute the main application
-    Run(A_ScriptDir . "\init.ahk")
+    ; Launch the main application (init.ahk)
+    if (FileExist("init.ahk")) {
+        OutputDebug("[HybridCapsLock] Launching init.ahk...")
+        Run('"' . A_AhkPath . '" "' . A_ScriptDir . '\init.ahk"')
+        OutputDebug("[HybridCapsLock] Main application launched successfully")
+    } else {
+        MsgBox("Error: init.ahk not found!`n`nPath: " . A_ScriptDir . "\init.ahk", "HybridCapsLock - File Missing", "Icon!")
+        OutputDebug("[HybridCapsLock] ERROR: init.ahk not found")
+        ExitApp(1)
+    }
     
-    ; Exit this launcher - the main application is now running
-    ExitApp()
+    ; HybridCapslock.ahk exits after launching init.ahk
+    OutputDebug("[HybridCapsLock] Startup verification complete, exiting...")
+    ExitApp(0)
     
 } catch as err {
     OutputDebug("[HybridCapsLock] ERROR: " . err.Message)
@@ -46,70 +58,3 @@ try {
     ExitApp(1)
 }
 
-; ===================================================================
-; AUTO-LOADER PREPROCESSOR
-; ===================================================================
-
-AutoLoaderPreprocessor() {
-    global AUTO_LOADER_ENABLED
-    
-    if (!AUTO_LOADER_ENABLED) {
-        OutputDebug("[AutoLoaderPreprocessor] Disabled by config")
-        return
-    }
-    
-    OutputDebug("[AutoLoaderPreprocessor] Starting scan...")
-    
-    ; Ensure no_include directories exist
-    EnsureNoIncludeDirectories()
-    
-    ; Load memory (previously included files)
-    memory := LoadAutoLoaderMemory()
-    
-    ; Scan current files
-    currentActions := ScanDirectory(AUTO_LOADER_ACTIONS_DIR, AUTO_LOADER_ACTIONS_NO_INCLUDE)
-    currentLayers := ScanDirectory(AUTO_LOADER_LAYERS_DIR, AUTO_LOADER_LAYERS_NO_INCLUDE)
-    
-    ; Get hardcoded includes (needed for filtering)
-    hardcoded := GetHardcodedIncludes()
-    hardcodedActions := hardcoded["actions"]
-    hardcodedLayers := hardcoded["layers"]
-    
-    ; Detect changes
-    changes := DetectChanges(memory, currentActions, currentLayers)
-    
-    ; Apply changes if any
-    if (changes["hasChanges"]) {
-        OutputDebug("[AutoLoaderPreprocessor] Changes detected, updating init.ahk...")
-        
-        ; Filter out hardcoded files before applying changes
-        filteredActions := []
-        for action in currentActions {
-            if (!hardcodedActions.Has(action["name"])) {
-                filteredActions.Push(action)
-            }
-        }
-        
-        filteredLayers := []
-        for layer in currentLayers {
-            if (!hardcodedLayers.Has(layer["name"])) {
-                filteredLayers.Push(layer)
-            }
-        }
-        
-        ApplyChanges(changes, filteredActions, filteredLayers)
-        
-        ; Save new memory (with filtered lists)
-        SaveAutoLoaderMemory(filteredActions, filteredLayers)
-        
-        OutputDebug("[AutoLoaderPreprocessor] Changes applied successfully")
-        
-    } else {
-        OutputDebug("[AutoLoaderPreprocessor] No changes detected")
-    }
-    
-    ; Always generate/update layer registry (even if no file changes)
-    GenerateLayerRegistry(currentLayers)
-    
-    OutputDebug("[AutoLoaderPreprocessor] Preprocessing complete")
-}

@@ -71,12 +71,49 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 - **🎯 Modo Líder (Hold CapsLock + Space):** Menús contextuales inteligentes para programas, ventanas, comandos del sistema, timestamps, información personal y más. Configurable como atajo en `kanata.kbd` (F24 en capa vim-nav).
   - [**📖 Guía de Modo Líder**](doc/en/user-guide/leader-mode.md)
 
-## ⚙️ Instalación y Uso
+## 🚀 Instalación Rápida
 
-### Requisitos
+### Opción 1: Instalación Automática (Recomendado)
 
-1. **Instalar:** [AutoHotkey v2.0](https://www.autohotkey.com/v2/)
-2. **Instalar:** [Kanata](https://github.com/jtroo/kanata) - Remapper de teclado a nivel bajo
+```powershell
+# Una línea que instala todo automáticamente
+iwr -useb https://raw.githubusercontent.com/Wilberucx/Hybrid-CapsLock-fork/main/install.ps1 | iex
+```
+
+**✅ Qué hace esto:**
+- Descarga AutoHotkey v2 automáticamente
+- Descarga Kanata automáticamente  
+- Instala HybridCapsLock en `%LOCALAPPDATA%\HybridCapsLock`
+- Crea acceso directo en escritorio
+- Configura inicio automático con Windows
+- Verifica todas las dependencias
+
+### Opción 2: Descarga Portable (Sin Instalación)
+
+1. **Descarga:** [HybridCapsLock-Portable.zip](https://github.com/Wilberucx/Hybrid-CapsLock-fork/releases)
+2. **Extrae** a cualquier carpeta
+3. **Instala AutoHotkey v2:** [Descargar aquí](https://www.autohotkey.com/download/ahk-v2.exe)
+4. **Ejecuta:** Doble-click en `HybridCapslock.ahk`
+
+### Opción 3: Instalación Manual
+
+1. Clona este repositorio
+2. Instala [AutoHotkey v2](https://www.autohotkey.com/download/ahk-v2.exe)
+3. Instala [Kanata](https://github.com/jtroo/kanata/releases) (opcional)
+4. Ejecuta: `.\install.ps1` o doble-click en `HybridCapslock.ahk`
+
+📚 **Guía de instalación detallada:** [Quick-Install.md](Quick-Install.md)
+
+## ⚙️ Uso Diario
+
+### Verificación de Dependencias
+
+HybridCapsLock ahora **verifica automáticamente** todas las dependencias al iniciar:
+- ✅ AutoHotkey v2 (requerido)
+- ✅ Kanata (opcional, con fallback)
+- ✅ Archivos de configuración
+
+Si falta algo, aparecerá un diálogo claro con enlaces de descarga.
 
 ### Inicio Rápido
 
