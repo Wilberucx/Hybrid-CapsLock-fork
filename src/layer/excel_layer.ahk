@@ -1,3 +1,8 @@
+; ==============================
+; EXCEL LAYER - Following Template Pattern
+; ==============================
+; Excel navigation layer using the standard template pattern
+; Refactored to be consistent with other layers
 
 ; ==============================
 ; CONFIGURATION
@@ -27,7 +32,7 @@ OnExcelLayerActivate() {
     
     OutputDebug("[Excel] OnExcelLayerActivate() - Activating layer")
     
-    ; Show status
+    ; Show status tooltip (persistent indicator)
     try {
         ShowExcelLayerStatus(true)
         SetTempStatus("EXCEL LAYER ON", 1500)
@@ -40,13 +45,6 @@ OnExcelLayerActivate() {
         ListenForLayerKeymaps("excel", "isExcelLayerActive")
     } catch Error as e {
         OutputDebug("[Excel] ERROR in ListenForLayerKeymaps: " . e.Message)
-    }
-    
-    ; When listener exits, deactivate layer
-    isExcelLayerActive := false
-    try {
-        ShowExcelLayerStatus(false)
-        SetTempStatus("EXCEL LAYER OFF", 1500)
     }
 }
 
@@ -71,21 +69,15 @@ OnExcelLayerDeactivate() {
 ; Generic/reusable actions should be in src/actions/
 
 ExcelExit() {
-    global isExcelLayerActive
-    isExcelLayerActive := false
+    ; Note: Layer deactivation is handled by ReturnToPreviousLayer()
     try ReturnToPreviousLayer()
 }
 
-; Add your layer-specific action functions here
-; Example:
-; ExcelDoSomething() {
-;     ; Implementation
-; }
-
 ; ==============================
-; HELP SYSTEM
+; HELP SYSTEM (Optional but Recommended)
 ; ==============================
 ; Dynamic help system that reads keymaps from KeymapRegistry
+; Shows all registered keymaps for this layer with tooltips
 
 global ExcelHelpActive := false
 
@@ -143,40 +135,3 @@ ExcelCloseHelp() {
         try RemoveToolTip()
     }
 }
-
-; ==============================
-; KEYMAP REGISTRATION
-; ==============================
-; Register in config/keymap.ahk:
-;
-; RegisterExcelKeymaps() {
-;     ; Basic actions
-;     RegisterKeymap("excel", "h", "Move Left", VimMoveLeft, false, 20)
-;     RegisterKeymap("excel", "j", "Move Down", VimMoveDown, false, 21)
-;     RegisterKeymap("excel", "k", "Move Up", VimMoveUp, false, 22)
-;     RegisterKeymap("excel", "l", "Move Right", VimMoveRight, false, 23)
-;     RegisterCategoryKeymap("excel", "g", "Go to", 1)
-;     RegisterKeymap("excel", "g", "g", "Go to Top", VimTopOfFile, false, 41)
-;     RegisterKeymap("excel", "G", "Go to Bottom", VimBottomOfFile, false, 41)
-;     RegisterKeymap("excel", "p", "Paste", VimPaste, false, 52)
-;     RegisterKeymap("excel", "u", "Undo", VimUndo, false, 55)
-;     RegisterKeymap("excel", "r", "Redo", VimRedo, false, 56)
-;     RegisterKeymap("excel", "Escape", "Exit", ExcelExit, false, 72)
-;
-;     OutputDebug("[Excel] Keymaps registered successfully")
-; }
-;
-; Then call RegisterExcelKeymaps() in InitializeCategoryKeymaps()
-
-; ==============================
-; INTEGRATION CHECKLIST
-; ==============================
-; □ 1. Copy and rename this file to {layerName}_layer.ahk
-; □ 2. Replace all Excel placeholders with actual layer name
-; □ 3. Replace all EXCEL placeholders with display name
-; □ 4. Implement layer-specific actions
-; □ 5. Create action functions in src/actions/ if reusable
-; □ 6. Register keymaps in config/keymap.ahk
-; □ 7. Register layer activation in leader menu if needed:
-;       RegisterKeymap("leader", "key", "EXCEL", ActivateExcelLayer, false)
-; □ 8. Test activation, keymaps, and deactivation

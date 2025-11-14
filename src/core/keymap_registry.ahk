@@ -661,7 +661,11 @@ HasKeymaps(category) {
 ;     ListenForLayerKeymaps("scroll", "isScrollLayerActive")
 ;
 ListenForLayerKeymaps(layerName, layerActiveVarName) {
-    OutputDebug("[LayerListener] Starting listener for layer: " . layerName)
+    OutputDebug("[LayerListener] ========================================")
+    OutputDebug("[LayerListener] STARTING NEW LISTENER")
+    OutputDebug("[LayerListener] Layer: " . layerName)
+    OutputDebug("[LayerListener] State Variable: " . layerActiveVarName)
+    OutputDebug("[LayerListener] ========================================")
     
     ; Verificar que el layer existe en KeymapRegistry
     if (!KeymapRegistry.Has(layerName)) {
@@ -671,11 +675,13 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
     
     ; Loop persistente mientras la layer esté activa
     Loop {
-        ; Verificar si layer sigue activa
+        ; Verificar si layer sigue activa ANTES de esperar input
         try {
             isActive := %layerActiveVarName%
             if (!isActive) {
-                OutputDebug("[LayerListener] Layer deactivated: " . layerName)
+                OutputDebug("[LayerListener] ----- LISTENER STOPPING -----")
+                OutputDebug("[LayerListener] Layer deactivated before waiting for input: " . layerName)
+                OutputDebug("[LayerListener] ----- LISTENER STOPPED -----")
                 break
             }
         } catch {
@@ -683,20 +689,30 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
             break
         }
         
-        ; Esperar input (sin timeout - persistente)
-        ih := InputHook("L1", "{Escape}")
+        ; CRITICAL FIX: Usar InputHook con timeout corto para poder verificar estado periódicamente
+        ; Esto permite detectar cuando la capa se desactiva mientras esperamos input
+        ih := InputHook("L1 T0.1", "{Escape}")  ; 100ms timeout
         ih.KeyOpt("{Escape}", "S")
         ih.Start()
         ih.Wait()
         
-        ; Verificar nuevamente si layer sigue activa (puede haberse desactivado durante input)
+        ; Si fue timeout, verificar estado y continuar loop
+        if (ih.EndReason = "Timeout") {
+            ih.Stop()
+            continue  ; Volver al inicio del loop para verificar isActive
+        }
+        
+        ; CRITICAL: Verificar inmediatamente si layer fue desactivada durante el input
+        ; Esto previene que un InputHook procese ESC después de que la capa se desactivó
         try {
             isActive := %layerActiveVarName%
             if (!isActive) {
+                OutputDebug("[LayerListener] Layer deactivated during input, discarding key: " . layerName)
                 ih.Stop()
                 break
             }
         } catch {
+            OutputDebug("[LayerListener] ERROR: State variable lost during input: " . layerActiveVarName)
             ih.Stop()
             break
         }
@@ -704,7 +720,11 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         ; Handle Escape - try to execute keymap if registered
         if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
             ih.Stop()
-            OutputDebug("[LayerListener] Escape pressed in layer: " . layerName)
+            OutputDebug("[LayerListener] ===== ESCAPE PRESSED =====")
+            OutputDebug("[LayerListener] Layer: " . layerName)
+            OutputDebug("[LayerListener] State Variable: " . layerActiveVarName . " = " . %layerActiveVarName%)
+            OutputDebug("[LayerListener] CurrentActiveLayer: " . CurrentActiveLayer)
+            OutputDebug("[LayerListener] PreviousLayer: " . PreviousLayer)
             
             ; Try to execute registered Escape keymap if it exists
             try {
@@ -799,12 +819,18 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
             OutputDebug("[LayerHierarchy] ERROR showing tooltip: " . tooltipErr.Message)
         }
         
-        ; Esperar input
-        ih := InputHook("L1", "{Escape}{Backspace}")
+        ; Esperar input con timeout para verificar estado periódicamente
+        ih := InputHook("L1 T0.1", "{Escape}{Backspace}")  ; 100ms timeout
         ih.KeyOpt("{Escape}", "S")
         ih.KeyOpt("{Backspace}", "S")
         ih.Start()
         ih.Wait()
+        
+        ; Si fue timeout, verificar estado y continuar
+        if (ih.EndReason = "Timeout") {
+            ih.Stop()
+            continue  ; Volver al inicio del loop para verificar isActive
+        }
         
         ; Verificar nuevamente si layer sigue activa
         try {

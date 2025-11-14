@@ -24,7 +24,7 @@
 ; CONFIGURATION
 ; ==============================
 
-global leaderLayerEnabled := true  ; Feature flag for leader layer
+global LeaderLayerEnabled := true  ; Feature flag for leader layer
 
 ; ==============================
 ; GLOBAL TRIGGER HOTKEY
@@ -63,11 +63,14 @@ ActivateLeaderLayer() {
     
     leaderActive := true
     
-    ; Deactivate NVIM layer to avoid conflicts
+    ; Deactivate NVIM layer to avoid conflicts using proper layer system
     if (isNvimLayerActive) {
-        isNvimLayerActive := false
-        try ShowNvimLayerToggleCS(false)
-        try ShowNvimLayerStatus(false)
+        try {
+            DeactivateLayer("nvim")
+            OutputDebug("[Leader] Deactivated nvim layer through proper system")
+        } catch as e {
+            OutputDebug("[Leader] Error deactivating nvim layer: " . e.Message)
+        }
     }
     
     ; Start hierarchical navigation at root

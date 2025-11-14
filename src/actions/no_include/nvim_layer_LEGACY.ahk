@@ -183,7 +183,10 @@ Esc:: {
 
 ; === QUICK EXIT (f key) ===
 f:: {
-    global isNvimLayerActive, tooltipConfig
+    global tooltipConfig
+    ; Note: Layer deactivation should be handled by the layer system
+    ; However, this is legacy code with different behavior
+    global isNvimLayerActive
     isNvimLayerActive := false
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         try ShowNvimLayerToggleCS(false)

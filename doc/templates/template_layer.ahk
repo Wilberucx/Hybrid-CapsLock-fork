@@ -69,12 +69,8 @@ OnLAYER_NAMELayerActivate() {
         OutputDebug("[LAYER_NAME] ERROR in ListenForLayerKeymaps: " . e.Message)
     }
     
-    ; When listener exits, deactivate layer
-    isLAYER_NAMELayerActive := false
-    try {
-        ShowLAYER_NAMELayerStatus(false)
-        SetTempStatus("LAYER_DISPLAY OFF", 1500)
-    }
+    ; Note: Layer deactivation is handled by the SwitchToLayer system
+    ; No need to manually deactivate here
 }
 
 OnLAYER_NAMELayerDeactivate() {

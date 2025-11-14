@@ -1,54 +1,25 @@
 ; ==============================
-; NVIM LAYER - Unified Keymap System
+; NVIM LAYER - Following Template Pattern  
 ; ==============================
-; Vim-like navigation layer using RegisterKeymap() and ListenForLayerKeymaps()
-;
-; FEATURES:
-; - Toggle ON/OFF con F23 (tap CapsLock from Kanata)
-; - Basic vim navigation (hjkl, word jumps, document navigation)
-; - Edit operations (yank, paste, undo, redo)
-; - Integration with visual_layer and insert_layer
-; - Help system
-;
-; DEPENDENCIES:
-; - vim_nav.ahk: Navegación básica reutilizable
-; - vim_edit.ahk: Operaciones de edición
-; - nvim_layer_helpers.ahk: Helper functions
-;
-; COMPLEX LOGIC REMOVED:
-; - ColonLogic (:w, :q, :wq) - Moved to no_include/nvim_layer_LEGACY.ahk
-; - GLogic (gg for top) - Moved to no_include/nvim_layer_LEGACY.ahk
-; - Conditional key behavior - Simplified
-;
-; NOTE: This is a CLEAN implementation following the layer template pattern
+; Vim-like navigation layer using the standard template pattern
+; Refactored to be consistent with other layers
 
 ; ==============================
 ; CONFIGURATION
 ; ==============================
 
-global nvimLayerEnabled := true          ; Feature flag
-global isNvimLayerActive := false        ; Layer state
-global nvimStaticEnabled := true         ; Legacy: static vs dynamic hotkeys
+global NvimLayerEnabled := true          ; Feature flag
+global isNvimLayerActive := false        ; Layer state (managed by SwitchToLayer)
 
 ; ==============================
-; ACTIVATION FUNCTION (Toggle)
+; ACTIVATION FUNCTION
 ; ==============================
-; NOTE: Nvim uses TOGGLE instead of simple activation
-; F23 (from Kanata) toggles the layer on/off
 
-ActivateNvimLayer() {
-    global isNvimLayerActive
-    
-    ; Toggle layer
-    isNvimLayerActive := !isNvimLayerActive
-    
-    OutputDebug("[Nvim] ActivateNvimLayer() - Toggling to: " . (isNvimLayerActive ? "ON" : "OFF"))
-    
-    if (isNvimLayerActive) {
-        OnNvimLayerActivate()
-    } else {
-        OnNvimLayerDeactivate()
-    }
+ActivateNvimLayer(originLayer := "leader") {
+    OutputDebug("[Nvim] ActivateNvimLayer() called with originLayer: " . originLayer)
+    result := SwitchToLayer("nvim", originLayer)
+    OutputDebug("[Nvim] SwitchToLayer result: " . (result ? "true" : "false"))
+    return result
 }
 
 ; ==============================
@@ -61,14 +32,10 @@ OnNvimLayerActivate() {
     
     OutputDebug("[Nvim] OnNvimLayerActivate() - Activating layer")
     
-    ; Show status
+    ; Show status tooltip (persistent indicator)
     try {
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-            ShowNvimLayerToggleCS(true)
-        } else {
-            ShowNvimLayerStatus(true)
-            SetTempStatus("NVIM LAYER ON", 1500)
-        }
+        ShowNvimLayerStatus(true)
+        SetTempStatus("NVIM LAYER ON", 1500)
     } catch Error as e {
         OutputDebug("[Nvim] ERROR showing status: " . e.Message)
     }
@@ -79,35 +46,18 @@ OnNvimLayerActivate() {
     } catch Error as e {
         OutputDebug("[Nvim] ERROR in ListenForLayerKeymaps: " . e.Message)
     }
-    
-    ; When listener exits, deactivate layer
-    isNvimLayerActive := false
-    try {
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-            ShowNvimLayerToggleCS(false)
-        } else {
-            ShowNvimLayerStatus(false)
-            SetTempStatus("NVIM LAYER OFF", 1500)
-        }
-    }
-    
-    try SaveLayerState()
 }
 
 OnNvimLayerDeactivate() {
-    global isNvimLayerActive
+    global isNvimLayerActive, NvimHelpActive
     isNvimLayerActive := false
     
-    ; Clean up
-    try {
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-            ShowNvimLayerToggleCS(false)
-        } else {
-            ShowNvimLayerStatus(false)
-        }
+    ; Clean up help if active
+    if (IsSet(NvimHelpActive) && NvimHelpActive) {
+        try NvimCloseHelp()
     }
     
-    try SaveLayerState()
+    try ShowNvimLayerStatus(false)
     
     OutputDebug("[Nvim] Layer deactivated")
 }
@@ -115,14 +65,19 @@ OnNvimLayerDeactivate() {
 ; ==============================
 ; LAYER-SPECIFIC ACTIONS
 ; ==============================
-; Actions specific to nvim layer control
-; Generic vim actions (VimMoveLeft, VimYank, etc.) are in src/actions/
+; Actions specific to this layer's control
+; Generic/reusable actions should be in src/actions/
 
-; Exit nvim layer (quick exit with 'f')
 NvimExit() {
-    global isNvimLayerActive
-    isNvimLayerActive := false
+    ; Note: Layer deactivation is handled by ReturnToPreviousLayer()
+    try ReturnToPreviousLayer()
+}
+
+; NVIM-SPECIFIC: Legacy behavior for compatibility
+NvimLegacyExit() {
+    ; Note: Layer deactivation is handled by the layer system
     Send("^!+2")  ; Additional behavior (if needed)
+    try ReturnToPreviousLayer()
 }
 
 ; Yank with notification
@@ -138,9 +93,10 @@ NvimInsertAtBeginning() {
 }
 
 ; ==============================
-; HELP SYSTEM (Dynamic from KeymapRegistry)
+; HELP SYSTEM (Optional but Recommended)
 ; ==============================
-; Help is generated dynamically from registered keymaps
+; Dynamic help system that reads keymaps from KeymapRegistry
+; Shows all registered keymaps for this layer with tooltips
 
 global NvimHelpActive := false
 
@@ -193,12 +149,7 @@ NvimCloseHelp() {
     try HideCSharpTooltip()
     NvimHelpActive := false
     if (isNvimLayerActive) {
-        try {
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled)
-                ShowNvimLayerToggleCS(true)
-            else
-                ShowNvimLayerStatus(true)
-        }
+        try ShowNvimLayerStatus(true)
     } else {
         try RemoveToolTip()
     }

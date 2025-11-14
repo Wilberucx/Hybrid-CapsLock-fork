@@ -135,9 +135,12 @@ ShowProcessTerminated() {
 }
 
 ShowNvimLayerStatus(isActive) {
-    ; Temporarily force native tooltip with elegant symbols
-    ShowCenteredToolTip(isActive ? "◉ NVIM" : "○ NVIM")
-    SetTimer(() => RemoveToolTip(), -900)
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowNvimLayerToggleCS(isActive)
+    } else {
+        ShowCenteredToolTip(isActive ? "◉ NVIM" : "○ NVIM")
+        SetTimer(() => RemoveToolTip(), -900)
+    }
 }
 
 ShowVisualModeStatus(isActive) {
@@ -160,6 +163,15 @@ ShowExcelLayerStatus(isActive) {
         try ShowExcelLayerToggleCS(isActive)
     } else {
         ShowCenteredToolTip(isActive ? "◉ EXCEL" : "○ EXCEL")
+        SetTimer(() => RemoveToolTip(), -900)
+    }
+}
+
+ShowVisualLayerStatus(isActive) {
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowVisualLayerToggleCS(isActive)
+    } else {
+        ShowCenteredToolTip(isActive ? "◉ VISUAL" : "○ VISUAL")
         SetTimer(() => RemoveToolTip(), -900)
     }
 }

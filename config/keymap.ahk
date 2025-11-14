@@ -8,11 +8,11 @@
 ; External triggers from Kanata
 
 #SuspendExempt
-#HotIf (leaderLayerEnabled)
+#HotIf (LeaderLayerEnabled)
 F24:: ActivateLeaderLayer()    ; CapsLock+Space → Leader
 #HotIf
 
-#HotIf (nvimLayerEnabled)
+#HotIf (NvimLayerEnabled)
 F23:: ActivateNvimLayer()       ; CapsLock Tap → Nvim (toggle)
 #HotIf
 #SuspendExempt False
@@ -26,9 +26,9 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("leader", "c", "Commands", 3)
     RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
     RegisterKeymap("leader", "e", "Excel", ActivateExcelLayer, false, 5)
-    RegisterCategoryKeymap("leader", "p", "Programs", 6)
-    RegisterCategoryKeymap("leader", "o", "Power Options", 7)
-    RegisterCategoryKeymap("leader", "i", "Information", 8)
+    RegisterCategoryKeymap("leader", "p", "Programs", 7)
+    RegisterCategoryKeymap("leader", "o", "Power Options", 8)
+    RegisterCategoryKeymap("leader", "i", "Information", 9)
     ; ==============================
     ; 2. SUBCATEGORÍAS 
     ; ==============================
@@ -240,10 +240,53 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("excel", "p", "Paste", VimPaste, false, 52)
     RegisterKeymap("excel", "u", "Undo", VimUndo, false, 55)
     RegisterKeymap("excel", "r", "Redo", VimRedo, false, 56)
+    ; Switch to visual layer for selection
+    RegisterKeymap("excel", "v", "Visual", ()=> SwitchToLayer("visual", "excel"), false, 52)
     
     ; Layer control
     RegisterKeymap("excel", "Escape", "Exit", ExcelExit, false, 72)
     RegisterKeymap("excel", "?", "Toggle Help", ExcelToggleHelp, false, 73)
+    RegisterKeymap("excel", "E", "Exit", ExcelExit, false, 72)
+
+    ; === VISUAL LAYER ===
+    ; Basic navigation with selection (vim visual mode)
+    RegisterKeymap("visual", "h", "Move Left (Select)", VimVisualMoveLeft, false, 20)
+    RegisterKeymap("visual", "j", "Move Down (Select)", VimVisualMoveDown, false, 21)
+    RegisterKeymap("visual", "k", "Move Up (Select)", VimVisualMoveUp, false, 22)
+    RegisterKeymap("visual", "l", "Move Right (Select)", VimVisualMoveRight, false, 23)
+    
+    ; Word navigation with selection
+    RegisterKeymap("visual", "w", "Word Forward (Select)", VimVisualWordForward, false, 30)
+    RegisterKeymap("visual", "b", "Word Backward (Select)", VimVisualWordBackward, false, 31)
+    RegisterKeymap("visual", "e", "End of Word (Select)", VimVisualEndOfWord, false, 32)
+    
+    ; Line navigation with selection
+    RegisterKeymap("visual", "0", "Start of Line (Select)", VimVisualStartOfLine, false, 10)
+    RegisterKeymap("visual", "$", "End of Line (Select)", VimVisualEndOfLine, false, 11)
+    
+    ; Document navigation with selection
+    RegisterCategoryKeymap("visual", "g", "Go to", 1)
+    RegisterKeymap("visual", "g", "g", "Go to Top (Select)", VimVisualTopOfFile, false, 41)
+    RegisterKeymap("visual", "G", "Go to Bottom (Select)", VimVisualBottomOfFile, false, 42)
+    
+    ; Page navigation with selection
+    RegisterKeymap("visual", "d", "Page Down (Select)", VimVisualPageDown, false, 45)
+    RegisterKeymap("visual", "u", "Page Up (Select)", VimVisualPageUp, false, 46)
+    
+    ; Text object selection
+    RegisterCategoryKeymap("visual", "i", "Inside", 2)
+    RegisterKeymap("visual", "i", "w", "Inside Word", VimVisualInsideWord, false, 50)
+    RegisterCategoryKeymap("visual", "a", "Around", 3)
+    RegisterKeymap("visual", "a", "w", "Around Word", VimVisualAroundWord, false, 51)
+    
+    ; Edit operations on selection
+    RegisterKeymap("visual", "y", "Yank Selection", () => Send("^c"), false, 60)
+    RegisterKeymap("visual", "x", "Cut Selection", () => Send("^x"), false, 61)
+    RegisterKeymap("visual", "p", "Paste", VimPaste, false, 62)
+    
+    ; Layer control
+    RegisterKeymap("visual", "Escape", "Exit", VisualExit , false, 72)
+    RegisterKeymap("visual", "?", "Toggle Help", VisualToggleHelp, false, 73)
     
     ; REMOVED (Complex logic moved to no_include/nvim_layer_LEGACY.ahk):
     ; - ColonLogic (:w, :q, :wq)

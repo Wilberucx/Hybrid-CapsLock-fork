@@ -1,220 +1,277 @@
 ; ==============================
-; VISUAL LAYER - Independent Visual Mode
+; LAYER TEMPLATE - Dynamic Layer Creation Pattern
 ; ==============================
-; Generic visual selection layer that can be invoked from any other layer
+; This is a template for creating new persistent layers
 ; 
-; FEATURES:
-; - Text selection with hjkl navigation
-; - Word-level selection (w/b/e)
-; - Line operations (0/$)
-; - Edit operations (d/y/c/x)
-; - Select all (a)
-; - Context-aware behavior
+; INSTRUCTIONS:
+; 1. Copy this file to a new file: {layerName}_layer.ahk
+; 2. Replace Visual with your layer name in PascalCase (e.g., "Scroll", "Nvim", "Excel")
+;    - For functions: ActivateVisualLayer → ActivateExcelLayer
+;    - For variables: isVisualLayerActive → isExcelLayerActive
+; 3. Replace visual with layer identifier in lowercase (e.g., "scroll", "nvim", "excel")
+;    - For SwitchToLayer: SwitchToLayer("visual", ...) → SwitchToLayer("excel", ...)
+;    - For ListenForLayerKeymaps: ListenForLayerKeymaps("visual", ...) → ListenForLayerKeymaps("excel", ...)
+;    - For RegisterKeymap: RegisterKeymap("visual", ...) → RegisterKeymap("excel", ...)
+; 4. Replace Visual Layer with friendly name (e.g., "Scroll Layer", "Nvim Layer", "Excel Layer")
+; 5. Implement your layer-specific actions
+; 6. Register keymaps in config/keymap.ahk
 ;
-; USAGE:
-; - Call from any layer: SwitchToLayer("visual", "origin_layer")  
-; - ESC returns to origin layer or base state
-; - All edit operations exit visual and return to origin
-;
-; DEPENDENCIES:
-; - vim_visual.ahk: Proper visual selection functions 
-; - Auto-loaded by auto_loader.ahk system
-; - Uses vim-style selection behavior
-
 
 ; ==============================
 ; CONFIGURATION
 ; ==============================
 
-global VisualLayerActive := false    ; Layer state
-global VisualSelection := false      ; Selection state
-global VisualHelpActive := false     ; Help menu state
+global VisualLayerEnabled := true          ; Feature flag
+global isVisualLayerActive := false        ; Layer state (managed by SwitchToLayer)
 
 ; ==============================
-; LAYER HOTKEYS
+; ACTIVATION FUNCTION
 ; ==============================
 
-#HotIf (VisualLayerActive)
-
-; === BASIC NAVIGATION (with selection) ===
-*h::VimVisualMoveLeft()
-*j::VimVisualMoveDown() 
-*k::VimVisualMoveUp()
-*l::VimVisualMoveRight()
-
-; Alt-modified combos (avoid menu conflicts)
-*!h::VimVisualMoveLeft()
-*!j::VimVisualMoveDown()
-*!k::VimVisualMoveUp() 
-*!l::VimVisualMoveRight()
-
-; === LINE NAVIGATION ===
-0::VimVisualStartOfLine()    ; Start of line
-+4::VimVisualEndOfLine()     ; End of line (Shift+4 = $)
-
-; === WORD NAVIGATION ===
-w::VimVisualWordForward()    ; Next word
-b::VimVisualWordBackward()   ; Previous word  
-e::VimVisualEndOfWord()      ; End of current word
-
-; === DOCUMENT NAVIGATION ===
-g::VimVisualTopOfFile()      ; Top of document
-+g::VimVisualBottomOfFile()  ; Bottom of document (Shift+G)
-
-; === EDIT OPERATIONS (exit visual after operation) ===
-d:: {
-    Send("{Delete}")
-    ExitVisualLayer()
-}
-
-y:: {
-    Send("^c")  ; Copy selection
-    ShowCopyNotification()
-    ExitVisualLayer()
-}
-
-c:: {
-    Send("{Delete}")
-    DeactivateVisualLayer()
-    SwitchToLayer("insert", PreviousLayer)  ; Go to insert, remember original layer
-}
-
-x:: {
-    Send("^x")  ; Cut
-    ExitVisualLayer()
-}
-
-p:: {
-    Send("^v")  ; Paste
-    ExitVisualLayer()
-}
-
-+p:: {
-    Send("^v")  ; Paste (plain)
-    ExitVisualLayer()
-}
-
-; === SELECT ALL ===
-a::Send("^a")
-
-; === EXIT VISUAL MODE ===
-Esc::ExitVisualLayer()
-
-; === EXIT TO BASE (emergency) ===
-f::ExitVisualToBase()
-
-; === HELP SYSTEM ===
-+vkBF::ShowVisualHelp()
-+SC035::ShowVisualHelp()
-?::ShowVisualHelp()
-
-#HotIf
-
-; ==============================
-; LAYER FUNCTIONS
-; ==============================
-
-; Called when entering visual layer
-ActivateVisualLayer() {
-    global VisualLayerActive, VisualSelection
-    
-    VisualLayerActive := true
-    VisualSelection := true
-    
-    ; Visual mode starts immediately - user navigation will extend selection
-    ; No initial selection needed - first movement will start it
-    
-    ShowVisualModeStatus(true)
-    OutputDebug("[VisualLayer] Visual mode activated")
-}
-
-; Called when exiting visual layer  
-DeactivateVisualLayer() {
-    global VisualLayerActive, VisualSelection
-    
-    VisualLayerActive := false
-    VisualSelection := false
-    
-    ; Clear any selection
-    Send("{Right}{Left}")
-    
-    ShowVisualModeStatus(false)
-    OutputDebug("[VisualLayer] Visual mode deactivated")
-}
-
-; Exit visual and return to previous layer
-ExitVisualLayer() {
-    DeactivateVisualLayer()
-    ReturnToPreviousLayer()
-}
-
-; SwitchToInsertMode removed - now uses layer switching directly
-
-; Emergency exit to base state
-ExitVisualToBase() {
-    global CurrentActiveLayer, PreviousLayer
-    DeactivateVisualLayer()
-    CurrentActiveLayer := ""
-    PreviousLayer := ""
-    
-    ShowCenteredToolTip("EXITED TO BASE")
-    SetTimer(() => RemoveToolTip(), -800)
+ActivateVisualLayer(originLayer := "leader") {
+    OutputDebug("[Visual] ActivateVisualLayer() called with originLayer: " . originLayer)
+    result := SwitchToLayer("visual", originLayer)  ; ⚠️ Use lowercase visual here!
+    OutputDebug("[Visual] SwitchToLayer result: " . (result ? "true" : "false"))
+    return result
 }
 
 ; ==============================
-; VISUAL SELECTION HELPERS
-; ==============================
-; All movement functions are now handled by vim_visual.ahk
-; This layer only manages the layer state and integration
-
-; ==============================
-; UI FUNCTIONS
+; ACTIVATION/DEACTIVATION HOOKS
 ; ==============================
 
-; ShowVisualModeStatus is defined globally in src/ui/tooltips_native_wrapper.ahk
-
-ShowVisualHelp() {
-    helpText := "VISUAL MODE HELP`n`n"
-    helpText .= "SELECTION NAVIGATION (vim-style):`n"
-    helpText .= "h/j/k/l - Move with selection`n"
-    helpText .= "w/b/e - Word-based selection`n" 
-    helpText .= "0/$ - Line start/end selection`n"
-    helpText .= "g/G - Document start/end selection`n`n"
-    helpText .= "OPERATIONS:`n"
-    helpText .= "d - Delete selection & exit`n"
-    helpText .= "y - Copy selection & exit`n"
-    helpText .= "c - Change (delete + insert)`n"
-    helpText .= "x - Cut selection & exit`n"
-    helpText .= "p/P - Paste & exit`n"
-    helpText .= "a - Select all`n`n"
-    helpText .= "EXIT:`n"
-    helpText .= "Esc - Return to previous layer`n"
-    helpText .= "f - Emergency exit to base`n`n"
-    helpText .= "Uses vim_visual.ahk for proper selection behavior"
-    
-    ShowCenteredToolTip(helpText)
-    SetTimer(() => RemoveToolTip(), -10000)
-}
-
-; ==============================
-; LAYER INTEGRATION HOOKS
-; ==============================
-
-; These functions are called by the layer switching system
-; from auto_loader.ahk
-
-; Hook called when this layer is activated
 OnVisualLayerActivate() {
-    ActivateVisualLayer()
+    global isVisualLayerActive
+    isVisualLayerActive := true
+    
+    OutputDebug("[Visual] OnVisualLayerActivate() - Activating layer")
+    
+    ; Show status tooltip (persistent indicator)
+    try {
+        ShowVisualLayerStatus(true)
+        SetTempStatus("Visual Layer ON", 1500)
+    } catch Error as e {
+        OutputDebug("[Visual] ERROR showing status: " . e.Message)
+    }
+    
+    ; Start listening for keymaps (uses keymap_registry system)
+    try {
+        ListenForLayerKeymaps("visual", "isVisualLayerActive")  ; ⚠️ Use lowercase visual here!
+    } catch Error as e {
+        OutputDebug("[Visual] ERROR in ListenForLayerKeymaps: " . e.Message)
+    }
+    
+    ; Note: Layer deactivation is handled by the SwitchToLayer system
+    ; No need to manually deactivate here
 }
 
-; Hook called when this layer is deactivated  
 OnVisualLayerDeactivate() {
-    DeactivateVisualLayer()
+    global isVisualLayerActive, VisualHelpActive
+    isVisualLayerActive := false
+    
+    ; Clean up help if active
+    if (IsSet(VisualHelpActive) && VisualHelpActive) {
+        try VisualCloseHelp()
+    }
+    
+    try ShowVisualLayerStatus(false)
+    
+    OutputDebug("[Visual] Layer deactivated")
 }
 
 ; ==============================
-; BASIC UTILITY FUNCTIONS
+; LAYER-SPECIFIC ACTIONS
 ; ==============================
-; Note: ShowCopyNotification, ShowCenteredToolTip, and RemoveToolTip are defined globally
-; in src/ui/tooltips_native_wrapper.ahk
+; Actions specific to this layer's control
+; Generic/reusable actions should be in src/actions/
+
+VisualExit() {
+    global isVisualLayerActive
+    isVisualLayerActive := false
+    try ReturnToPreviousLayer()
+}
+
+; Add your layer-specific action functions here
+; Example:
+; VisualDoSomething() {
+;     ; Implementation
+; }
+
+; ==============================
+; HELP SYSTEM (Optional but Recommended)
+; ==============================
+; Dynamic help system that reads keymaps from KeymapRegistry
+; Shows all registered keymaps for this layer with tooltips
+
+global VisualHelpActive := false
+
+VisualToggleHelp() {
+    global VisualHelpActive
+    if (VisualHelpActive)
+        VisualCloseHelp()
+    else
+        VisualShowHelp()
+}
+
+VisualShowHelp() {
+    global tooltipConfig, VisualHelpActive
+    try HideCSharpTooltip()
+    Sleep 30
+    VisualHelpActive := true
+    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
+    try SetTimer(VisualHelpAutoClose, -to)
+    
+    ; Generate help dynamically from KeymapRegistry
+    try {
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            ; Use C# tooltip with dynamic items
+            items := GenerateCategoryItemsForPath("visual")  ; ⚠️ Use lowercase visual!
+            if (items = "")
+                items := "[No keymaps registered for visual layer]"
+            ShowBottomRightListTooltip("Visual Layer HELP", items, "?: Close", to)
+        } else {
+            ; Fallback: native tooltip with dynamic text
+            menuText := BuildMenuForPath("visual", "Visual Layer HELP")  ; ⚠️ Use lowercase visual!
+            if (menuText = "")
+                menuText := "NO KEYMAPS REGISTERED"
+            ShowCenteredToolTip(menuText)
+        }
+    } catch Error as e {
+        OutputDebug("[Visual] ERROR showing help: " . e.Message)
+        ShowCenteredToolTip("Visual Layer HELP: See registered keymaps in config/keymap.ahk")
+    }
+}
+
+VisualHelpAutoClose() {
+    global VisualHelpActive
+    if (VisualHelpActive)
+        VisualCloseHelp()
+}
+
+VisualCloseHelp() {
+    global isVisualLayerActive, VisualHelpActive
+    try SetTimer(VisualHelpAutoClose, 0)
+    try HideCSharpTooltip()
+    VisualHelpActive := false
+    if (isVisualLayerActive) {
+        try {
+            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+                ; If you have a custom status tooltip, call it here
+                ; ShowVisualLayerToggleCS(true)
+            } else {
+                ShowCenteredToolTip("◉ Visual Layer")
+                SetTimer(() => RemoveToolTip(), -900)
+            }
+        }
+    } else {
+        try RemoveToolTip()
+    }
+}
+
+; ==============================
+; KEYMAP REGISTRATION
+; ==============================
+; Register in config/keymap.ahk inside InitializeCategoryKeymaps():
+;
+; RegisterVisualKeymaps() {
+;     ; Basic actions
+;     RegisterKeymap("visual", "key", "Description", ActionFunction, false, 1)  ; ⚠️ Use lowercase visual!
+;     
+;     ; Layer control
+;     RegisterKeymap("visual", "Escape", "Exit Layer", VisualExit, false, 10)
+;     
+;     ; Help system (if implemented)
+;     RegisterKeymap("visual", "?", "Toggle Help", VisualToggleHelp, false, 100)
+;     
+;     OutputDebug("[Visual] Keymaps registered successfully")
+; }
+;
+; Then call RegisterVisualKeymaps() in InitializeCategoryKeymaps()
+;
+; OR register directly in InitializeCategoryKeymaps() (simpler approach):
+;     RegisterKeymap("visual", "h", "Move Left", VimMoveLeft, false, 20)  ; ⚠️ lowercase visual!
+;     RegisterKeymap("visual", "j", "Move Down", VimMoveDown, false, 21)
+;     RegisterKeymap("visual", "Escape", "Exit Layer", VisualExit, false, 30)
+;     RegisterKeymap("visual", "?", "Toggle Help", VisualToggleHelp, false, 100)  ; Help system
+;     ; ... more keymaps
+
+; ==============================
+; STATUS TOOLTIP FUNCTIONS (To implement in UI files)
+; ==============================
+; These functions need to be implemented in the UI wrapper files:
+;
+; 1. In src/ui/tooltips_native_wrapper.ahk (native fallback):
+;    ShowVisualLayerStatus(isActive) {
+;        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+;            try ShowVisualLayerToggleCS(isActive)
+;        } else {
+;            ShowCenteredToolTip(isActive ? "◉ Visual Layer" : "○ Visual Layer")
+;            SetTimer(() => RemoveToolTip(), -900)
+;        }
+;    }
+;
+; 2. In src/ui/tooltip_csharp_integration.ahk (C# tooltip):
+;    ShowVisualLayerToggleCS(isActive) {
+;        try HideCSharpTooltip()
+;        Sleep 30
+;        StartTooltipApp()
+;        if (!isActive) {
+;            try HideCSharpTooltip()
+;            return
+;        }
+;        theme := ReadTooltipThemeDefaults()
+;        cmd := Map()
+;        cmd["show"] := true
+;        cmd["title"] := "Visual Layer"
+;        cmd["layout"] := "list"
+;        cmd["tooltip_type"] := "bottom_right_list"
+;        cmd["timeout_ms"] := 0  ; persistent while layer is active
+;        items := []
+;        it := Map()
+;        it["key"] := "?"
+;        it["description"] := "help"
+;        items.Push(it)
+;        cmd["items"] := items
+;        if (theme.style.Count)
+;            cmd["style"] := theme.style
+;        if (theme.position.Count)
+;            cmd["position"] := theme.position
+;        if (theme.window.Has("topmost"))
+;            cmd["topmost"] := theme.window["topmost"]
+;        if (theme.window.Has("click_through"))
+;            cmd["click_through"] := theme.window["click_through"]
+;        if (theme.window.Has("opacity"))
+;            cmd["opacity"] := theme.window["opacity"]
+;        json := SerializeJson(cmd)
+;        ScheduleTooltipJsonWrite(json)
+;    }
+;
+; See examples in:
+; - ShowScrollLayerStatus() in src/ui/scroll_tooltip_integration.ahk
+; - ShowNvimLayerToggleCS() in src/ui/tooltip_csharp_integration.ahk
+; - ShowExcelLayerStatus() in src/ui/tooltips_native_wrapper.ahk
+
+; ==============================
+; INTEGRATION CHECKLIST
+; ==============================
+; □ 1. Copy and rename this file to {layerName}_layer.ahk
+; □ 2. Replace all visual placeholders with lowercase identifier (e.g., "excel")
+;       ⚠️ Do this FIRST to avoid confusion with Visual!
+; □ 3. Replace all Visual placeholders with PascalCase name (e.g., "Excel")
+; □ 4. Replace all Visual Layer placeholders with display name (e.g., "Excel Layer")
+; □ 5. Verify critical lines use visual (lowercase):
+;       - SwitchToLayer("visual", ...) 
+;       - ListenForLayerKeymaps("visual", ...)
+;       - RegisterKeymap("visual", ...)
+; □ 6. Implement layer-specific actions
+; □ 7. Create action functions in src/actions/ if reusable
+; □ 8. Register keymaps in config/keymap.ahk using lowercase visual
+;       - Include help keymap: RegisterKeymap("visual", "?", "Toggle Help", VisualToggleHelp, false, 100)
+; □ 9. Implement status tooltip functions in UI files:
+;       - Add ShowVisualLayerStatus() in src/ui/tooltips_native_wrapper.ahk
+;       - Add ShowVisualLayerToggleCS() in src/ui/tooltip_csharp_integration.ahk
+;       - See "STATUS TOOLTIP FUNCTIONS" section above for code templates
+; □ 10. Register layer activation in leader menu if needed:
+;       RegisterKeymap("leader", "key", "Visual Layer", ActivateVisualLayer, false)
+; □ 11. Test activation, keymaps, and deactivation
+; □ 12. Test help system by pressing "?" while layer is active
+; □ 13. Test status tooltip appears when layer activates (persistent indicator)

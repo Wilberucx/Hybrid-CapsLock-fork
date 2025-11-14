@@ -1043,13 +1043,9 @@ NvimSpecToDescription(spec) {
 }
 
 ShowNvimLayerToggleCS(isActive) {
-    ; Ensure app is running; if not, fallback to native tooltip
+    try HideCSharpTooltip()
+    Sleep 30
     StartTooltipApp()
-    if (!ProcessExist("TooltipApp.exe")) {
-        try ShowNvimLayerStatus(isActive)
-        return
-    }
-    ; If turning OFF, simply hide the tooltip and exit (no OFF tooltip)
     if (!isActive) {
         try HideCSharpTooltip()
         return
@@ -1057,44 +1053,18 @@ ShowNvimLayerToggleCS(isActive) {
     theme := ReadTooltipThemeDefaults()
     cmd := Map()
     cmd["show"] := true
-    cmd["title"] := "Nvim"
+    cmd["title"] := "NVIM"
     cmd["layout"] := "list"
     cmd["tooltip_type"] := "bottom_right_list"
-    ; Read status timeout from config (string), then coerce to number safely
-    ; Persist while ON (timeout 0). Use configured/short timeout when OFF.
-    if (isActive) {
-        statusMs := 0
-    } else {
-        statusMs := CleanIniValue(IniRead(ConfigIni, "Tooltips", "status_notification_timeout", ""))
-        if (statusMs = "" || statusMs = "ERROR")
-            statusMs := 2000
-        else
-            statusMs := Integer(Trim(statusMs))
-    }
-    cmd["timeout_ms"] := statusMs
-
-    ; Single item: when ON show help hint, when OFF show OFF
+    cmd["timeout_ms"] := 0  ; persistent while layer is active
     items := []
     it := Map()
-    if (isActive) {
-        it["key"] := "?"
-        it["description"] := "help"
-    } else {
-        it["key"] := ""
-        it["description"] := "OFF"
-    }
+    it["key"] := "?"
+    it["description"] := "help"
     items.Push(it)
     cmd["items"] := items
-
-    ; Apply theme and accent by state
-    if (theme.style.Count) {
-        style := theme.style
-        if (isActive && style.Has("success"))
-            style["accent_options"] := style["success"]
-        else if (!isActive && style.Has("error"))
-            style["accent_options"] := style["error"]
-        cmd["style"] := style
-    }
+    if (theme.style.Count)
+        cmd["style"] := theme.style
     if (theme.position.Count)
         cmd["position"] := theme.position
     if (theme.window.Has("topmost"))
@@ -1103,9 +1073,6 @@ ShowNvimLayerToggleCS(isActive) {
         cmd["click_through"] := theme.window["click_through"]
     if (theme.window.Has("opacity"))
         cmd["opacity"] := theme.window["opacity"]
-
-    ; NVIM layer tooltip is not navigable; omit navigation entirely
-    StartTooltipApp()
     json := SerializeJson(cmd)
     ScheduleTooltipJsonWrite(json)
 }

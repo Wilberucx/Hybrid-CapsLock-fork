@@ -67,12 +67,8 @@ OnScrollLayerActivate() {
         OutputDebug("[ScrollLayer] ERROR in ListenForLayerKeymaps: " . e.Message)
     }
     
-    ; When listener exits, deactivate layer
-    isScrollLayerActive := false
-    try {
-        ShowScrollLayerStatus(false)
-        SetTempStatus("SCROLL LAYER OFF", 1500)
-    }
+    ; Note: Layer deactivation is handled by the SwitchToLayer system
+    ; No need to manually deactivate here
 }
 
 OnScrollLayerDeactivate() {
