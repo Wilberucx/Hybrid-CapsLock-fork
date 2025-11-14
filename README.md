@@ -77,6 +77,7 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 3. **Instala AutoHotkey v2:** [Descargar aquí](https://www.autohotkey.com/download/ahk-v2.exe)
 4. Instala [Kanata](https://github.com/jtroo/kanata/releases)
 5. **Ejecuta:** Doble-click en `HybridCapslock.ahk`
+6. (opcional) Si quieres tooltips modernos descarga [tooltip_csharp.zip](https://github.com/Wilberucx/Hybrid-CapsLock-fork/releases)
 
 ### Opción 2: Instalación Manual
 
