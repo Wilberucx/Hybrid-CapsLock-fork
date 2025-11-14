@@ -70,36 +70,20 @@ Este fork combina las **fortalezas de Kanata** (ergonomía, timing perfecto, hom
 - **🎯 Modo Líder (Hold CapsLock + Space):** Menús contextuales inteligentes para programas, ventanas, comandos del sistema, timestamps, información personal y más. Configurable como atajo en `kanata.kbd` (F24 en capa vim-nav).
   - [**📖 Guía de Modo Líder**](doc/en/user-guide/leader-mode.md)
 
-## 🚀 Instalación Rápida
-
-### Opción 1: Instalación Automática (Recomendado)
-
-```powershell
-# Una línea que instala todo automáticamente
-iwr -useb https://raw.githubusercontent.com/Wilberucx/Hybrid-CapsLock-fork/main/install.ps1 | iex
-```
-
-**✅ Qué hace esto:**
-- Descarga AutoHotkey v2 automáticamente
-- Descarga Kanata automáticamente  
-- Instala HybridCapsLock en `%LOCALAPPDATA%\HybridCapsLock`
-- Crea acceso directo en escritorio
-- Configura inicio automático con Windows
-- Verifica todas las dependencias
-
-### Opción 2: Descarga Portable (Sin Instalación)
+### Opción 1: Descarga Portable (Sin Instalación)
 
 1. **Descarga:** [HybridCapsLock-Portable.zip](https://github.com/Wilberucx/Hybrid-CapsLock-fork/releases)
 2. **Extrae** a cualquier carpeta
 3. **Instala AutoHotkey v2:** [Descargar aquí](https://www.autohotkey.com/download/ahk-v2.exe)
-4. **Ejecuta:** Doble-click en `HybridCapslock.ahk`
+4. Instala [Kanata](https://github.com/jtroo/kanata/releases)
+5. **Ejecuta:** Doble-click en `HybridCapslock.ahk`
 
-### Opción 3: Instalación Manual
+### Opción 2: Instalación Manual
 
 1. Clona este repositorio
 2. Instala [AutoHotkey v2](https://www.autohotkey.com/download/ahk-v2.exe)
-3. Instala [Kanata](https://github.com/jtroo/kanata/releases) (opcional)
-4. Ejecuta: `.\install.ps1` o doble-click en `HybridCapslock.ahk`
+3. Instala [Kanata](https://github.com/jtroo/kanata/releases)
+
 
 📚 **Guía de instalación detallada:** [Quick-Install.md](Quick-Install.md)
 
