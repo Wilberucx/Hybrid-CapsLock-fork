@@ -1,3 +1,4 @@
+
 # Changelog
 
 All notable changes to the HybridCapslock project will be documented in this file.
@@ -5,9 +6,12 @@ All notable changes to the HybridCapslock project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1]
+### Fixed 
+- Switch beetwen layers, can exit on original later 
 ---
 
-## [Unreleased]
+## [2.0.0] - Previous Version
 
 ### Added
 - Documentation internationalization (i18n) structure with English and Spanish support
@@ -22,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.0.0] - Previous Version
+## [1.0.0] 
 
 ### Added
 - Hybrid system combining Kanata (timing/homerow mods) with AutoHotkey (context-aware logic)
