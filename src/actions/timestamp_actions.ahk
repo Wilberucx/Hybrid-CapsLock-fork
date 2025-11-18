@@ -14,6 +14,10 @@
  * @param description - Optional description for tooltip
  */
 InsertTimestamp(format, description := "") {
+  return () => InsertTimestampNow(format, description)
+}
+
+InsertTimestampNow(format, description := "") {
     timestamp := FormatTime(, format)
     SendText(timestamp)
     tooltipMsg := description ? description . ": " . timestamp : "TIMESTAMP: " . timestamp
