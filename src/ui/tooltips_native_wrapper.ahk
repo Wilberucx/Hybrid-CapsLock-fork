@@ -2,7 +2,7 @@
 ; UI native wrapper and status helpers
 ; ==============================
 ; Provides fallback UI when C# tooltips are disabled or unavailable.
-; Exposes unified functions used by core/confirmations and layers.
+; Exposes unified functions used by layers.
 
 ; Normalize navigation labels in native tooltips using INI [TooltipStyle]/navigation_label.
 NormalizeNavigationLabels(text) {

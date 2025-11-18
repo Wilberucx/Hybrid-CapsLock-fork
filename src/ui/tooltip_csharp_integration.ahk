@@ -465,6 +465,26 @@ TooltipInCommandsMenu() {
     return tooltipMenuActive && tooltipConfig.handleInput && (tooltipCurrentTitle = "COMMAND PALETTE")
 }
 
+; Handle confirmation selection (Y/N)
+HandleConfirmationSelection(confirmed) {
+    global confirmationResult, confirmationActive
+    confirmationResult := confirmed
+    confirmationActive := false
+    HideCSharpTooltip()
+    
+}
+
+TooltipInConfirmationMode() {
+    global tooltipMenuActive, tooltipCurrentTitle, tooltipConfig
+    return tooltipMenuActive && tooltipConfig.handleInput && (tooltipCurrentTitle = "CONFIRM ACTION")
+}
+
+#HotIf TooltipInConfirmationMode()
+y::HandleConfirmationSelection(true)
+n::HandleConfirmationSelection(false)
+Esc::HandleConfirmationSelection(false)
+#HotIf
+
 ; Leader menu hotkeys (only on LEADER MODE)
 #HotIf TooltipInLeaderMenu()
 p::HandleTooltipSelection("p")

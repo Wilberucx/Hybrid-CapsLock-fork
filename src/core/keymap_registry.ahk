@@ -444,20 +444,132 @@ FindKeymap(category, key) {
 }
 
 ; ==============================
-; EJECUCIÓN (DUAL MODE)
+; EJECUCIÓN (JERÁRQUICO)
 ; ==============================
 
-; ExecuteKeymap(category, key)
-; FLAT
-ExecuteKeymap(category, key) {
-    km := FindKeymap(category, key)
+; ShowUnifiedConfirmation(description)
+; Función unificada que detecta si C# tooltips están activos y usa el apropiado
+ShowUnifiedConfirmation(description) {
+    ; DEBUG: Log confirmation attempt
     
-    if (!km)
-        return false
+    ; Check if C# tooltips are enabled via HybridConfig
+    csharpEnabled := false
+    if (IsSet(HybridConfig) && HybridConfig.tooltips.enabled) {
+        csharpEnabled := true
+    } else if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        csharpEnabled := true
+    }
     
-    if (km["confirm"]) {
-        ; Simple Y/N confirmation (replacing complex confirmations.ahk system)
-        ShowCenteredToolTip("Execute: " . km["desc"] . "?`n[y: Yes] [n/Esc: No]")
+    if (csharpEnabled) {
+        ; ===== CONFIRMACIÓN CON C# TOOLTIP =====
+        ; Create confirmation menu with C# tooltips
+        items := "y:✓ Yes|n:✗ No"
+        
+        ; Use C# tooltip system
+        theme := ReadTooltipThemeDefaults()
+        cmd := Map()
+        cmd["show"] := true
+        cmd["title"] := "CONFIRM ACTION"
+        cmd["layout"] := "list"
+        cmd["tooltip_type"] := "center"
+        cmd["timeout_ms"] := 10000  ; 10 second timeout
+        
+        ; Add confirmation items
+        itemsList := []
+        
+        ; Add description as info item
+        descItem := Map()
+        descItem["key"] := "▶"
+        descItem["description"] := description
+        itemsList.Push(descItem)
+        
+        ; Add separator
+        sepItem := Map()
+        sepItem["key"] := ""
+        sepItem["description"] := "──────────────"
+        itemsList.Push(sepItem)
+        
+        ; Add Yes option
+        yesItem := Map()
+        yesItem["key"] := "Y"
+        yesItem["description"] := "✓ Confirm"
+        itemsList.Push(yesItem)
+        
+        ; Add No option
+        noItem := Map()
+        noItem["key"] := "N"
+        noItem["description"] := "✗ Cancel"
+        itemsList.Push(noItem)
+        
+        cmd["items"] := itemsList
+        
+        ; Apply theme (including current position)
+        if (theme.style.Count)
+            cmd["style"] := theme.style
+        if (theme.position.Count)
+            cmd["position"] := theme.position
+        if (theme.window.Has("topmost"))
+            cmd["topmost"] := theme.window["topmost"]
+        if (theme.window.Has("click_through"))
+            cmd["click_through"] := theme.window["click_through"]
+        if (theme.window.Has("opacity"))
+            cmd["opacity"] := theme.window["opacity"]
+        
+        ; Show C# tooltip
+        StartTooltipApp()
+        json := SerializeJson(cmd)
+        ScheduleTooltipJsonWrite(json)
+        
+        ; Wait for input - Check if C# handles input or use InputHook fallback
+        confirmed := false
+        if (tooltipConfig.handleInput) {
+            ; C# tooltip handles input via hotkeys - wait for tooltip to be hidden
+            ; Set up confirmation variables for C# system to use
+            global confirmationResult := false
+            global confirmationActive := true
+            
+            ; Wait until C# system processes input and hides tooltip
+            timeout := 10000  ; 10 seconds
+            startTime := A_TickCount
+            while (confirmationActive && (A_TickCount - startTime) < timeout) {
+                Sleep(50)
+                ; Check if user used hotkeys that would hide tooltip
+                if (!tooltipMenuActive) {
+                    confirmationActive := false
+                    break
+                }
+            }
+            
+            confirmed := confirmationResult
+            
+        } else {
+            ; Fallback to InputHook if C# doesn't handle input
+            ih := InputHook("L1 T10")  ; 10 second timeout
+            ih.KeyOpt("{Escape}", "+")
+            ih.Start()
+            ih.Wait()
+            
+            ; Process result
+            if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
+                confirmed := false
+            } else if (ih.EndReason = "Timeout") {
+                confirmed := false
+            } else {
+                key := ih.Input
+                if (key = "y" || key = "Y")
+                    confirmed := true
+            }
+            ih.Stop()
+        }
+        
+        ; Hide tooltip (if not already hidden)
+        HideCSharpTooltip()
+        
+        return confirmed
+        
+    } else {
+        ; ===== CONFIRMACIÓN CON TOOLTIP NATIVO =====
+        ShowCenteredToolTip("Execute: " . description . "?`n[y: Yes] [n/Esc: No]")
         ih := InputHook("L1 T3")  ; 3 second timeout
         ih.KeyOpt("{Escape}", "+")
         ih.Start()
@@ -475,19 +587,10 @@ ExecuteKeymap(category, key) {
         ih.Stop()
         SetTimer(() => RemoveToolTip(), -200)
         
-        if (!confirmed)
-            return true
-    }
-    
-    try {
-        km["action"].Call()
-        return true
-    } catch as e {
-        ShowCenteredToolTip("Error: " . km["desc"] . " - " . e.Message)
-        SetTimer(() => RemoveToolTip(), -2000)
-        return true
+        return confirmed
     }
 }
+
 
 ; ExecuteKeymapAtPath(path, key)
 ; JERÁRQUICO
@@ -506,26 +609,8 @@ ExecuteKeymapAtPath(path, key) {
     
     ; Es acción, ejecutar
     if (data["confirm"]) {
-        ; Simple Y/N confirmation
-        ShowCenteredToolTip("Execute: " . data["desc"] . "?`n[y: Yes] [n/Esc: No]")
-        ih := InputHook("L1 T3")  ; 3 second timeout
-        ih.KeyOpt("{Escape}", "+")
-        ih.Start()
-        ih.Wait()
-        confirmed := false
-        if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
-            confirmed := false
-        } else if (ih.EndReason = "Timeout") {
-            confirmed := false
-        } else {
-            key := ih.Input
-            if (key = "y" || key = "Y")
-                confirmed := true
-        }
-        ih.Stop()
-        SetTimer(() => RemoveToolTip(), -200)
-        
-        if (!confirmed)
+        ; Use unified confirmation system
+        if (!ShowUnifiedConfirmation(data["desc"]))
             return false
     }
     

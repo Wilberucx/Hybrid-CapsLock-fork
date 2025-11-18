@@ -4,6 +4,8 @@
 ; Verifica que AutoHotkey v2 y Kanata estén disponibles
 ; antes de inicializar HybridCapsLock
 
+; Note: Debug functions are included via init.ahk
+
 class DependencyChecker {
     
     ; ---- Verificar todas las dependencias ----
