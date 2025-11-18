@@ -32,12 +32,12 @@ global isScrollLayerActive := false      ; Layer state (managed by SwitchToLayer
 
 ActivateScrollLayer(originLayer := "leader") {
     ; DEBUG: Log para verificar si se ejecuta
-    OutputDebug("[SCROLL DEBUG] ActivateScrollLayer() llamado con originLayer: " . originLayer)
+    Log.i("ActivateScrollLayer() llamado con originLayer: " . originLayer, "SCROLL")
     
     ; Use SwitchToLayer for consistent behavior
     result := SwitchToLayer("scroll", originLayer)
     
-    OutputDebug("[SCROLL DEBUG] SwitchToLayer result: " . (result ? "true" : "false"))
+    Log.d("SwitchToLayer result: " . (result ? "true" : "false"), "SCROLL")
     return result
 }
 
@@ -49,14 +49,14 @@ OnScrollLayerActivate() {
     global isScrollLayerActive
     isScrollLayerActive := true
     
-    OutputDebug("[ScrollLayer] OnScrollLayerActivate() - Activating layer")
+    Log.d("OnScrollLayerActivate() - Activating layer", "SCROLL")
     
     ; Show status
     try {
         ShowScrollLayerStatus(true)
         SetTempStatus("SCROLL LAYER ON", 1500)
     } catch Error as e {
-        OutputDebug("[ScrollLayer] ERROR showing status: " . e.Message)
+        Log.e("Error showing status: " . e.Message, "SCROLL")
     }
     
     ; Start listening for keymaps (reuses keymap_registry system)
@@ -64,7 +64,7 @@ OnScrollLayerActivate() {
     try {
         ListenForLayerKeymaps("scroll", "isScrollLayerActive")
     } catch Error as e {
-        OutputDebug("[ScrollLayer] ERROR in ListenForLayerKeymaps: " . e.Message)
+        Log.e("Error in ListenForLayerKeymaps: " . e.Message, "SCROLL")
     }
     
     ; Note: Layer deactivation is handled by the SwitchToLayer system

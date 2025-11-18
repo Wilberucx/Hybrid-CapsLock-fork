@@ -79,16 +79,17 @@ try {
     ; Configuration loaded via #Include directives above
     ; HybridConfig is now global from settings.ahk
     if (IsSet(HybridConfig)) {
-        OutputDebug("[INIT] Config loaded from: ahk`n")
+        LogInfo("Config loaded from: ahk", "INIT")
         
-        ; Initialize debug_mode from HybridConfig
-        global debug_mode
-        debug_mode := HybridConfig.app.debug_mode
-        if (debug_mode) {
-            InfoLog("Debug mode ENABLED - verbose logging active", "INIT")
-        }
+        ; Inicializar el sistema de debug centralizado
+        InitDebugSystem()
+        
+        ; Sincronizar con el sistema legacy
+        SyncDebugMode()
+        
+        LogInfo("HybridCapsLock v" . HybridConfig.app.version . " iniciado correctamente", "INIT")
     } else {
-        OutputDebug("[INIT] Config not loaded, will use INI fallback`n")
+        LogError("Config not loaded, will use INI fallback", "INIT")
     }
     
     ; Luego cargar configuración de AHK

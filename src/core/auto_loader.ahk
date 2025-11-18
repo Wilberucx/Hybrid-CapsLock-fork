@@ -680,7 +680,7 @@ LoadLayerRegistry() {
     LayerRegistry := Map()
     
     if (!FileExist(AUTO_LOADER_LAYER_REGISTRY_FILE)) {
-        OutputDebug("[LayerSwitcher] Registry file not found: " . AUTO_LOADER_LAYER_REGISTRY_FILE)
+        Log.e("Registry file not found: " . AUTO_LOADER_LAYER_REGISTRY_FILE, "LAYER")
         return false
     }
     
@@ -710,15 +710,15 @@ LoadLayerRegistry() {
                     layerName := Trim(parts[1])
                     layerPath := Trim(parts[2])
                     LayerRegistry[layerName] := layerPath
-                    OutputDebug("[LayerSwitcher] Registered layer: " . layerName . " -> " . layerPath)
+                    Log.d("Registered layer: " . layerName . " -> " . layerPath, "LAYER")
                 }
             }
         }
         
-        OutputDebug("[LayerSwitcher] Registry loaded: " . LayerRegistry.Count . " layers")
+        Log.d("Registry loaded: " . LayerRegistry.Count . " layers", "LAYER")
         return true
     } catch as regLoadErr {
-        OutputDebug("[LayerSwitcher] ERROR loading registry: " . regLoadErr.Message)
+        Log.e("Error loading registry: " . regLoadErr.Message, "LAYER")
         return false
     }
 }
@@ -726,23 +726,23 @@ LoadLayerRegistry() {
 SwitchToLayer(targetLayer, originLayer := "") {
     global CurrentActiveLayer, PreviousLayer, LayerRegistry
     
-    OutputDebug("[LayerSwitcher] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    OutputDebug("[LayerSwitcher] SWITCH TO LAYER CALLED")
-    OutputDebug("[LayerSwitcher] From: " . originLayer . " → To: " . targetLayer)
-    OutputDebug("[LayerSwitcher] CurrentActiveLayer before: " . CurrentActiveLayer)
-    OutputDebug("[LayerSwitcher] PreviousLayer before: " . PreviousLayer)
+    Log.t(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "LAYER")
+    Log.d("SWITCH TO LAYER CALLED", "LAYER")
+    Log.d("From: " . originLayer . " ? To: " . targetLayer, "LAYER")
+    Log.d("CurrentActiveLayer before: " . CurrentActiveLayer, "LAYER")
+    Log.d("PreviousLayer before: " . PreviousLayer, "LAYER")
     
     ; Load registry if not loaded
     if (LayerRegistry.Count == 0) {
         if (!LoadLayerRegistry()) {
-            OutputDebug("[LayerSwitcher] ERROR: Could not load layer registry")
+            Log.e("Could not load layer registry", "LAYER")
             return false
         }
     }
     
     ; Validate target layer exists
     if (!LayerRegistry.Has(targetLayer)) {
-        OutputDebug("[LayerSwitcher] ERROR: Layer not found: " . targetLayer)
+        Log.e("Layer not found: " . targetLayer, "LAYER")
         return false
     }
     
@@ -764,18 +764,18 @@ SwitchToLayer(targetLayer, originLayer := "") {
     ; Activate new layer
     ActivateLayer(targetLayer)
     
-    OutputDebug("[LayerSwitcher] Switched to layer: " . targetLayer . " (from: " . PreviousLayer . ")")
+    Log.d("Switched to layer: " . targetLayer . " (from: " . PreviousLayer . ")", "LAYER")
     return true
 }
 
 ReturnToPreviousLayer() {
     global CurrentActiveLayer, PreviousLayer
     
-    OutputDebug("[LayerSwitcher] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-    OutputDebug("[LayerSwitcher] RETURN TO PREVIOUS LAYER CALLED")
-    OutputDebug("[LayerSwitcher] CurrentActiveLayer: " . CurrentActiveLayer)
-    OutputDebug("[LayerSwitcher] PreviousLayer: " . PreviousLayer)
-    OutputDebug("[LayerSwitcher] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+    Log.t("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "LAYER")
+    Log.d("RETURN TO PREVIOUS LAYER CALLED", "LAYER")
+    Log.d("CurrentActiveLayer: " . CurrentActiveLayer, "LAYER")
+    Log.d("PreviousLayer: " . PreviousLayer, "LAYER")
+    Log.t("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "LAYER")
     
     if (PreviousLayer == "" || PreviousLayer == "leader") {
         ; Return to base state - completely exit current layer
@@ -784,7 +784,7 @@ ReturnToPreviousLayer() {
         }
         CurrentActiveLayer := ""
         PreviousLayer := ""
-        OutputDebug("[LayerSwitcher] Returned to base state")
+        Log.d("Returned to base state", "LAYER")
     } else {
         ; Return to previous layer - use intelligent restoration
         if (CurrentActiveLayer != "") {
@@ -796,68 +796,68 @@ ReturnToPreviousLayer() {
         tempPrevious := PreviousLayer
         CurrentActiveLayer := tempPrevious
         PreviousLayer := ""
-        OutputDebug("[LayerSwitcher] Updated CurrentActiveLayer to: " . CurrentActiveLayer)
+        Log.d("Updated CurrentActiveLayer to: " . CurrentActiveLayer, "LAYER")
         
         ; Smart reactivation: preserve original context
         RestoreOriginLayerContext(tempPrevious)
-        OutputDebug("[LayerSwitcher] Returned to previous layer: " . CurrentActiveLayer)
+        Log.d("Returned to previous layer: " . CurrentActiveLayer, "LAYER")
     }
 }
 
 ActivateLayer(layerName) {
-    OutputDebug("[LayerSwitcher] +++++ ACTIVATING LAYER: " . layerName . " +++++")
+    Log.t("+++++ ACTIVATING LAYER: " . layerName . " +++++", "LAYER")
     
     ; Call layer-specific activation hook if it exists
     hookFunction := "On" . StrTitle(layerName) . "LayerActivate"
     try {
         if (IsSet(%hookFunction%)) {
             %hookFunction%()
-            OutputDebug("[LayerSwitcher] Called activation hook: " . hookFunction)
+            Log.d("Called activation hook: " . hookFunction, "LAYER")
         }
     } catch as hookErr {
-        OutputDebug("[LayerSwitcher] Activation hook not found or failed: " . hookFunction . " - " . hookErr.Message)
+        Log.w("Activation hook not found or failed: " . hookFunction . " - " . hookErr.Message, "LAYER")
     }
     
     ; Set layer state variable
     layerStateVar := "is" . StrTitle(layerName) . "LayerActive"
     try {
         %layerStateVar% := true
-        OutputDebug("[LayerSwitcher] Set state variable: " . layerStateVar . " = true")
+        Log.d("Set state variable: " . layerStateVar . " = true", "LAYER")
     } catch {
-        OutputDebug("[LayerSwitcher] Could not set state variable: " . layerStateVar)
+        Log.d("Could not set state variable: " . layerStateVar, "LAYER")
     }
 }
 
 DeactivateLayer(layerName) {
-    OutputDebug("[LayerSwitcher] ----- DEACTIVATING LAYER: " . layerName . " -----")
+    Log.t("----- DEACTIVATING LAYER: " . layerName . " -----", "LAYER")
     
     ; Call layer-specific deactivation hook if it exists
     hookFunction := "On" . StrTitle(layerName) . "LayerDeactivate"
     try {
         if (IsSet(%hookFunction%)) {
             %hookFunction%()
-            OutputDebug("[LayerSwitcher] Called deactivation hook: " . hookFunction)
+            Log.d("Called deactivation hook: " . hookFunction, "LAYER")
         }
     } catch as deactivationErr {
-        OutputDebug("[LayerSwitcher] Deactivation hook not found or failed: " . hookFunction . " - " . deactivationErr.Message)
+        Log.w("Deactivation hook not found or failed: " . hookFunction . " - " . deactivationErr.Message, "LAYER")
     }
     
     ; Unset layer state variable
     layerStateVar := "is" . StrTitle(layerName) . "LayerActive"
     try {
         %layerStateVar% := false
-        OutputDebug("[LayerSwitcher] Set state variable: " . layerStateVar . " = false")
+        Log.d("Set state variable: " . layerStateVar . " = false", "LAYER")
         
         ; Give time for the listener to stop completely
         Sleep(50)
     } catch {
-        OutputDebug("[LayerSwitcher] Could not unset state variable: " . layerStateVar)
+        Log.d("Could not unset state variable: " . layerStateVar, "LAYER")
     }
 }
 
 
 RestoreOriginLayerContext(layerName) {
-    OutputDebug("[LayerSwitcher] Restoring origin layer context: " . layerName)
+    Log.d("Restoring origin layer context: " . layerName, "LAYER")
     
     ; Longer delay to ensure previous layer is completely deactivated and listeners stopped
     Sleep(150)
@@ -868,9 +868,9 @@ RestoreOriginLayerContext(layerName) {
         ; Create and immediately stop a dummy InputHook to clear any pending state
         clearHook := InputHook("L1")
         clearHook.Stop()
-        OutputDebug("[LayerSwitcher] Cleared pending InputHook state")
+        Log.d("Cleared pending InputHook state", "LAYER")
     } catch as clearErr {
-        OutputDebug("[LayerSwitcher] Error clearing InputHook: " . clearErr.Message)
+        Log.w("Error clearing InputHook: " . clearErr.Message, "LAYER")
     }
     
     ; Small delay after clearing to ensure clean state
@@ -882,5 +882,5 @@ RestoreOriginLayerContext(layerName) {
     ; 2. Set the state variable (redundant but safe)
     ActivateLayer(layerName)
     
-    OutputDebug("[LayerSwitcher] Origin layer context fully restored: " . layerName)
+    Log.d("Origin layer context fully restored: " . layerName, "LAYER")
 }

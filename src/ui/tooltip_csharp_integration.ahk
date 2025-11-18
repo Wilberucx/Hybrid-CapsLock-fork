@@ -219,9 +219,9 @@ ShowCSharpTooltipWithType(title, items, navigation := "", timeout := 0, tooltipT
     ; Copiar estilo y posición desde tema (si existen)
     if (theme.style.Count) {
         cmd["style"] := theme.style
-        OutputDebug("[Tooltip] Theme style applied: " . theme.style.Count . " properties`n")
+        Log.d("Theme style applied: " . theme.style.Count . " properties", "TOOLTIP")
     } else {
-        OutputDebug("[Tooltip] WARNING: theme.style is empty!`n")
+        Log.w("theme.style is empty", "TOOLTIP")
     }
     if (theme.position.Count)
         cmd["position"] := theme.position
@@ -383,7 +383,7 @@ HandleTooltipSelection(key) {
     global tooltipMenuActive, tooltipCurrentTitle
 
     ; Debug
-    OutputDebug("[TOOLTIP] Selection - title=" tooltipCurrentTitle " key=" key "`n")
+    Log.d("Selection - title=" . tooltipCurrentTitle . " key=" . key, "TOOLTIP")
 
     if (key = "ESC") {
         HideCSharpTooltip()
@@ -413,7 +413,7 @@ HandleTooltipSelection(key) {
             case "v":
                 ShowVaultFlowCommandsMenuCS()
             default:
-                OutputDebug("[TOOLTIP] Unknown key in COMMAND PALETTE: " key "`n")
+                Log.d("Unknown key in COMMAND PALETTE: " . key, "TOOLTIP")
         }
         return
     }
@@ -427,7 +427,7 @@ HandleTooltipSelection(key) {
             case "h":
                 ShowHybridManagementMenuCS()
             default:
-                OutputDebug("[TOOLTIP] Unknown key in LEADER MODE: " key "`n")
+                Log.d("Unknown key in LEADER MODE: " . key, "TOOLTIP")
         }
         return
     }
@@ -1381,9 +1381,9 @@ ReadTooltipThemeDefaults() {
     ; Try HybridConfig theme first
     if (IsSet(HybridConfig)) {
         try {
-            OutputDebug("[Tooltip] Reading theme from HybridConfig`n")
+            Log.d("Reading theme from HybridConfig", "TOOLTIP")
             theme := HybridConfig.getTheme()
-            OutputDebug("[Tooltip] Theme name: " . theme.name . "`n")
+            Log.d("Theme name: " . theme.name, "TOOLTIP")
             defaults := Map()
             
             ; Window properties
@@ -1424,16 +1424,16 @@ ReadTooltipThemeDefaults() {
             ; Navigation labels
             defaults["navigation_label"] := theme.navigation.back_label . " | " . theme.navigation.exit_label
             
-            OutputDebug("[Tooltip] Theme from HybridConfig loaded successfully - " . defaults.style.Count . " style properties`n")
+            Log.d("Theme from HybridConfig loaded successfully - " . defaults.style.Count . " style properties", "TOOLTIP")
             return defaults
         } catch as e {
             ; Fall through to INI
-            OutputDebug("[Tooltip] ERROR reading theme from HybridConfig: " . e.Message . "`n")
+            Log.w("Error reading theme from HybridConfig: " . e.Message, "TOOLTIP")
         }
     }
     
     ; Fallback to INI
-    OutputDebug("[Tooltip] Using INI fallback for theme`n")
+    Log.d("Using INI fallback for theme", "TOOLTIP")
     defaults := Map()
     ; Layout/ventana
     defaults.window := Map()

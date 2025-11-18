@@ -746,15 +746,15 @@ HasKeymaps(category) {
 ;     ListenForLayerKeymaps("scroll", "isScrollLayerActive")
 ;
 ListenForLayerKeymaps(layerName, layerActiveVarName) {
-    OutputDebug("[LayerListener] ========================================")
-    OutputDebug("[LayerListener] STARTING NEW LISTENER")
-    OutputDebug("[LayerListener] Layer: " . layerName)
-    OutputDebug("[LayerListener] State Variable: " . layerActiveVarName)
-    OutputDebug("[LayerListener] ========================================")
+    Log.t("========================================", "LAYER")
+    Log.d("STARTING NEW LISTENER", "LAYER")
+    Log.d("Layer: " . layerName, "LAYER")
+    Log.d("State Variable: " . layerActiveVarName, "LAYER")
+    Log.t("========================================", "LAYER")
     
     ; Verificar que el layer existe en KeymapRegistry
     if (!KeymapRegistry.Has(layerName)) {
-        OutputDebug("[LayerListener] ERROR: Layer not found in KeymapRegistry: " . layerName)
+        Log.e("Layer not found in KeymapRegistry: " . layerName, "LAYER")
         return false
     }
     
@@ -764,13 +764,13 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         try {
             isActive := %layerActiveVarName%
             if (!isActive) {
-                OutputDebug("[LayerListener] ----- LISTENER STOPPING -----")
-                OutputDebug("[LayerListener] Layer deactivated before waiting for input: " . layerName)
-                OutputDebug("[LayerListener] ----- LISTENER STOPPED -----")
+                Log.d("LISTENER STOPPING", "LAYER")
+                Log.d("Layer deactivated before waiting for input: " . layerName, "LAYER")
+                Log.d("LISTENER STOPPED", "LAYER")
                 break
             }
         } catch {
-            OutputDebug("[LayerListener] ERROR: State variable not found: " . layerActiveVarName)
+            Log.e("State variable not found: " . layerActiveVarName, "LAYER")
             break
         }
         
@@ -792,12 +792,12 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         try {
             isActive := %layerActiveVarName%
             if (!isActive) {
-                OutputDebug("[LayerListener] Layer deactivated during input, discarding key: " . layerName)
+                Log.d("Layer deactivated during input, discarding key: " . layerName, "LAYER")
                 ih.Stop()
                 break
             }
         } catch {
-            OutputDebug("[LayerListener] ERROR: State variable lost during input: " . layerActiveVarName)
+            Log.e("State variable lost during input: " . layerActiveVarName, "LAYER")
             ih.Stop()
             break
         }
@@ -805,11 +805,11 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         ; Handle Escape - try to execute keymap if registered
         if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
             ih.Stop()
-            OutputDebug("[LayerListener] ===== ESCAPE PRESSED =====")
-            OutputDebug("[LayerListener] Layer: " . layerName)
-            OutputDebug("[LayerListener] State Variable: " . layerActiveVarName . " = " . %layerActiveVarName%)
-            OutputDebug("[LayerListener] CurrentActiveLayer: " . CurrentActiveLayer)
-            OutputDebug("[LayerListener] PreviousLayer: " . PreviousLayer)
+            Log.d("ESCAPE PRESSED", "LAYER")
+            Log.d("Layer: " . layerName, "LAYER")
+            Log.d("State Variable: " . layerActiveVarName . " = " . %layerActiveVarName%, "LAYER")
+            Log.d("CurrentActiveLayer: " . CurrentActiveLayer, "LAYER")
+            Log.d("PreviousLayer: " . PreviousLayer, "LAYER")
             
             ; Try to execute registered Escape keymap if it exists
             try {
@@ -819,11 +819,11 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
                     continue
                 }
             } catch as execErr {
-                OutputDebug("[LayerListener] ERROR executing Escape keymap: " . execErr.Message)
+                Log.e("Error executing Escape keymap: " . execErr.Message, "LAYER")
             }
             
             ; If no Escape keymap registered or execution failed, just exit
-            OutputDebug("[LayerListener] No Escape keymap registered, exiting layer")
+            Log.d("No Escape keymap registered, exiting layer", "LAYER")
             break
         }
         
@@ -837,22 +837,22 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         }
         
         ; Ejecutar keymap registrado (con soporte para navegación jerárquica)
-        OutputDebug("[LayerListener] Key pressed: " . key . " in layer: " . layerName)
+        Log.d("Key pressed: " . key . " in layer: " . layerName, "LAYER")
         
         try {
             result := ExecuteKeymapAtPath(layerName, key)
             
             ; Si es una categoría, entrar en navegación jerárquica
             if (result && Type(result) = "String") {
-                OutputDebug("[LayerListener] Category detected, entering hierarchical navigation: " . result)
+                Log.d("Category detected, entering hierarchical navigation: " . result, "LAYER")
                 NavigateHierarchicalInLayer(result, layerActiveVarName)
             }
         } catch as execErr {
-            OutputDebug("[LayerListener] ERROR executing keymap: " . execErr.Message)
+            Log.e("Error executing keymap: " . execErr.Message, "LAYER")
         }
     }
     
-    OutputDebug("[LayerListener] Stopped listener for layer: " . layerName)
+    Log.d("Stopped listener for layer: " . layerName, "LAYER")
     return true
 }
 
@@ -860,7 +860,7 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
 ; Navegación jerárquica dentro de layers persistentes
 ; Similar a NavigateHierarchical pero respeta el estado de la layer
 NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
-    OutputDebug("[LayerHierarchy] Starting hierarchical navigation at path: " . currentPath)
+    Log.d("Starting hierarchical navigation at path: " . currentPath, "LAYER")
     
     ; Stack para navegación (para back)
     pathStack := [currentPath]
@@ -870,11 +870,11 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
         try {
             isActive := %layerActiveVarName%
             if (!isActive) {
-                OutputDebug("[LayerHierarchy] Layer deactivated, exiting navigation")
+                Log.d("Layer deactivated, exiting navigation", "LAYER")
                 break
             }
         } catch {
-            OutputDebug("[LayerHierarchy] ERROR: State variable not found: " . layerActiveVarName)
+            Log.e("State variable not found: " . layerActiveVarName, "LAYER")
             break
         }
         
@@ -901,7 +901,7 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
                 }
             }
         } catch as tooltipErr {
-            OutputDebug("[LayerHierarchy] ERROR showing tooltip: " . tooltipErr.Message)
+            Log.e("Error showing tooltip: " . tooltipErr.Message, "LAYER")
         }
         
         ; Esperar input con timeout para verificar estado periódicamente
@@ -935,7 +935,7 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
         if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
             ih.Stop()
             try RemoveToolTip()
-            OutputDebug("[LayerHierarchy] Escape pressed, exiting navigation")
+            Log.d("Escape pressed, exiting navigation", "LAYER")
             break
         }
         
@@ -945,10 +945,10 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
             try RemoveToolTip()
             if (pathStack.Length > 1) {
                 pathStack.Pop()
-                OutputDebug("[LayerHierarchy] Going back to: " . pathStack[pathStack.Length])
+                Log.d("Going back to: " . pathStack[pathStack.Length], "LAYER")
                 continue
             } else {
-                OutputDebug("[LayerHierarchy] At root level, exiting navigation")
+                Log.d("At root level, exiting navigation", "LAYER")
                 break
             }
         }
@@ -963,7 +963,7 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
             continue
         }
         
-        OutputDebug("[LayerHierarchy] Key pressed: " . key . " at path: " . currentPath)
+        Log.d("Key pressed: " . key . " at path: " . currentPath, "LAYER")
         
         ; Execute keymap at current path
         try {
@@ -973,25 +973,25 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
                 if (Type(result) = "String") {
                     ; Es una categoría, navegar más profundo
                     pathStack.Push(result)
-                    OutputDebug("[LayerHierarchy] Navigating deeper to: " . result)
+                    Log.d("Navigating deeper to: " . result, "LAYER")
                     continue
                 } else {
                     ; Es una acción ejecutada, salir de navegación
-                    OutputDebug("[LayerHierarchy] Action executed, exiting navigation")
+                    Log.d("Action executed, exiting navigation", "LAYER")
                     break
                 }
             } else {
                 ; Tecla no encontrada
-                OutputDebug("[LayerHierarchy] Key not found: " . key)
+                Log.d("Key not found: " . key, "LAYER")
                 continue
             }
         } catch as execErr {
-            OutputDebug("[LayerHierarchy] ERROR executing keymap: " . execErr.Message)
+            Log.e("Error executing keymap: " . execErr.Message, "LAYER")
             continue
         }
     }
     
-    OutputDebug("[LayerHierarchy] Stopped hierarchical navigation")
+    Log.d("Stopped hierarchical navigation", "LAYER")
 }
 
 ; ==============================

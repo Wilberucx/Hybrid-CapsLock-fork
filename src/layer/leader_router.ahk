@@ -46,7 +46,7 @@ global LeaderLayerEnabled := true  ; Feature flag for leader layer
 ActivateLeaderLayer() {
     global leaderActive, isNvimLayerActive, hybridPauseActive
     
-    OutputDebug("[Leader] ActivateLeaderLayer() - Activating leader")
+    Log.i("ActivateLeaderLayer() - Activating leader", "LEADER")
     
     ; Resume script if suspended
     if (A_IsSuspended) {
@@ -67,9 +67,9 @@ ActivateLeaderLayer() {
     if (isNvimLayerActive) {
         try {
             DeactivateLayer("nvim")
-            OutputDebug("[Leader] Deactivated nvim layer through proper system")
+            Log.d("Deactivated nvim layer through proper system", "LEADER")
         } catch as e {
-            OutputDebug("[Leader] Error deactivating nvim layer: " . e.Message)
+            Log.e("Error deactivating nvim layer: " . e.Message, "LEADER")
         }
     }
     
@@ -77,7 +77,7 @@ ActivateLeaderLayer() {
     NavigateHierarchical("leader")
     
     leaderActive := false
-    OutputDebug("[Leader] ActivateLeaderLayer() - Deactivated")
+    Log.i("ActivateLeaderLayer() - Deactivated", "LEADER")
 }
 
 ; Legacy alias for backward compatibility

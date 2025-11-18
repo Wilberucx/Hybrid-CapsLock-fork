@@ -44,28 +44,37 @@ global leaderLayerEnabled := true
 global nvimStaticEnabled := true
 
 ; ===============================
-; DEBUG SYSTEM
+; DEBUG SYSTEM - LEGACY COMPATIBILITY
 ; ===============================
-; Debug flag - controls development logging
-; Updated from HybridConfig.app.debug_mode after config loads
+; NOTA: El sistema de debug se ha movido a src/core/Debug_log.ahk
+; Estas funciones se mantienen por compatibilidad, pero redirigen al nuevo sistema
+; Se recomienda usar las nuevas funciones: LogDebug(), LogInfo(), LogError()
+; O mejor aún, usar la nueva API: Log.d(), Log.i(), Log.e()
+
+; Include del nuevo sistema de debug centralizado
+#Include %A_ScriptDir%\src\core\Debug_log.ahk
+
+; Debug flag - controls development logging (mantenido para compatibilidad)
 global debug_mode := false
 
-; Debug logging function - only logs if debug_mode is enabled
+; Funciones de compatibilidad - redirigen al nuevo sistema
 DebugLog(message, category := "DEBUG") {
-    global debug_mode
-    if (debug_mode) {
-        OutputDebug("[" . category . "] " . message . "`n")
-    }
+    LogDebug(message, category)
 }
 
-; Always log (regardless of debug_mode) - for critical messages
 InfoLog(message, category := "INFO") {
-    OutputDebug("[" . category . "] " . message . "`n")
+    LogInfo(message, category)
 }
 
-; Error logging (always shown)
 ErrorLog(message, category := "ERROR") {
-    OutputDebug("[" . category . "] " . message . "`n")
+    LogError(message, category)
+}
+
+; Sincronizar debug_mode con el nuevo sistema cuando se cargue la configuración
+SyncDebugMode() {
+    global debug_mode
+    ; Sincronizar con el nuevo sistema de logging
+    debug_mode := Log.IsEnabled(LogLevel.DEBUG)
 }
 
 ; Persistence master flag (can be overwritten by LoadLayerFlags)

@@ -16,9 +16,9 @@ global isNvimLayerActive := false        ; Layer state (managed by SwitchToLayer
 ; ==============================
 
 ActivateNvimLayer(originLayer := "leader") {
-    OutputDebug("[Nvim] ActivateNvimLayer() called with originLayer: " . originLayer)
+    Log.i("ActivateNvimLayer() called with originLayer: " . originLayer, "NVIM")
     result := SwitchToLayer("nvim", originLayer)
-    OutputDebug("[Nvim] SwitchToLayer result: " . (result ? "true" : "false"))
+    Log.d("SwitchToLayer result: " . (result ? "true" : "false"), "NVIM")
     return result
 }
 
@@ -30,21 +30,21 @@ OnNvimLayerActivate() {
     global isNvimLayerActive
     isNvimLayerActive := true
     
-    OutputDebug("[Nvim] OnNvimLayerActivate() - Activating layer")
+    Log.d("OnNvimLayerActivate() - Activating layer", "NVIM")
     
     ; Show status tooltip (persistent indicator)
     try {
         ShowNvimLayerStatus(true)
         SetTempStatus("NVIM LAYER ON", 1500)
     } catch Error as e {
-        OutputDebug("[Nvim] ERROR showing status: " . e.Message)
+        Log.e("Error showing status: " . e.Message, "NVIM")
     }
     
     ; Start listening for keymaps (uses keymap_registry system)
     try {
         ListenForLayerKeymaps("nvim", "isNvimLayerActive")
     } catch Error as e {
-        OutputDebug("[Nvim] ERROR in ListenForLayerKeymaps: " . e.Message)
+        Log.e("Error in ListenForLayerKeymaps: " . e.Message, "NVIM")
     }
 }
 
@@ -59,7 +59,7 @@ OnNvimLayerDeactivate() {
     
     try ShowNvimLayerStatus(false)
     
-    OutputDebug("[Nvim] Layer deactivated")
+    Log.d("Layer deactivated", "NVIM")
 }
 
 ; ==============================
@@ -132,7 +132,7 @@ NvimShowHelp() {
             ShowCenteredToolTip(menuText)
         }
     } catch Error as e {
-        OutputDebug("[Nvim] ERROR showing help: " . e.Message)
+        Log.e("Error showing help: " . e.Message, "NVIM")
         ShowCenteredToolTip("NVIM HELP: See registered keymaps in config/keymap.ahk")
     }
 }

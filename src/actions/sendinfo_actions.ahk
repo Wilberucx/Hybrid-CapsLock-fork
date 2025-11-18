@@ -38,7 +38,7 @@ InsertTextHelper(text, tooltipMsg, tooltipDuration) {
     SendText(text)
     try ShowCenteredToolTip(tooltipMsg)
     try SetTimer(() => RemoveToolTip(), -tooltipDuration)
-    OutputDebug("[TEXT_INSERT] Inserted: " . text)
+    Log.d("Inserted: " . text, "TEXT_INSERT")
 }
 
 ; ==============================

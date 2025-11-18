@@ -29,9 +29,9 @@ global isVisualLayerActive := false        ; Layer state (managed by SwitchToLay
 ; ==============================
 
 ActivateVisualLayer(originLayer := "leader") {
-    OutputDebug("[Visual] ActivateVisualLayer() called with originLayer: " . originLayer)
+    Log.i("ActivateVisualLayer() called with originLayer: " . originLayer, "VISUAL")
     result := SwitchToLayer("visual", originLayer)  ; ⚠️ Use lowercase visual here!
-    OutputDebug("[Visual] SwitchToLayer result: " . (result ? "true" : "false"))
+    Log.d("SwitchToLayer result: " . (result ? "true" : "false"), "VISUAL")
     return result
 }
 
@@ -43,21 +43,21 @@ OnVisualLayerActivate() {
     global isVisualLayerActive
     isVisualLayerActive := true
     
-    OutputDebug("[Visual] OnVisualLayerActivate() - Activating layer")
+    Log.d("OnVisualLayerActivate() - Activating layer", "VISUAL")
     
     ; Show status tooltip (persistent indicator)
     try {
         ShowVisualLayerStatus(true)
         SetTempStatus("Visual Layer ON", 1500)
     } catch Error as e {
-        OutputDebug("[Visual] ERROR showing status: " . e.Message)
+        Log.e("Error showing status: " . e.Message, "VISUAL")
     }
     
     ; Start listening for keymaps (uses keymap_registry system)
     try {
         ListenForLayerKeymaps("visual", "isVisualLayerActive")  ; ⚠️ Use lowercase visual here!
     } catch Error as e {
-        OutputDebug("[Visual] ERROR in ListenForLayerKeymaps: " . e.Message)
+        Log.e("Error in ListenForLayerKeymaps: " . e.Message, "VISUAL")
     }
     
     ; Note: Layer deactivation is handled by the SwitchToLayer system
@@ -75,7 +75,7 @@ OnVisualLayerDeactivate() {
     
     try ShowVisualLayerStatus(false)
     
-    OutputDebug("[Visual] Layer deactivated")
+    Log.d("Layer deactivated", "VISUAL")
 }
 
 ; ==============================
@@ -136,7 +136,7 @@ VisualShowHelp() {
             ShowCenteredToolTip(menuText)
         }
     } catch Error as e {
-        OutputDebug("[Visual] ERROR showing help: " . e.Message)
+        Log.e("Error showing help: " . e.Message, "VISUAL")
         ShowCenteredToolTip("Visual Layer HELP: See registered keymaps in config/keymap.ahk")
     }
 }

@@ -12,6 +12,7 @@ AppConfig := {
     name: "HybridCapsLock",
     version: "6.3",
     debug_mode: false,
+    log_level: "INFO",  ; TRACE, DEBUG, INFO, WARNING, ERROR
     config_version: 1,
     
     ; Paths

@@ -1,8 +1,10 @@
-# Debug System - HybridCapsLock
+# Debug System - HybridCapsLock (Sistema Centralizado v2.0)
 
 ## Overview
 
-The debug system provides centralized control over development logging in HybridCapsLock. When `debug_mode` is enabled, verbose logging helps developers trace execution flow, troubleshoot issues, and understand system behavior.
+El sistema de debug centralizado proporciona control unificado sobre el logging de desarrollo en HybridCapsLock. Cuando `debug_mode` está habilitado, el logging verboso ayuda a los desarrolladores a rastrear el flujo de ejecución, solucionar problemas y entender el comportamiento del sistema.
+
+**🆕 NUEVO:** Sistema centralizado en `src/core/Debug_log.ahk` con funciones mejoradas, manejo automático de errores y logging inteligente.
 
 ## Configuration
 
@@ -28,7 +30,9 @@ Debug mode is loaded at startup from `HybridConfig.app.debug_mode`. To change it
 
 ## Logging Functions
 
-Three logging functions are available (defined in `src/core/globals.ahk`):
+### 🆕 NUEVAS FUNCIONES (src/core/Debug_log.ahk)
+
+El nuevo sistema incluye funciones especializadas y mejoradas:
 
 ### 1. DebugLog(message, category)
 

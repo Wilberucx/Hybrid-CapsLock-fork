@@ -16,9 +16,9 @@ global isExcelLayerActive := false        ; Layer state (managed by SwitchToLaye
 ; ==============================
 
 ActivateExcelLayer(originLayer := "leader") {
-    OutputDebug("[Excel] ActivateExcelLayer() called with originLayer: " . originLayer)
+    Log.i("ActivateExcelLayer() called with originLayer: " . originLayer, "EXCEL")
     result := SwitchToLayer("excel", originLayer)
-    OutputDebug("[Excel] SwitchToLayer result: " . (result ? "true" : "false"))
+    Log.d("SwitchToLayer result: " . (result ? "true" : "false"), "EXCEL")
     return result
 }
 
@@ -30,21 +30,21 @@ OnExcelLayerActivate() {
     global isExcelLayerActive
     isExcelLayerActive := true
     
-    OutputDebug("[Excel] OnExcelLayerActivate() - Activating layer")
+    Log.d("OnExcelLayerActivate() - Activating layer", "EXCEL")
     
     ; Show status tooltip (persistent indicator)
     try {
         ShowExcelLayerStatus(true)
         SetTempStatus("EXCEL LAYER ON", 1500)
     } catch Error as e {
-        OutputDebug("[Excel] ERROR showing status: " . e.Message)
+        Log.e("Error showing status: " . e.Message, "EXCEL")
     }
     
     ; Start listening for keymaps (uses keymap_registry system)
     try {
         ListenForLayerKeymaps("excel", "isExcelLayerActive")
     } catch Error as e {
-        OutputDebug("[Excel] ERROR in ListenForLayerKeymaps: " . e.Message)
+        Log.e("Error in ListenForLayerKeymaps: " . e.Message, "EXCEL")
     }
 }
 
@@ -59,7 +59,7 @@ OnExcelLayerDeactivate() {
     
     try ShowExcelLayerStatus(false)
     
-    OutputDebug("[Excel] Layer deactivated")
+    Log.d("Layer deactivated", "EXCEL")
 }
 
 ; ==============================
@@ -113,7 +113,7 @@ ExcelShowHelp() {
             ShowCenteredToolTip(menuText)
         }
     } catch Error as e {
-        OutputDebug("[Excel] ERROR showing help: " . e.Message)
+        Log.e("Error showing help: " . e.Message, "EXCEL")
         ShowCenteredToolTip("EXCEL LAYER HELP: See registered keymaps in config/keymap.ahk")
     }
 }
