@@ -18,9 +18,7 @@
 #Include src\core\auto_loader.ahk
 #Include src\core\kanata_launcher.ahk
 #Include src\core\globals.ahk
-#Include src\core\config_loader.ahk
 #Include src\core\config.ahk
-#Include src\core\persistence.ahk
 #Include src\core\keymap_registry.ahk
 
 
@@ -94,7 +92,6 @@ try {
     
     ; Luego cargar configuración de AHK
     LoadLayerFlags()
-    LoadLayerState()
     StartTooltipApp()  ; Start C# tooltip application
 } catch {
 }
