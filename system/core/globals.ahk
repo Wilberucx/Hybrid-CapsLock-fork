@@ -34,13 +34,13 @@ global nvimStaticEnabled := true
 ; ===============================
 ; DEBUG SYSTEM - LEGACY COMPATIBILITY
 ; ===============================
-; NOTA: El sistema de debug se ha movido a src/core/Debug_log.ahk
+; NOTA: El sistema de debug se ha movido a system/core/Debug_log.ahk
 ; Estas funciones se mantienen por compatibilidad, pero redirigen al nuevo sistema
 ; Se recomienda usar las nuevas funciones: LogDebug(), LogInfo(), LogError()
 ; O mejor aún, usar la nueva API: Log.d(), Log.i(), Log.e()
 
 ; Include del nuevo sistema de debug centralizado
-#Include %A_ScriptDir%\src\core\Debug_log.ahk
+#Include %A_ScriptDir%\system\core\Debug_log.ahk
 
 ; Debug flag - controls development logging (mantenido para compatibilidad)
 global debug_mode := false

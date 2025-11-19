@@ -144,8 +144,8 @@ ShowVersionInfo() {
     if (IsSet(HybridConfig)) {
         verText := HybridConfig.app.name . " v" . HybridConfig.app.version
     } else {
-        ; Fallback to INI
-        ver := IniRead(A_ScriptDir . "\config\configuration.ini", "General", "script_version", "")
+        ; Fallback to INI (Neovim-style: ahk/config/)
+        ver := IniRead(A_ScriptDir . "\ahk\config\configuration.ini", "General", "script_version", "")
         verText := (ver != "" && ver != "ERROR") ? ("HybridCapsLock v" . ver) : "HybridCapsLock"
     }
     ShowCenteredToolTip(verText)

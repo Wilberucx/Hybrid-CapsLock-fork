@@ -143,7 +143,7 @@ class Log {
     ; Leer configuración directamente del archivo (fallback)
     static _readFromConfigFile() {
         try {
-            configPath := A_ScriptDir . "\config\settings.ahk"
+            configPath := A_ScriptDir . "\ahk\config\settings.ahk"
             if (!FileExist(configPath)) {
                 return
             }

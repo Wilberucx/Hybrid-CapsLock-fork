@@ -8,21 +8,21 @@
 ; VARIABLES GLOBALES NECESARIAS
 ; ===================================================================
 
-; Definir rutas de configuración si no están definidas
+; Definir rutas de configuración si no están definidas (Neovim-style: ahk/config/)
 if (!IsSet(ConfigIni)) {
-    global ConfigIni := A_ScriptDir . "\config\configuration.ini"
+    global ConfigIni := A_ScriptDir . "\ahk\config\configuration.ini"
 }
 if (!IsSet(ProgramsIni)) {
-    global ProgramsIni := A_ScriptDir . "\config\programs.ini"
+    global ProgramsIni := A_ScriptDir . "\ahk\config\programs.ini"
 }
 if (!IsSet(InfoIni)) {
-    global InfoIni := A_ScriptDir . "\config\information.ini"
+    global InfoIni := A_ScriptDir . "\ahk\config\information.ini"
 }
 if (!IsSet(TimestampsIni)) {
-    global TimestampsIni := A_ScriptDir . "\config\timestamps.ini"
+    global TimestampsIni := A_ScriptDir . "\ahk\config\timestamps.ini"
 }
 if (!IsSet(CommandsIni)) {
-    global CommandsIni := A_ScriptDir . "\config\commands.ini"
+    global CommandsIni := A_ScriptDir . "\ahk\config\commands.ini"
 }
 
 ; Global variables for tooltip configuration
@@ -1002,9 +1002,9 @@ ShowVisualHelpCS() {
 ; ===================================================================
 ; FUNCIONES ESPECÍFICAS PARA NVIM LAYER OPTIONS
 
-; Build NVIM items for status from config/nvim_layer.ini [Normal]
+; Build NVIM items for status from ahk/config/nvim_layer.ini [Normal]
 BuildNvimStatusItems() {
-    ini := A_ScriptDir . "\\config\\nvim_layer.ini"
+    ini := A_ScriptDir . "\\ahk\\config\\nvim_layer.ini"
     items := []
     try {
         order := IniRead(ini, "Normal", "order", "")

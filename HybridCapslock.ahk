@@ -26,8 +26,8 @@
 try {
     OutputDebug("[HybridCapsLock] Starting dependency check...")
     
-    ; Load dependency checker
-    #Include src\core\dependency_checker.ahk
+    ; Load dependency checker (from system/core)
+    #Include system\core\dependency_checker.ahk
     
     ; Check all dependencies before proceeding
     if (!CheckDependencies()) {

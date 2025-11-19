@@ -80,10 +80,11 @@ class DependencyChecker {
     
     ; ---- Verificar archivos de configuración ----
     static CheckConfigFiles() {
+        ; Nueva estructura Neovim-style: user config en ahk/config/
         requiredFiles := [
-            "config\settings.ahk",
-            "config\colorscheme.ahk",
-            "config\kanata.kbd",
+            "ahk\config\settings.ahk",
+            "ahk\config\colorscheme.ahk",
+            "ahk\config\kanata.kbd",
             "init.ahk"
         ]
         

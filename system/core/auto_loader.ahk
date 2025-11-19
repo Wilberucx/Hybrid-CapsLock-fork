@@ -1,11 +1,12 @@
 ; ===================================================================
-; Auto Loader - Dynamic Actions & Layers Discovery
+; Auto Loader - Dynamic Actions & Layers Discovery (Neovim-style)
 ; ===================================================================
-; Automatically scans and includes new .ahk files from:
-; - src/actions/
-; - src/layer/
+; Automatically scans and includes new .ahk files with priority system:
+; 1. ahk/actions/ and ahk/layers/ (USER - highest priority)
+; 2. system/actions/ and system/layers/ (SYSTEM - fallback)
 ;
 ; Features:
+; - User files override system files (like Neovim's lua/ folder)
 ; - JSON memory to track included files
 ; - Auto-include in init.ahk
 ; - Safety: Excludes files in no_include/ folders
@@ -25,13 +26,17 @@ global AUTO_LOADER_MEMORY_FILE := A_ScriptDir . "\data\auto_loader_memory.json"
 global AUTO_LOADER_LAYER_REGISTRY_FILE := A_ScriptDir . "\data\layer_registry.ini"
 global AUTO_LOADER_INIT_FILE := A_ScriptDir . "\init.ahk"
 
-; Scan directories
-global AUTO_LOADER_ACTIONS_DIR := A_ScriptDir . "\src\actions"
-global AUTO_LOADER_LAYERS_DIR := A_ScriptDir . "\src\layer"
+; Scan directories (User - priority 1)
+global AUTO_LOADER_USER_ACTIONS_DIR := A_ScriptDir . "\ahk\actions"
+global AUTO_LOADER_USER_LAYERS_DIR := A_ScriptDir . "\ahk\layers"
+
+; Scan directories (System - priority 2)
+global AUTO_LOADER_SYSTEM_ACTIONS_DIR := A_ScriptDir . "\system\actions"
+global AUTO_LOADER_SYSTEM_LAYERS_DIR := A_ScriptDir . "\system\layers"
 
 ; Exclude directories (files here won't be included)
-global AUTO_LOADER_ACTIONS_NO_INCLUDE := A_ScriptDir . "\src\actions\no_include"
-global AUTO_LOADER_LAYERS_NO_INCLUDE := A_ScriptDir . "\src\layer\no_include"
+global AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE := A_ScriptDir . "\system\actions\no_include"
+global AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE := A_ScriptDir . "\system\layers\no_include"
 
 ; Markers in init.ahk for auto-injection
 global AUTO_LOADER_ACTIONS_MARKER_START := "; ===== AUTO-LOADED ACTIONS START ====="
@@ -51,7 +56,7 @@ AutoLoaderInit() {
         return
     }
     
-    OutputDebug("[AutoLoader] Starting scan...")
+    OutputDebug("[AutoLoader] Starting scan (Neovim-style priority)...")
     
     ; Ensure no_include directories exist
     EnsureNoIncludeDirectories()
@@ -59,9 +64,17 @@ AutoLoaderInit() {
     ; Load memory (previously included files)
     memory := LoadAutoLoaderMemory()
     
-    ; Scan current files
-    currentActions := ScanDirectory(AUTO_LOADER_ACTIONS_DIR, AUTO_LOADER_ACTIONS_NO_INCLUDE)
-    currentLayers := ScanDirectory(AUTO_LOADER_LAYERS_DIR, AUTO_LOADER_LAYERS_NO_INCLUDE)
+    ; Scan current files from BOTH user and system directories
+    ; Priority: User files override system files with same name
+    currentActions := MergeWithPriority(
+        ScanDirectory(AUTO_LOADER_USER_ACTIONS_DIR, ""),
+        ScanDirectory(AUTO_LOADER_SYSTEM_ACTIONS_DIR, AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE)
+    )
+    
+    currentLayers := MergeWithPriority(
+        ScanDirectory(AUTO_LOADER_USER_LAYERS_DIR, ""),
+        ScanDirectory(AUTO_LOADER_SYSTEM_LAYERS_DIR, AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE)
+    )
     
     ; Get hardcoded includes (needed for filtering)
     hardcoded := GetHardcodedIncludes()
@@ -167,17 +180,48 @@ SaveAutoLoaderMemory(actions, layers) {
 ; ===================================================================
 
 EnsureNoIncludeDirectories() {
-    global AUTO_LOADER_ACTIONS_NO_INCLUDE, AUTO_LOADER_LAYERS_NO_INCLUDE
+    global AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE, AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE
     
-    if (!DirExist(AUTO_LOADER_ACTIONS_NO_INCLUDE)) {
-        DirCreate(AUTO_LOADER_ACTIONS_NO_INCLUDE)
-        OutputDebug("[AutoLoader] Created: " . AUTO_LOADER_ACTIONS_NO_INCLUDE)
+    if (!DirExist(AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE)) {
+        DirCreate(AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE)
+        OutputDebug("[AutoLoader] Created: " . AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE)
     }
     
-    if (!DirExist(AUTO_LOADER_LAYERS_NO_INCLUDE)) {
-        DirCreate(AUTO_LOADER_LAYERS_NO_INCLUDE)
-        OutputDebug("[AutoLoader] Created: " . AUTO_LOADER_LAYERS_NO_INCLUDE)
+    if (!DirExist(AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE)) {
+        DirCreate(AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE)
+        OutputDebug("[AutoLoader] Created: " . AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE)
     }
+}
+
+; ===================================================================
+; MERGE WITH PRIORITY (Neovim-style)
+; ===================================================================
+
+MergeWithPriority(userFiles, systemFiles) {
+    ; User files have priority over system files
+    ; If a file with the same name exists in both, only the user version is included
+    
+    merged := []
+    userFileNames := Map()
+    
+    ; First, add all user files and track their names
+    for userFile in userFiles {
+        merged.Push(userFile)
+        userFileNames[userFile["name"]] := true
+        OutputDebug("[AutoLoader] Priority: USER file '" . userFile["name"] . "' from " . userFile["path"])
+    }
+    
+    ; Then, add system files only if not overridden by user
+    for systemFile in systemFiles {
+        if (!userFileNames.Has(systemFile["name"])) {
+            merged.Push(systemFile)
+            OutputDebug("[AutoLoader] Including SYSTEM file '" . systemFile["name"] . "' from " . systemFile["path"])
+        } else {
+            OutputDebug("[AutoLoader] Skipping SYSTEM file '" . systemFile["name"] . "' (overridden by user)")
+        }
+    }
+    
+    return merged
 }
 
 ScanDirectory(dirPath, excludePath) {
@@ -621,7 +665,7 @@ GenerateLayerRegistry(allLayers) {
         if (InStr(layerFile, "_layer.ahk")) {
             layerName := ExtractLayerNameFromFile(layerFile)
             if (layerName != "") {
-                relativePath := "src\\layer\\" . layerFile
+                relativePath := "system\\layers\\" . layerFile
                 layerMap[layerName] := relativePath
                 OutputDebug("[LayerRegistry] Added hardcoded layer: " . layerName . " -> " . relativePath)
             }

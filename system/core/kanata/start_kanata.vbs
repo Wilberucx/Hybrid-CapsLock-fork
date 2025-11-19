@@ -27,8 +27,8 @@ kanataPath = userProfile & "\kanata\kanata.exe"
 ' Opción 3: Kanata en Program Files (descomenta para usar)
 ' kanataPath = "C:\Program Files\Kanata\kanata.exe"
 
-' Configuración siempre está en el proyecto
-configPath = FSO.BuildPath(projectRoot, "config\kanata.kbd")
+' Configuración siempre está en el proyecto (Neovim-style: ahk/config/)
+configPath = FSO.BuildPath(projectRoot, "ahk\config\kanata.kbd")
 
 ' ---- VERIFICACIÓN ----
 

@@ -2,14 +2,14 @@
 ; Kanata Launcher Module
 ; ==============================
 ; Inicia, detiene y reinicia Kanata
-; Scripts VBS ubicados en: src/core/kanata/
+; Scripts VBS ubicados en: system/core/kanata/
 
 ; ---- Configuración ----
 global KanataStartDelay := 500  ; ms de espera después de lanzar Kanata
 
 ; ---- Rutas de scripts VBS ----
 GetKanataScriptPath(scriptName) {
-    return A_ScriptDir . "\src\core\kanata\" . scriptName
+    return A_ScriptDir . "\system\core\kanata\" . scriptName
 }
 
 ; ---- Función: Iniciar Kanata si no está corriendo ----
