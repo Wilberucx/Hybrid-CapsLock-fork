@@ -476,7 +476,7 @@ HandleConfirmationSelection(confirmed) {
 
 TooltipInConfirmationMode() {
     global tooltipMenuActive, tooltipCurrentTitle, tooltipConfig
-    return tooltipMenuActive && tooltipConfig.handleInput && (tooltipCurrentTitle = "CONFIRM ACTION")
+    return tooltipMenuActive && tooltipConfig.handleInput && (tooltipCurrentTitle = "CONFIRMATION")
 }
 
 #HotIf TooltipInConfirmationMode()

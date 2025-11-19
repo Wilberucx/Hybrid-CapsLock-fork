@@ -462,43 +462,31 @@ ShowUnifiedConfirmation(description) {
     
     if (csharpEnabled) {
         ; ===== CONFIRMACIÓN CON C# TOOLTIP =====
-        ; Create confirmation menu with C# tooltips
-        items := "y:✓ Yes|n:✗ No"
+        ; Create confirmation menu with C# tooltips - estilo botones separados
         
         ; Use C# tooltip system
         theme := ReadTooltipThemeDefaults()
         cmd := Map()
         cmd["show"] := true
-        cmd["title"] := "CONFIRM ACTION"
-        cmd["layout"] := "list"
-        cmd["tooltip_type"] := "center"
+        cmd["title"] := description . "?"  ; Poner la pregunta en el título
+        cmd["layout"] := "grid"  ; Usar grid para botones separados
+        cmd["columns"] := 2      ; 2 columnas para Y y N lado a lado
+        cmd["tooltip_type"] := "leader"
         cmd["timeout_ms"] := 10000  ; 10 second timeout
         
-        ; Add confirmation items
+        ; Add confirmation items - solo los botones Y/N
         itemsList := []
         
-        ; Add description as info item
-        descItem := Map()
-        descItem["key"] := "▶"
-        descItem["description"] := description
-        itemsList.Push(descItem)
-        
-        ; Add separator
-        sepItem := Map()
-        sepItem["key"] := ""
-        sepItem["description"] := "──────────────"
-        itemsList.Push(sepItem)
-        
-        ; Add Yes option
+        ; Add Yes option - estilo botón
         yesItem := Map()
         yesItem["key"] := "Y"
-        yesItem["description"] := "✓ Confirm"
+        yesItem["description"] := "Yes"
         itemsList.Push(yesItem)
         
-        ; Add No option
+        ; Add No option - estilo botón
         noItem := Map()
         noItem["key"] := "N"
-        noItem["description"] := "✗ Cancel"
+        noItem["description"] := "No"
         itemsList.Push(noItem)
         
         cmd["items"] := itemsList
@@ -610,8 +598,10 @@ ExecuteKeymapAtPath(path, key) {
     ; Es acción, ejecutar
     if (data["confirm"]) {
         ; Use unified confirmation system
-        if (!ShowUnifiedConfirmation(data["desc"]))
-            return false
+        if (!ShowUnifiedConfirmation(data["desc"])) {
+            ; User cancelled - return true to indicate action was handled (just not executed)
+            return true
+        }
     }
     
     data["action"]()
