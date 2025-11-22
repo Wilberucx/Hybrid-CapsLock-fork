@@ -29,15 +29,19 @@ ShowDiskCleanup() {
 
 ToggleHiddenFiles() {
     try {
-        currentValue := RegRead("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "Hidden")
+        currentValue := RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "Hidden")
         newValue := (currentValue = 1) ? 2 : 1
-        RegWrite(newValue, "REG_DWORD", "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "Hidden")
-        Send("{F5}")
+        RegWrite(newValue, "REG_DWORD", "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "Hidden")
+        
+        ; Refrescar todas las ventanas del Explorer
+        for window in ComObjGet("Shell.Application").Windows()
+            window.Refresh()
+        
         statusText := (newValue = 1) ? "HIDDEN FILES SHOWN" : "HIDDEN FILES HIDDEN"
         ShowCenteredToolTip(statusText)
         SetTimer(() => RemoveToolTip(), -2000)
     } catch Error as e {
-        ShowCenteredToolTip("Error toggling hidden files")
+        ShowCenteredToolTip("Error: " . e.Message)
         SetTimer(() => RemoveToolTip(), -2000)
     }
 }
