@@ -62,7 +62,6 @@
 #Include system\ui\scroll_tooltip_integration.ahk
 
 ; ===== AUTO-LOADED LAYERS START =====
-#Include system\layers\excel_layer.ahk
 #Include system\layers\insert_layer.ahk
 #Include system\layers\leader_router.ahk
 #Include system\layers\nvim_layer.ahk

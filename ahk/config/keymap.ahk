@@ -25,7 +25,6 @@ InitializeCategoryKeymaps() {
     RegisterCategoryKeymap("leader", "t", "Timestamps", 2)
     RegisterCategoryKeymap("leader", "c", "Commands", 3)
     RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
-    RegisterKeymap("leader", "e", "Excel", ActivateExcelLayer, false, 5)
     RegisterCategoryKeymap("leader", "p", "Programs", 7)
     RegisterCategoryKeymap("leader", "o", "Power Options", 8)
     RegisterCategoryKeymap("leader", "i", "Information", 9)
@@ -223,30 +222,6 @@ InitializeCategoryKeymaps() {
     RegisterKeymap("nvim", "f", "Quick Exit", NvimExit, false, 71)
     RegisterKeymap("nvim", "Escape", "Exit", NvimExit, false, 72)
     RegisterKeymap("nvim", "?", "Toggle Help", NvimToggleHelp, false, 73)
-
-    ; Excel Layer Keymaps
-    ; Navigation
-    RegisterKeymap("excel", "h", "Move Left", VimMoveLeft, false, 20)
-    RegisterKeymap("excel", "j", "Move Down", VimMoveDown, false, 21)
-    RegisterKeymap("excel", "k", "Move Up", VimMoveUp, false, 22)
-    RegisterKeymap("excel", "l", "Move Right", VimMoveRight, false, 23)
-    
-    ; Go to commands
-    RegisterCategoryKeymap("excel", "g", "Go to", 1)
-    RegisterKeymap("excel", "g", "g", "Go to Top", VimTopOfFile, false, 41)
-    RegisterKeymap("excel", "G", "Go to Bottom", VimBottomOfFile, false, 42)
-    
-    ; Edit operations
-    RegisterKeymap("excel", "p", "Paste", VimPaste, false, 52)
-    RegisterKeymap("excel", "u", "Undo", VimUndo, false, 55)
-    RegisterKeymap("excel", "r", "Redo", VimRedo, false, 56)
-    ; Switch to visual layer for selection
-    RegisterKeymap("excel", "v", "Visual", ()=> SwitchToLayer("visual", "excel"), false, 52)
-    
-    ; Layer control
-    RegisterKeymap("excel", "Escape", "Exit", ExcelExit, false, 72)
-    RegisterKeymap("excel", "?", "Toggle Help", ExcelToggleHelp, false, 73)
-    RegisterKeymap("excel", "E", "Exit", ExcelExit, false, 72)
 
     ; === VISUAL LAYER ===
     ; Basic navigation with selection (vim visual mode)

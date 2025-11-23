@@ -145,8 +145,6 @@ ShowNvimLayerStatus(isActive) {
 
 ShowVisualModeStatus(isActive) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowVisualLayerToggleCS(isActive)
-        ; If turning OFF Visual and NVIM layer remains active, restore NVIM persistent tooltip
         try {
             global isNvimLayerActive
             if (!isActive && isNvimLayerActive)
@@ -158,18 +156,8 @@ ShowVisualModeStatus(isActive) {
     }
 }
 
-ShowExcelLayerStatus(isActive) {
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowExcelLayerToggleCS(isActive)
-    } else {
-        ShowCenteredToolTip(isActive ? "◉ EXCEL" : "○ EXCEL")
-        SetTimer(() => RemoveToolTip(), -900)
-    }
-}
-
 ShowVisualLayerStatus(isActive) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowVisualLayerToggleCS(isActive)
     } else {
         ShowCenteredToolTip(isActive ? "◉ VISUAL" : "○ VISUAL")
         SetTimer(() => RemoveToolTip(), -900)

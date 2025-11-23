@@ -521,7 +521,7 @@ Esc::HandleTooltipSelection("ESC")
 ShowLeaderModeMenuCS() {
     TooltipNavReset()
     TooltipNavPush("LEADER")
-    items := "p:Programs|t:Timestamps|c:Commands|i:Information|w:Windows|n:Excel layer|s:Scroll layer|h:Hybrid Management"
+    items := "p:Programs|t:Timestamps|c:Commands|i:Information|w:Windows|s:Scroll layer|h:Hybrid Management"
     ShowCSharpOptionsMenu("LEADER MODE", items, "ESC: Exit")
 }
 
@@ -873,12 +873,8 @@ ShowCopyNotificationCS() {
 RestorePersistentAfterCopy(which) {
     try {
         switch which {
-            case "visual":
-                ShowVisualLayerToggleCS(true)
             case "nvim":
                 ShowNvimLayerToggleCS(true)
-            case "excel":
-                ShowExcelLayerToggleCS(true)
         }
     } catch {
     }
@@ -922,46 +918,6 @@ ShowCapsLockStatusCS(stateText) {
 
     ; Intentionally omit navigation to avoid Back/Exit hints
     StartTooltipApp()
-    json := SerializeJson(cmd)
-    ScheduleTooltipJsonWrite(json)
-}
-
-
-ShowExcelLayerToggleCS(isActive) {
-    ; Ensure previous tooltip is hidden to avoid overlap
-    try HideCSharpTooltip()
-    Sleep 30
-    ; Ensure app is running; proceed even if process check lags to avoid recursion
-    StartTooltipApp()
-    if (!isActive) {
-        try HideCSharpTooltip()
-        return
-    }
-    theme := ReadTooltipThemeDefaults()
-    cmd := Map()
-    cmd["show"] := true
-    cmd["title"] := "Excel"
-    cmd["layout"] := "list"
-    cmd["tooltip_type"] := "bottom_right_list"
-    cmd["timeout_ms"] := 0 ; persistent while excel is active
-    ; Single item hint
-    items := []
-    it := Map()
-    it["key"] := "?"
-    it["description"] := "help"
-    items.Push(it)
-    cmd["items"] := items
-    ; Apply theme
-    if (theme.style.Count)
-        cmd["style"] := theme.style
-    if (theme.position.Count)
-        cmd["position"] := theme.position
-    if (theme.window.Has("topmost"))
-        cmd["topmost"] := theme.window["topmost"]
-    if (theme.window.Has("click_through"))
-        cmd["click_through"] := theme.window["click_through"]
-    if (theme.window.Has("opacity"))
-        cmd["opacity"] := theme.window["opacity"]
     json := SerializeJson(cmd)
     ScheduleTooltipJsonWrite(json)
 }
@@ -1098,119 +1054,6 @@ ShowNvimLayerToggleCS(isActive) {
 }
 ; ===================================================================
 
-
-; Excel Help
-ShowExcelHelpCS() {
-    global tooltipConfig
-    ; Excel layer help with all current mappings
-    items := "1:Numpad1|2:Numpad2|3:Numpad3|q:Numpad4|w:Numpad5|e:Numpad6|a:Numpad7|s:Numpad8|d:Numpad9|x:Numpad0|,:Comma|.:NumpadDot|8:Multiply (*)|9:Parentheses ()|;:NumpadSub|/:NumpadDiv|h:Left|j:Down|k:Up|l:Right|[:Prev Tab|]:Next Tab|i:Edit (F2)|I:Edit & Exit|f:Find|u:Undo|r:Redo|g:Go to top|G:Go to bottom|m:Go to cell|y:Copy|p:Paste|o:Enter|O:Shift+Enter|vr:Select row|vc:Select column|vv:Visual mode|N:Exit Excel layer"
-    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
-    if (to < 8000)
-        to := 8000
-    ShowBottomRightListTooltip("EXCEL HELP", items, "?: Close", to)
-}
-
-; Excel VV Mode Toggle (Visual Selection)
-ShowExcelVVModeToggleCS(isActive) {
-    ; Ensure app is running
-    StartTooltipApp()
-    if (!ProcessExist("TooltipApp.exe")) {
-        ; Fallback to native tooltip
-        ToolTip(isActive ? "◉ VISUAL (EXCEL)" : "○ VISUAL (EXCEL)")
-        SetTimer(() => ToolTip(), -900)
-        return
-    }
-    if (!isActive) {
-        ; When exiting VV mode, restore Excel layer tooltip
-        try ShowExcelLayerToggleCS(true)
-        return
-    }
-    theme := ReadTooltipThemeDefaults()
-    cmd := Map()
-    cmd["show"] := true
-    cmd["title"] := "Visual (Excel)"
-    cmd["layout"] := "list"
-    cmd["tooltip_type"] := "bottom_right_list"
-    cmd["timeout_ms"] := 0 ; persistent while VV mode is active
-    
-    ; Show help hint
-    items := []
-    it := Map()
-    it["key"] := "?"
-    it["description"] := "help"
-    items.Push(it)
-    cmd["items"] := items
-    
-    ; Apply theme with visual accent
-    if (theme.style.Count) {
-        style := theme.style
-        if (style.Has("warning"))
-            style["accent_options"] := style["warning"]
-        cmd["style"] := style
-    }
-    if (theme.position.Count)
-        cmd["position"] := theme.position
-    if (theme.window.Has("topmost"))
-        cmd["topmost"] := theme.window["topmost"]
-    if (theme.window.Has("click_through"))
-        cmd["click_through"] := theme.window["click_through"]
-    if (theme.window.Has("opacity"))
-        cmd["opacity"] := theme.window["opacity"]
-    
-    json := SerializeJson(cmd)
-    ScheduleTooltipJsonWrite(json)
-}
-
-; Excel VV Mode Help
-ShowExcelVVHelpCS() {
-    global tooltipConfig
-    items := "h:Select left|j:Select down|k:Select up|l:Select right|y:Copy & exit|d:Delete & exit|p:Paste & exit|Esc:Exit Visual mode"
-    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
-    if (to < 8000)
-        to := 8000
-    ShowBottomRightListTooltip("VISUAL (EXCEL) HELP", items, "?: Close", to)
-}
-
-; Menú de opciones Visual (v)
-ShowVisualLayerToggleCS(isActive) {
-    ; Ensure app is running; if not, fallback to native tooltip
-    StartTooltipApp()
-    if (!ProcessExist("TooltipApp.exe")) {
-        try ShowVisualModeStatus(isActive)
-        return
-    }
-    if (!isActive) {
-        try HideCSharpTooltip()
-        return
-    }
-    theme := ReadTooltipThemeDefaults()
-    cmd := Map()
-    cmd["show"] := true
-    cmd["title"] := "Visual"
-    cmd["layout"] := "list"
-    cmd["tooltip_type"] := "bottom_right_list"
-    cmd["timeout_ms"] := 0 ; persistent while visual is active
-    ; Single item hint
-    items := []
-    it := Map()
-    it["key"] := "?"
-    it["description"] := "help"
-    items.Push(it)
-    cmd["items"] := items
-    ; Apply theme
-    if (theme.style.Count)
-        cmd["style"] := theme.style
-    if (theme.position.Count)
-        cmd["position"] := theme.position
-    if (theme.window.Has("topmost"))
-        cmd["topmost"] := theme.window["topmost"]
-    if (theme.window.Has("click_through"))
-        cmd["click_through"] := theme.window["click_through"]
-    if (theme.window.Has("opacity"))
-        cmd["opacity"] := theme.window["opacity"]
-    json := SerializeJson(cmd)
-    ScheduleTooltipJsonWrite(json)
-}
 
 ShowVisualMenuCS() {
     items := "v:Visual Mode|l:Visual Line|b:Visual Block"
@@ -1354,7 +1197,7 @@ StopTooltipApp() {
         ProcessClose("TooltipApp.exe")
     }
     ; Cerrar todos los PowerShell que ejecutan StatusWindow
-    statusTypes := ["Nvim", "Visual", "Yank", "Excel"]
+    statusTypes := ["Nvim", "Visual", "Yank"]
     for index, statusType in statusTypes {
         try {
             RunWait("powershell.exe -Command `"Get-Process | Where-Object {`$_.ProcessName -eq 'powershell' -and `$_.CommandLine -like '*StatusWindow_" . statusType . "*'} | Stop-Process -Force`"", , "Hide")
