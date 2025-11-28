@@ -12,18 +12,7 @@
 if (!IsSet(ConfigIni)) {
     global ConfigIni := A_ScriptDir . "\ahk\config\configuration.ini"
 }
-if (!IsSet(ProgramsIni)) {
-    global ProgramsIni := A_ScriptDir . "\ahk\config\programs.ini"
-}
-if (!IsSet(InfoIni)) {
-    global InfoIni := A_ScriptDir . "\ahk\config\information.ini"
-}
-if (!IsSet(TimestampsIni)) {
-    global TimestampsIni := A_ScriptDir . "\ahk\config\timestamps.ini"
-}
-if (!IsSet(CommandsIni)) {
-    global CommandsIni := A_ScriptDir . "\ahk\config\commands.ini"
-}
+
 
 ; Global variables for tooltip configuration
 global tooltipConfig := ReadTooltipConfig()
@@ -43,11 +32,10 @@ CleanIniValue(value) {
     return Trim(value)
 }
 
-; Function to read tooltip configuration (UPDATED: HybridConfig support)
+; Function to read tooltip configuration (HybridConfig only)
 ReadTooltipConfig() {
-    global HybridConfig, ConfigIni
+    global HybridConfig
     
-    ; Try HybridConfig first
     if (IsSet(HybridConfig)) {
         config := {}
         config.enabled := HybridConfig.tooltips.enabled
@@ -63,92 +51,45 @@ ReadTooltipConfig() {
         return config
     }
     
-    ; Fallback to INI
-    config := {}
-    
-    ; Helper function to clean read values (remove comments)
-    CleanIniValue(value) {
-        ; Remover comentarios (todo después de ;)
-        if (InStr(value, ";")) {
-            value := Trim(SubStr(value, 1, InStr(value, ";") - 1))
-        }
-        return Trim(value)
+    ; Default fallback if HybridConfig is missing
+    return {
+        enabled: true,
+        handleInput: false,
+        optionsTimeout: 10000,
+        statusTimeout: 2000,
+        autoHide: true,
+        persistent: false,
+        fadeAnimation: true,
+        clickThrough: true,
+        exePath: "",
+        menuLayout: "grid"
     }
-    
-    ; Leer y limpiar valores
-    enabledValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "enable_csharp_tooltips", "true"))
-    config.enabled := enabledValue = "true"
-    
-    ; Whether tooltip layer should also handle input (hotkeys) instead of InputHook
-    handleInputValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "tooltip_handles_input", "false"))
-    config.handleInput := handleInputValue = "true"
-    
-    optionsTimeoutValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "options_menu_timeout", "10000"))
-    config.optionsTimeout := Integer(optionsTimeoutValue)
-    
-    statusTimeoutValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "status_notification_timeout", "2000"))
-    config.statusTimeout := Integer(statusTimeoutValue)
-    
-    autoHideValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "auto_hide_on_action", "true"))
-    config.autoHide := autoHideValue = "true"
-    
-    persistentValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "persistent_menus", "false"))
-    config.persistent := persistentValue = "true"
-    
-    fadeAnimationValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "tooltip_fade_animation", "true"))
-    config.fadeAnimation := fadeAnimationValue = "true"
-    
-    clickThroughValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "tooltip_click_through", "true"))
-    config.clickThrough := clickThroughValue = "true"
-
-    ; Ruta opcional del ejecutable TooltipApp
-    exePathValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "tooltip_exe_path", ""))
-    config.exePath := exePathValue
-    
-    ; Layout for option menus: grid (default) or list_vertical
-   layoutValue := CleanIniValue(IniRead(ConfigIni, "Tooltips", "menu_layout", "grid"))
-   config.menuLayout := StrLower(layoutValue)
-
-    return config
 }
 
 ; ===================================================================
-; ESCRITURA ROBUSTA DEL JSON (ATÓMICA + THROTTLE)
+; COMUNICACIÓN NAMED PIPE (NUEVO PROTOCOLO)
 ; ===================================================================
 
-; Ruta del archivo JSON principal (alineada a A_ScriptDir)
-GetTooltipJsonPath() {
-    return A_ScriptDir . "\tooltip_commands.json"
-}
-
-; Atomic write: writes to .tmp then moves to avoid partial reads
-WriteFileAtomic(path, content) {
-    tmp := path . ".tmp"
+; Enviar JSON crudo al Named Pipe
+Tooltip_SendRaw(json) {
+    pipeName := "\\.\pipe\TooltipPipe"
     try {
-        FileDelete(tmp)
+        ; Abrir pipe en modo escritura
+        ; Nota: FileOpen con ruta de pipe funciona en v2
+        pipe := FileOpen(pipeName, "w", "UTF-8")
+        if (pipe) {
+            pipe.Write(json . "`n")
+            pipe.Close()
+        }
+    } catch as e {
+        ; Fallo silencioso o log si es necesario
+        Log.e("Error writing to pipe: " . e.Message, "TOOLTIP")
     }
-    FileAppend(content, tmp)
-    ; Move with overwrite (1) for safe replacement
-    FileMove(tmp, path, 1)
 }
 
-; State for write debouncing
-global tooltipJsonPending := ""
-global tooltipDebounceMs := 100
-
+; Wrapper para compatibilidad con código existente que usaba ScheduleTooltipJsonWrite
 ScheduleTooltipJsonWrite(json) {
-    global tooltipJsonPending, tooltipDebounceMs
-    tooltipJsonPending := json
-    ; Reiniciar timer one-shot para consolidar múltiples escrituras
-    SetTimer(DebouncedTooltipWrite, 0)
-    SetTimer(DebouncedTooltipWrite, -tooltipDebounceMs)
-}
-
-DebouncedTooltipWrite() {
-    global tooltipJsonPending
-    if (tooltipJsonPending != "") {
-        WriteFileAtomic(GetTooltipJsonPath(), tooltipJsonPending)
-    }
+    Tooltip_SendRaw(json)
 }
 
 ; (JsonEscape helper defined later once)
@@ -317,6 +258,7 @@ StartTooltipApp() {
 ; Global state for menu interaction
 global tooltipMenuActive := false
 global tooltipCurrentTitle := ""
+global tooltipCurrentPath := ""
 
 ; Breadcrumb navigation stack for intelligent back
 global tooltipNavStack := []
@@ -331,34 +273,19 @@ TooltipNavTop() {
     return tooltipNavStack.Length ? tooltipNavStack[tooltipNavStack.Length] : ""
 }
 
-TooltipNavPush(menuId) {
+TooltipNavPush(path, title) {
     global tooltipNavStack
-    if (!tooltipNavStack.Length || tooltipNavStack[tooltipNavStack.Length] != menuId) {
-        tooltipNavStack.Push(menuId)
+    ; Check if top is same to avoid duplicates
+    if (tooltipNavStack.Length > 0) {
+        top := tooltipNavStack[tooltipNavStack.Length]
+        if (top.path == path)
+            return
     }
+    tooltipNavStack.Push({path: path, title: title})
 }
 
-TooltipShowById(menuId) {
-    switch menuId {
-        case "LEADER": ShowLeaderModeMenuCS()
-        case "PROGRAMS": ShowProgramMenuCS()
-        case "WINDOWS": ShowWindowMenuCS()
-        case "TIMESTAMPS": ShowTimeMenuCS()
-        case "INFORMATION": ShowInformationMenuCS()
-        case "COMMANDS": ShowCommandsMenuCS()
-        case "CMD_s": ShowSystemCommandsMenuCS()
-        case "CMD_n": ShowNetworkCommandsMenuCS()
-        case "CMD_g": ShowGitCommandsMenuCS()
-        case "CMD_m": ShowMonitoringCommandsMenuCS()
-        case "CMD_f": ShowFolderCommandsMenuCS()
-        case "CMD_o": ShowPowerOptionsCommandsMenuCS()
-        case "CMD_a": ShowADBCommandsMenuCS()
-        case "CMD_v": ShowVaultFlowCommandsMenuCS()
-        case "CMD_h": ShowHybridManagementMenuCS()
-        default:
-            ; fallback to leader
-            ShowLeaderModeMenuCS()
-    }
+TooltipShowById(navItem) {
+    ShowMenuForPath(navItem.path, navItem.title)
 }
 
 TooltipNavBackCS() {
@@ -379,60 +306,55 @@ TooltipMenuIsActive() {
 }
 
 ; Central dispatcher for option selection
+; Central dispatcher for option selection
 HandleTooltipSelection(key) {
-    global tooltipMenuActive, tooltipCurrentTitle
-
+    global tooltipMenuActive, tooltipCurrentTitle, tooltipCurrentPath
+    
     ; Debug
-    Log.d("Selection - title=" . tooltipCurrentTitle . " key=" . key, "TOOLTIP")
+    Log.d("Selection - path=" . tooltipCurrentPath . " key=" . key, "TOOLTIP")
 
     if (key = "ESC") {
         HideCSharpTooltip()
         tooltipMenuActive := false
         return
     }
-
-    if (tooltipCurrentTitle = "COMMAND PALETTE") {
-        switch key {
-            case "\\":
-                TooltipNavBackCS()
-                return
-            case "s":
-                ShowSystemCommandsMenuCS()
-            case "n":
-                ShowNetworkCommandsMenuCS()
-            case "g":
-                ShowGitCommandsMenuCS()
-            case "m":
-                ShowMonitoringCommandsMenuCS()
-            case "f":
-                ShowFolderCommandsMenuCS()
-            case "o":
-                ShowPowerOptionsCommandsMenuCS()
-            case "a":
-                ShowADBCommandsMenuCS()
-            case "v":
-                ShowVaultFlowCommandsMenuCS()
-            default:
-                Log.d("Unknown key in COMMAND PALETTE: " . key, "TOOLTIP")
-        }
+    
+    if (key = "\\") {
+        TooltipNavBackCS()
         return
     }
 
-    if (tooltipCurrentTitle = "LEADER MODE") {
-        switch key {
-            case "\\":
-                HideCSharpTooltip()
-                tooltipMenuActive := false
-                return
-            case "h":
-                ShowHybridManagementMenuCS()
-            default:
-                Log.d("Unknown key in LEADER MODE: " . key, "TOOLTIP")
+    ; Dynamic lookup using KeymapRegistry
+    ; We need to find the item in the current path
+    keymaps := GetKeymapsForPath(tooltipCurrentPath)
+    
+    if (keymaps.Has(key)) {
+        item := keymaps[key]
+        
+        if (item["isCategory"]) {
+            ; It's a category -> Navigate to it
+            ShowMenuForPath(item["path"], item["desc"])
+        } else {
+            ; It's an action -> Execute it
+            HideCSharpTooltip() ; Hide first usually
+            tooltipMenuActive := false
+            
+            if (item["confirm"]) {
+                if (!ShowUnifiedConfirmation(item["desc"])) {
+                    return ; Cancelled
+                }
+            }
+            
+            try {
+                item["action"]()
+            } catch as e {
+                Log.e("Error executing action for key " . key . ": " . e.Message, "TOOLTIP")
+                ShowCSharpStatusNotification("ERROR", "Action failed")
+            }
         }
-        return
+    } else {
+        Log.d("Unknown key in " . tooltipCurrentPath . ": " . key, "TOOLTIP")
     }
-
-    ; Other menus can be handled here similarly, based on tooltipCurrentTitle
 }
 
 ; Ensure ShowCSharpOptionsMenu marks menu as active and remembers title
@@ -456,13 +378,10 @@ ShowCSharpOptionsMenu(title, items, navigation := "", timeout := 0) {
 }
 
 ; Context helpers for scoping hotkeys
-TooltipInLeaderMenu() {
-    global tooltipMenuActive, tooltipCurrentTitle, tooltipConfig
-    return tooltipMenuActive && tooltipConfig.handleInput && (tooltipCurrentTitle = "LEADER MODE")
-}
-TooltipInCommandsMenu() {
-    global tooltipMenuActive, tooltipCurrentTitle, tooltipConfig
-    return tooltipMenuActive && tooltipConfig.handleInput && (tooltipCurrentTitle = "COMMAND PALETTE")
+; Context helpers for scoping hotkeys
+TooltipInMenu() {
+    global tooltipMenuActive, tooltipConfig
+    return tooltipMenuActive && tooltipConfig.handleInput
 }
 
 ; Handle confirmation selection (Y/N)
@@ -486,31 +405,56 @@ Esc::HandleConfirmationSelection(false)
 #HotIf
 
 ; Leader menu hotkeys (only on LEADER MODE)
-#HotIf TooltipInLeaderMenu()
-p::HandleTooltipSelection("p")
-t::HandleTooltipSelection("t")
-c::HandleTooltipSelection("c")
-
-i::HandleTooltipSelection("i")
-n::HandleTooltipSelection("n")
-h::HandleTooltipSelection("h")
-\::HandleTooltipSelection("\\")
-Esc::HandleTooltipSelection("ESC")
-#HotIf
-
-; Commands palette hotkeys (only on COMMAND PALETTE)
-#HotIf TooltipInCommandsMenu()
-s::HandleTooltipSelection("s")
-n::HandleTooltipSelection("n")
-g::HandleTooltipSelection("g")
-m::HandleTooltipSelection("m")
-f::HandleTooltipSelection("f")
-w::HandleTooltipSelection("w")
-o::HandleTooltipSelection("o")
+; Generic menu hotkeys (active whenever a tooltip menu is open)
+#HotIf TooltipInMenu()
 a::HandleTooltipSelection("a")
+b::HandleTooltipSelection("b")
+c::HandleTooltipSelection("c")
+d::HandleTooltipSelection("d")
+e::HandleTooltipSelection("e")
+f::HandleTooltipSelection("f")
+g::HandleTooltipSelection("g")
+h::HandleTooltipSelection("h")
+i::HandleTooltipSelection("i")
+j::HandleTooltipSelection("j")
+k::HandleTooltipSelection("k")
+l::HandleTooltipSelection("l")
+m::HandleTooltipSelection("m")
+n::HandleTooltipSelection("n")
+o::HandleTooltipSelection("o")
+p::HandleTooltipSelection("p")
+q::HandleTooltipSelection("q")
+r::HandleTooltipSelection("r")
+s::HandleTooltipSelection("s")
+t::HandleTooltipSelection("t")
+u::HandleTooltipSelection("u")
 v::HandleTooltipSelection("v")
+w::HandleTooltipSelection("w")
+x::HandleTooltipSelection("x")
+y::HandleTooltipSelection("y")
+z::HandleTooltipSelection("z")
+1::HandleTooltipSelection("1")
+2::HandleTooltipSelection("2")
+3::HandleTooltipSelection("3")
+4::HandleTooltipSelection("4")
+5::HandleTooltipSelection("5")
+6::HandleTooltipSelection("6")
+7::HandleTooltipSelection("7")
+8::HandleTooltipSelection("8")
+9::HandleTooltipSelection("9")
+0::HandleTooltipSelection("0")
+-::HandleTooltipSelection("-")
+=::HandleTooltipSelection("=")
+[::HandleTooltipSelection("[")
+]::HandleTooltipSelection("]")
+SC027::HandleTooltipSelection(";") ; ;
+SC028::HandleTooltipSelection("'") ; '
+,::HandleTooltipSelection(",")
+.::HandleTooltipSelection(".")
+/::HandleTooltipSelection("/")
 \::HandleTooltipSelection("\\")
 Esc::HandleTooltipSelection("ESC")
+Backspace::HandleTooltipSelection("\\")
 #HotIf
 
 ; ===================================================================
@@ -518,275 +462,76 @@ Esc::HandleTooltipSelection("ESC")
 ; ===================================================================
 
 ; Reemplazar ShowLeaderModeMenu() original
+; Reemplazar ShowLeaderModeMenu() original
 ShowLeaderModeMenuCS() {
-    TooltipNavReset()
-    TooltipNavPush("LEADER")
-    items := "p:Programs|t:Timestamps|c:Commands|i:Information|w:Windows|s:Scroll layer|h:Hybrid Management"
-    ShowCSharpOptionsMenu("LEADER MODE", items, "ESC: Exit")
+    ShowMenuForPath("leader", "LEADER MODE")
 }
 
-; Reemplazar ShowProgramMenu() original  
-ShowProgramMenuCS() {
-    TooltipNavPush("PROGRAMS")
-    items := GenerateProgramItemsForCS()
-    ShowCSharpOptionsMenu("PROGRAM LAUNCHER", items, "BACKSPACE: Back|ESC: Exit")
-}
-
-; Generate program items for C# tooltips from ProgramMapping order
-GenerateProgramItemsForCS() {
-    global ProgramsIni
-    items := ""
+; Generic function to show menu for any path
+ShowMenuForPath(path, title) {
+    global tooltipCurrentPath
+    tooltipCurrentPath := path
     
-    ; Read order from ProgramMapping
-    orderStr := IniRead(ProgramsIni, "ProgramMapping", "order", "")
-    if (orderStr = "" || orderStr = "ERROR") {
-        ; Fallback order
-        orderStr := "e i t v n o b z m w l r q p k f"
-    }
+    TooltipNavPush(path, title)
     
-    ; Split order into individual keys
-    keys := StrSplit(orderStr, " ")
-    
-    ; Process keys and build items string
-    Loop keys.Length {
-        key := Trim(keys[A_Index])
-        if (key = "")
-            continue
-            
-        ; Get program name for this key
-        programName := IniRead(ProgramsIni, "ProgramMapping", key, "")
-        if (programName = "" || programName = "ERROR")
-            continue
-            
-        ; Add to items string
-        if (items != "")
-            items .= "|"
-        items .= key . ":" . programName
-    }
-    
-    ; Fallback if no configuration found
-    if (items == "") {
-        items := "e:Explorer|i:Settings|t:Terminal|v:VisualStudio|n:Notepad|b:Vivaldi|z:Zen"
-    }
-    
-    return items
-}
-
-; Reemplazar ShowWindowMenu() original
-ShowWindowMenuCS() {
-    TooltipNavPush("WINDOWS")
-    items := "2:Split 50/50|3:Split 33/67|4:Quarter Split|x:Close|m:Maximize|-:Minimize|d:Draw|z:Zoom|c:Zoom with cursor|j:Next Window|k:Previous Window"
-    ShowCSharpOptionsMenu("WINDOW MANAGER", items, "\\: Back|ESC: Exit")
-}
-
-; Reemplazar ShowTimeMenu() original
-ShowTimeMenuCS() {
-    TooltipNavPush("TIMESTAMPS")
-    items := "d:Date Formats|t:Time Formats|h:Date+Time Formats"
-    ShowCSharpOptionsMenu("TIMESTAMP MANAGER", items, "\\: Back|ESC: Exit")
-}
-
-; Reemplazar ShowInformationMenu() original
-ShowInformationMenuCS() {
-    TooltipNavPush("INFORMATION")
-    items := GenerateInformationItemsForCS()
-    ShowCSharpOptionsMenu("INFORMATION MANAGER", items, "\\: Back|ESC: Exit")
-}
-
-; Generate information items for C# tooltips from InfoMapping order
-GenerateInformationItemsForCS() {
-    global InfoIni
-    items := ""
-    
-    ; Read order from InfoMapping
-    orderStr := IniRead(InfoIni, "InfoMapping", "order", "")
-    if (orderStr = "" || orderStr = "ERROR") {
-        ; Fallback order
-        orderStr := "e n p a c w g l r"
-    }
-    
-    ; Split order into individual keys
-    keys := StrSplit(orderStr, " ")
-    
-    ; Process keys and build items string
-    Loop keys.Length {
-        key := Trim(keys[A_Index])
-        if (key = "")
-            continue
-            
-        ; Get information name for this key
-        infoName := IniRead(InfoIni, "InfoMapping", key, "")
-        if (infoName = "" || infoName = "ERROR")
-            continue
-            
-        ; Add to items string
-        if (items != "")
-            items .= "|"
-        items .= key . ":" . infoName
-    }
-    
-    ; Fallback if no configuration found
-    if (items == "") {
-        items := "e:Email|n:Name|p:Phone|a:Address|c:Company|w:Website|g:GitHub|l:LinkedIn"
-    }
-    
-    return items
-}
-
-; Reemplazar ShowCommandsMenu() original
-ShowCommandsMenuCS() {
-    TooltipNavPush("COMMANDS")
-    
-    ; Generar items desde CategoryRegistry (DINÁMICO)
-    items := BuildMainMenuItemsFromRegistry()
-    
-    ; Fallback solo si el registry está vacío
+    items := GenerateCategoryItemsForPath(path)
     if (items = "") {
-        items := "[No categories registered]"
+        items := "[No items registered]"
     }
     
-    ShowCSharpOptionsMenu("COMMAND PALETTE", items, "\\: Back|ESC: Exit")
+    ShowCSharpOptionsMenu(title, items, "BACKSPACE: Back|ESC: Exit")
 }
+; Estas funciones ya no son necesarias gracias al sistema genérico.
 
-; Helper: Generar items para menú principal desde CategoryRegistry
-BuildMainMenuItemsFromRegistry() {
-    categories := GetSortedCategories()
-    
-    if (categories.Length = 0)
-        return ""
-    
-    items := ""
-    for cat in categories {
-        if (items != "")
-            items .= "|"
-        items .= cat["symbol"] . ":" . cat["title"]
-    }
-    
-    return items
-}
 
 ; ===================================================================
-; SUBMENÚS DE TIMESTAMP CON C#
+; GENERIC LAYER STATUS (NUEVO PROTOCOLO)
 ; ===================================================================
 
-; Reemplazar ShowDateFormatsMenu() original
-ShowDateFormatsMenuCS() {
-    items := ""
-    
-    ; Leer configuración dinámica desde timestamps.ini
-    Loop 10 {
-        lineContent := IniRead(TimestampsIni, "MenuDisplay", "date_line" . A_Index, "")
-        if (lineContent != "" && lineContent != "ERROR") {
-            ; Método simple: dividir por múltiples espacios y procesar cada parte
-            cleanLine := RegExReplace(lineContent, "\s{3,}", "|||")
-            parts := StrSplit(cleanLine, "|||")
-            
-            ; Procesar cada parte
-            for index, part in parts {
-                part := Trim(part)
-                if (part != "" && InStr(part, " - ")) {
-                    ; Extraer key y descripción
-                    dashPos := InStr(part, " - ")
-                    key := Trim(SubStr(part, 1, dashPos - 1))
-                    desc := Trim(SubStr(part, dashPos + 3))
-                    
-                    ; Validar que la key sea una letra o número
-                    if (StrLen(key) <= 2 && RegExMatch(key, "^[a-z0-9]+$")) {
-                        if (items != "")
-                            items .= "|"
-                        items .= key . ":" . desc
-                    }
-                }
-            }
-        }
+ShowGenericLayerStatusCS(layerId, isActive) {
+    ; Si no está activo, ocultar el pill
+    if (!isActive) {
+        json := '{"id": "status_pill", "show": false}'
+        Tooltip_SendRaw(json)
+        return
     }
-    
-    ; Fallback si no hay configuración
-    if (items == "") {
-        items := "d:Default|1:yyyy-MM-dd|2:dd/MM/yyyy|3:MM/dd/yyyy|4:dd-MMM-yyyy|5:ddd, dd MMM yyyy|6:yyyyMMdd"
-    }
-    
-    ShowCSharpOptionsMenu("DATE FORMATS", items, "\\: Back|ESC: Exit")
-}
 
-; Reemplazar ShowTimeFormatsMenu() original
-ShowTimeFormatsMenuCS() {
-    items := ""
-    
-    ; Leer configuración dinámica desde timestamps.ini
-    Loop 10 {
-        lineContent := IniRead(TimestampsIni, "MenuDisplay", "time_line" . A_Index, "")
-        if (lineContent != "" && lineContent != "ERROR") {
-            ; Método simple: dividir por múltiples espacios y procesar cada parte
-            cleanLine := RegExReplace(lineContent, "\s{3,}", "|||")
-            parts := StrSplit(cleanLine, "|||")
-            
-            ; Procesar cada parte
-            for index, part in parts {
-                part := Trim(part)
-                if (part != "" && InStr(part, " - ")) {
-                    ; Extraer key y descripción
-                    dashPos := InStr(part, " - ")
-                    key := Trim(SubStr(part, 1, dashPos - 1))
-                    desc := Trim(SubStr(part, dashPos + 3))
-                    
-                    ; Validar que la key sea una letra o número
-                    if (StrLen(key) <= 2 && RegExMatch(key, "^[a-z0-9]+$")) {
-                        if (items != "")
-                            items .= "|"
-                        items .= key . ":" . desc
-                    }
-                }
-            }
-        }
-    }
-    
-    ; Fallback si no hay configuración
-    if (items == "") {
-        items := "t:Default|1:HH:mm:ss|2:HH:mm|3:hh:mm tt|4:HHmmss|5:HH.mm.ss"
-    }
-    
-    ShowCSharpOptionsMenu("TIME FORMATS", items, "\\: Back|ESC: Exit")
-}
+    ; Obtener metadata del layer (color, nombre)
+    metadata := GetLayerMetadata(layerId)
 
-; Reemplazar ShowDateTimeFormatsMenu() original
-ShowDateTimeFormatsMenuCS() {
-    items := ""
+    ; Construir comando para mostrar status pill persistente
+    cmd := Map()
+    cmd["id"] := "status_pill"
+    cmd["show"] := true
+    cmd["title"] := metadata["name"]
+    cmd["timeout_ms"] := 0 ; Persistente
     
-    ; Leer configuración dinámica desde timestamps.ini
-    Loop 10 {
-        lineContent := IniRead(TimestampsIni, "MenuDisplay", "datetime_line" . A_Index, "")
-        if (lineContent != "" && lineContent != "ERROR") {
-            ; Método simple: dividir por múltiples espacios y procesar cada parte
-            cleanLine := RegExReplace(lineContent, "\s{3,}", "|||")
-            parts := StrSplit(cleanLine, "|||")
-            
-            ; Procesar cada parte
-            for index, part in parts {
-                part := Trim(part)
-                if (part != "" && InStr(part, " - ")) {
-                    ; Extraer key y descripción
-                    dashPos := InStr(part, " - ")
-                    key := Trim(SubStr(part, 1, dashPos - 1))
-                    desc := Trim(SubStr(part, dashPos + 3))
-                    
-                    ; Validar que la key sea una letra o número
-                    if (StrLen(key) <= 2 && RegExMatch(key, "^[a-z0-9]+$")) {
-                        if (items != "")
-                            items .= "|"
-                        items .= key . ":" . desc
-                    }
-                }
-            }
-        }
+    ; Leer defaults de tema
+    theme := ReadTooltipThemeDefaults()
+
+    ; Posición desde tema (position_status)
+    if (theme.HasOwnProp("position_status") && theme.position_status.Count > 0) {
+        cmd["position"] := theme.position_status
+    } else {
+        ; Fallback hardcoded si falla la lectura del tema
+        cmd["position"] := Map()
+        cmd["position"]["anchor"] := "bottom_right"
+        cmd["position"]["offset_x"] := -20
+        cmd["position"]["offset_y"] := -20
     }
     
-    ; Fallback si no hay configuración
-    if (items == "") {
-        items := "h:Default|1:yyyy-MM-dd HH:mm:ss|2:dd/MM/yyyy HH:mm|3:yyyy-MM-dd HH:mm:ss|4:yyyyMMddHHmmss|5:ddd, dd MMM yyyy HH:mm"
-    }
+    ; Estilo distintivo para status
+    cmd["style"] := Map()
+    cmd["style"]["background"] := metadata["color"]
+    cmd["style"]["text"] := metadata["textColor"]  ; Use dynamic text color
+    cmd["style"]["padding"] := [8, 4, 8, 4]
+    cmd["style"]["corner_radius"] := 4
+    cmd["style"]["title_font_size"] := 10
     
-    ShowCSharpOptionsMenu("DATE+TIME FORMATS", items, "\\: Back|ESC: Exit")
+    ; Enviar comando
+    StartTooltipApp()
+    json := SerializeJson(cmd)
+    Tooltip_SendRaw(json)
 }
 
 ; ===================================================================
@@ -801,82 +546,6 @@ ShowCenteredToolTipCS(text, duration := 0) {
     } else {
         items := "info:" . text
         ShowCSharpTooltip("STATUS", items, "", duration)
-    }
-}
-
-; Notificaciones específicas mejoradas
-ShowCopyNotificationCS() {
-    ; Bottom-right, navigation-less clipboard status with short timeout
-    ; Additionally, if a persistent layer (NVIM/Visual/Excel) is active, restore it after the toast ends
-    global ConfigIni
-    global isNvimLayerActive, VisualMode, excelLayerActive
-
-    to := CleanIniValue(IniRead(ConfigIni, "Tooltips", "status_notification_timeout", ""))
-    if (to = "" || to = "ERROR") {
-        to := 1200
-    } else {
-        to := Integer(Trim(to))
-        if (to > 1200)
-            to := 1200
-        if (to < 400)
-            to := 400
-    }
-
-    ; Build command directly to avoid any default navigation injection
-    theme := ReadTooltipThemeDefaults()
-    cmd := Map()
-    cmd["show"] := true
-    cmd["title"] := "CLIPBOARD"
-    cmd["layout"] := "list"
-    cmd["tooltip_type"] := "bottom_right_list"
-    cmd["timeout_ms"] := to
-
-    items := []
-    it := Map()
-    it["key"] := "<"
-    it["description"] := "COPIED"
-    items.Push(it)
-    cmd["items"] := items
-
-    ; Apply theme styling and position
-    if (theme.style.Count)
-        cmd["style"] := theme.style
-    if (theme.position.Count)
-        cmd["position"] := theme.position
-    if (theme.window.Has("topmost"))
-        cmd["topmost"] := theme.window["topmost"]
-    if (theme.window.Has("click_through"))
-        cmd["click_through"] := theme.window["click_through"]
-    if (theme.window.Has("opacity"))
-        cmd["opacity"] := theme.window["opacity"]
-
-    StartTooltipApp()
-    json := SerializeJson(cmd)
-    ScheduleTooltipJsonWrite(json)
-
-    ; Determine which persistent to restore (if any), then schedule it after the toast
-    active := ""
-    if (IsSet(isNvimLayerActive) && isNvimLayerActive) {
-        if (IsSet(VisualMode) && VisualMode)
-            active := "visual"
-        else
-            active := "nvim"
-    } else if (IsSet(excelLayerActive) && excelLayerActive) {
-        active := "excel"
-    }
-    if (active != "") {
-        delay := to + 120
-        SetTimer(() => RestorePersistentAfterCopy(active), -delay)
-    }
-}
-
-RestorePersistentAfterCopy(which) {
-    try {
-        switch which {
-            case "nvim":
-                ShowNvimLayerToggleCS(true)
-        }
-    } catch {
     }
 }
 
@@ -933,259 +602,22 @@ ShowCommandExecutedCS(category, command) {
 ; ===================================================================
 ; FUNCIONES ESPECÍFICAS PARA NVIM/ VISUAL/ EXCEL/ SCROLL HELP
 
-ShowNvimHelpCS() {
-    global tooltipConfig
-    ; Generate items dynamically from KeymapRegistry
-    items := GenerateCategoryItemsForPath("nvim")
-    if (items = "")
-        items := "[No keymaps registered for nvim layer]"
-    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
-    if (to < 8000)
-        to := 8000
-    ShowBottomRightListTooltip("NVIM HELP", items, "?: Close", to)
-}
-
-ShowVisualHelpCS() {
-    global tooltipConfig
-    ; Visual mode specific help
-    items := "h:Extend left|j:Extend down|k:Extend up|l:Extend right|w:Extend word right|b:Extend word left|0:Extend to line start|$:Extend to line end|y:Copy selection|d:Delete selection|a:Select all|c:Change -> Insert|Esc:Exit Visual"
-    to := (IsSet(tooltipConfig) && tooltipConfig.HasProp("optionsTimeout") && tooltipConfig.optionsTimeout > 0) ? tooltipConfig.optionsTimeout : 8000
-    if (to < 8000)
-        to := 8000
-    ShowBottomRightListTooltip("VISUAL HELP", items, "?: Close", to)
-}
-
 ; ===================================================================
-; FUNCIONES ESPECÍFICAS PARA NVIM LAYER OPTIONS
-
-; Build NVIM items for status from ahk/config/nvim_layer.ini [Normal]
-BuildNvimStatusItems() {
-    ini := A_ScriptDir . "\\ahk\\config\\nvim_layer.ini"
-    items := []
-    try {
-        order := IniRead(ini, "Normal", "order", "")
-        if (order = "" || order = "ERROR")
-            return items
-        keys := StrSplit(order, " ")
-        for _, k in keys {
-            k := Trim(k)
-            if (k = "")
-                continue
-            spec := IniRead(ini, "Normal", k, "")
-            if (spec = "" || spec = "ERROR")
-                continue
-            desc := NvimSpecToDescription(spec)
-            itm := Map()
-            itm["key"] := k
-            itm["description"] := desc
-            items.Push(itm)
-        }
-    } catch {
-    }
-    return items
-}
-
-NvimSpecToDescription(spec) {
-    spec := Trim(spec)
-    if (InStr(spec, ":")) {
-        t := StrLower(Trim(SubStr(spec, 1, InStr(spec, ":") - 1)))
-        v := Trim(SubStr(spec, InStr(spec, ":") + 1))
-        if (t = "send") {
-            ; Simple mapping for arrows and common combos
-            if (RegExMatch(v, "\{Left\}", &m))
-                return "Move left"
-            if (RegExMatch(v, "\{Right\}", &m))
-                return "Move right"
-            if (RegExMatch(v, "\{Up\}", &m))
-                return "Move up"
-            if (RegExMatch(v, "\{Down\}", &m))
-                return "Move down"
-            if (InStr(v, "^v"))
-                return "Paste"
-            return "Send " . v
-        } else if (t = "showmenu") {
-            v := StrLower(v)
-            if (v = "yank")
-                return "Yank menu"
-            if (v = "delete")
-                return "Delete menu"
-            return "Menu " . v
-        } else if (t = "func") {
-            return "Function: " . v
-        }
-        return t ": " v
-    }
-    return spec
-}
-
-ShowNvimLayerToggleCS(isActive) {
-    try HideCSharpTooltip()
-    Sleep 30
-    StartTooltipApp()
-    if (!isActive) {
-        try HideCSharpTooltip()
-        return
-    }
-    theme := ReadTooltipThemeDefaults()
-    cmd := Map()
-    cmd["show"] := true
-    cmd["title"] := "NVIM"
-    cmd["layout"] := "list"
-    cmd["tooltip_type"] := "bottom_right_list"
-    cmd["timeout_ms"] := 0  ; persistent while layer is active
-    items := []
-    it := Map()
-    it["key"] := "?"
-    it["description"] := "help"
-    items.Push(it)
-    cmd["items"] := items
-    if (theme.style.Count)
-        cmd["style"] := theme.style
-    if (theme.position.Count)
-        cmd["position"] := theme.position
-    if (theme.window.Has("topmost"))
-        cmd["topmost"] := theme.window["topmost"]
-    if (theme.window.Has("click_through"))
-        cmd["click_through"] := theme.window["click_through"]
-    if (theme.window.Has("opacity"))
-        cmd["opacity"] := theme.window["opacity"]
-    json := SerializeJson(cmd)
-    ScheduleTooltipJsonWrite(json)
-}
+; FUNCIONES ESPECÍFICAS ELIMINADAS (Usar ShowGenericLayerStatus)
 ; ===================================================================
 
-
-ShowVisualMenuCS() {
-    items := "v:Visual Mode|l:Visual Line|b:Visual Block"
-    ShowCSharpOptionsMenu("VISUAL MODE", items, "ESC: Cancel")
-}
-
-; Menú de opciones Insert (i)
-ShowInsertMenuCS() {
-    items := "i:Insert Mode|a:Insert After|o:Insert New Line"
-    ShowCSharpOptionsMenu("INSERT MODE", items, "ESC: Cancel")
-}
-
-; Menú de opciones Replace (r)
-ShowReplaceMenuCS() {
-    items := "r:Replace Character|R:Replace Mode|s:Substitute"
-    ShowCSharpOptionsMenu("REPLACE OPTIONS", items, "ESC: Cancel")
-}
-
-; Menú de opciones Yank (y) - Actualizado para mostrar opciones
-ShowYankMenuCS() {
-    items := "y:Yank Line|w:Yank Word|a:Yank All|p:Yank Paragraph"
-    ShowCSharpOptionsMenu("YANK OPTIONS", items, "ESC: Cancel")
-}
-
-; Menú de opciones Delete (d) - Actualizado para mostrar opciones  
-ShowDeleteMenuCS() {
-    items := "d:Delete Line|w:Delete Word|a:Delete All"
-    ShowCSharpOptionsMenu("DELETE OPTIONS", items, "ESC: Cancel")
-}
 
 ; ===================================================================
 ; FUNCIONES ESPECÍFICAS PARA SUBMENÚS DE COMANDOS
 ; ===================================================================
 
 ; Submenú System Commands (leader → c → s)
-ShowSystemCommandsMenuCS() {
-    TooltipNavPush("CMD_s")
-    items := GenerateCategoryItems("system")
-    if (items = "") {
-        MsgBox("ERROR: System commands not registered. Check RegisterSystemKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("SYSTEM COMMANDS", items, "\\: Back|ESC: Exit")
-}
+; ===================================================================
+; FUNCIONES ESPECÍFICAS ELIMINADAS (Usar ShowGenericLayerStatus)
+; ===================================================================
+; Las funciones ShowSystemCommandsMenuCS, ShowNetworkCommandsMenuCS, etc.
+; han sido eliminadas ya que ahora se usa ShowMenuForPath de forma dinámica.
 
-; Submenú Network Commands (leader → c → n)
-ShowNetworkCommandsMenuCS() {
-    TooltipNavPush("CMD_n")
-    items := GenerateCategoryItems("network")
-    if (items = "") {
-        MsgBox("ERROR: Network commands not registered. Check RegisterNetworkKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("NETWORK COMMANDS", items, "\\: Back|ESC: Exit")
-}
-
-; Submenú Git Commands (leader → c → g)
-ShowGitCommandsMenuCS() {
-    TooltipNavPush("CMD_g")
-    items := GenerateCategoryItems("git")
-    if (items = "") {
-        MsgBox("ERROR: Git commands not registered. Check RegisterGitKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("GIT COMMANDS", items, "\\: Back|ESC: Exit")
-}
-
-; Submenú Monitoring Commands (leader → c → m)
-ShowMonitoringCommandsMenuCS() {
-    TooltipNavPush("CMD_m")
-    items := GenerateCategoryItems("monitoring")
-    if (items = "") {
-        MsgBox("ERROR: Monitoring commands not registered. Check RegisterMonitoringKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("MONITORING COMMANDS", items, "\\: Back|ESC: Exit")
-}
-
-; Submenú Folder Commands (leader → c → f)
-ShowFolderCommandsMenuCS() {
-    TooltipNavPush("CMD_f")
-    items := GenerateCategoryItems("folder")
-    if (items = "") {
-        MsgBox("ERROR: Folder commands not registered. Check RegisterFolderKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("FOLDER ACCESS", items, "\\: Back|ESC: Exit")
-}
-
-; Submenú Power Options (leader → c → o)
-ShowPowerOptionsCommandsMenuCS() {
-    TooltipNavPush("CMD_o")
-    items := GenerateCategoryItems("power")
-    if (items = "") {
-        MsgBox("ERROR: Power commands not registered. Check RegisterPowerKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("POWER OPTIONS", items, "\\: Back|ESC: Exit")
-}
-
-; Submenú ADB Tools (leader → c → a)
-ShowADBCommandsMenuCS() {
-    TooltipNavPush("CMD_a")
-    items := GenerateCategoryItems("adb")
-    if (items = "") {
-        MsgBox("ERROR: ADB commands not registered. Check RegisterADBKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("ADB TOOLS", items, "\\: Back|ESC: Exit")
-}
-
-; Submenú Hybrid Management (leader → h)
-ShowHybridManagementMenuCS() {
-    TooltipNavPush("HYBRID")
-    items := GenerateCategoryItemsForPath("leader.h")
-    if (items = "") {
-        MsgBox("ERROR: Hybrid commands not registered. Check RegisterHybridKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("HYBRID MANAGEMENT", items, "\\: Back|ESC: Exit")
-}
-
-; Submenú VaultFlow Commands (leader → c → v)
-ShowVaultFlowCommandsMenuCS() {
-    TooltipNavPush("CMD_v")
-    items := GenerateCategoryItems("vaultflow")
-    if (items = "") {
-        MsgBox("ERROR: VaultFlow commands not registered. Check RegisterVaultFlowKeymaps() in startup.", "Keymap Registry Error", "Icon!")
-        return
-    }
-    ShowCSharpOptionsMenu("VAULTFLOW COMMANDS", items, "\\: Back|ESC: Exit")
-}
 
 ; ===================================================================
 ; FUNCIÓN DE LIMPIEZA
@@ -1202,14 +634,6 @@ StopTooltipApp() {
         try {
             RunWait("powershell.exe -Command `"Get-Process | Where-Object {`$_.ProcessName -eq 'powershell' -and `$_.CommandLine -like '*StatusWindow_" . statusType . "*'} | Stop-Process -Force`"", , "Hide")
         }
-    }
-    ; Limpiar archivos JSON
-    try {
-        FileDelete(GetTooltipJsonPath())
-        FileDelete(A_ScriptDir . "\\status_nvim_commands.json")
-        FileDelete(A_ScriptDir . "\\status_visual_commands.json")
-        FileDelete(A_ScriptDir . "\\status_yank_commands.json")
-        FileDelete(A_ScriptDir . "\\status_excel_commands.json")
     }
 }
 
@@ -1262,7 +686,33 @@ ReadTooltipThemeDefaults() {
             defaults.position := Map()
             defaults.position["anchor"] := theme.position.anchor
             defaults.position["offset_x"] := theme.position.offset_x
+            defaults.position["offset_x"] := theme.position.offset_x
             defaults.position["offset_y"] := theme.position.offset_y
+            
+            ; Extended position properties
+            if (theme.position.HasOwnProp("x"))
+                defaults.position["x"] := theme.position.x
+            if (theme.position.HasOwnProp("y"))
+                defaults.position["y"] := theme.position.y
+            if (theme.position.HasOwnProp("monitor"))
+                defaults.position["monitor"] := theme.position.monitor
+            
+            ; Status Position
+            defaults.position_status := Map()
+            if (theme.HasOwnProp("position_status")) {
+                defaults.position_status["anchor"] := theme.position_status.anchor
+                defaults.position_status["offset_x"] := theme.position_status.offset_x
+                defaults.position_status["offset_y"] := theme.position_status.offset_y
+                if (theme.position_status.HasOwnProp("x"))
+                    defaults.position_status["x"] := theme.position_status.x
+                if (theme.position_status.HasOwnProp("y"))
+                    defaults.position_status["y"] := theme.position_status.y
+                if (theme.position_status.HasOwnProp("monitor"))
+                    defaults.position_status["monitor"] := theme.position_status.monitor
+            } else {
+                ; Fallback to generic position if not defined
+                defaults.position_status := defaults.position.Clone()
+            }
             
             ; Navigation labels
             defaults["navigation_label"] := theme.navigation.back_label . " | " . theme.navigation.exit_label

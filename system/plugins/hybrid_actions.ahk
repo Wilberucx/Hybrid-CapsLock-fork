@@ -1,0 +1,151 @@
+; ==============================
+; Hybrid Management Actions
+; ==============================
+; Reusable functions for Hybrid Management
+; Estilo: una función = una acción atómica
+; Inspirado en kanata_launcher.ahk - funciones limpias y reutilizables
+
+; ---- Reload completo (Kanata + AHK) ----
+ReloadHybridScript() {
+    ; Notificación
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowCSharpStatusNotification("HYBRID", "RELOADING...")
+    } else {
+        ShowCenteredToolTip("RELOADING...")
+        SetTimer(() => RemoveToolTip(), -800)
+    }
+    
+    Sleep(400)
+    
+    ; Detener tooltip app
+    try StopTooltipApp()
+    
+    ; Reiniciar Kanata (si estaba corriendo)
+    if (IsKanataRunning()) {
+        RestartKanata()
+    }
+    
+    ; Reiniciar AHK
+    Run('"' . A_AhkPath . '" "' . A_ScriptFullPath . '"')
+    ExitApp()
+}
+
+; ---- Restart solo Kanata ----
+RestartKanataOnly() {
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowCSharpStatusNotification("KANATA", "RESTARTING...")
+    } else {
+        ShowCenteredToolTip("RESTARTING KANATA...")
+        SetTimer(() => RemoveToolTip(), -800)
+    }
+    
+    RestartKanata()
+    
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        Sleep(600)
+        try ShowCSharpStatusNotification("KANATA", "RESTARTED")
+        Sleep(1000)
+    } else {
+        Sleep(800)
+        ShowCenteredToolTip("KANATA RESTARTED")
+        SetTimer(() => RemoveToolTip(), -1500)
+    }
+}
+
+; ---- Exit completo (Kanata + AHK) ----
+ExitHybridScript() {
+    ; Notificación
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowCSharpStatusNotification("HYBRID", "EXITING...")
+        Sleep(500)
+        try StopTooltipApp()
+    } else {
+        ShowCenteredToolTip("EXITING SCRIPT...")
+        SetTimer(() => RemoveToolTip(), -600)
+        Sleep(600)
+    }
+    
+    ; Detener Kanata (si estaba corriendo)
+    if (IsKanataRunning()) {
+        StopKanata()
+    }
+    
+    ; Salir de AHK
+    ExitApp()
+}
+
+; ---- Pause Hybrid ----
+PauseHybridScript() {
+    ToggleHybridPause()
+}
+
+; ---- Hybrid Pause Helper Functions ----
+ToggleHybridPause() {
+    global hybridPauseActive, hybridPauseMinutes
+    if (!hybridPauseActive && !A_IsSuspended) {
+        ; Start hybrid pause
+        Suspend(1)
+        hybridPauseActive := true
+        mins := (IsSet(hybridPauseMinutes) && hybridPauseMinutes > 0) ? hybridPauseMinutes : 10
+        try SetTimer(HybridAutoResumeTimer, -(mins * 60000))
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            try ShowCSharpStatusNotification("HYBRID", "SUSPENDED " . mins . "m — press Leader to resume")
+        } else {
+            ShowCenteredToolTip("SUSPENDED " . mins . "m — press Leader to resume")
+            SetTimer(() => RemoveToolTip(), -1500)
+        }
+    } else {
+        ; Already suspended -> resume now
+        try SetTimer(HybridAutoResumeTimer, 0)
+        Suspend(0)
+        hybridPauseActive := false
+        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+            try ShowCSharpStatusNotification("HYBRID", "RESUMED")
+        } else {
+            ShowCenteredToolTip("RESUMED")
+            SetTimer(() => RemoveToolTip(), -900)
+        }
+    }
+}
+
+HybridAutoResumeTimer() {
+    global hybridPauseActive
+    Suspend(0)
+    hybridPauseActive := false
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        try ShowCSharpStatusNotification("HYBRID", "RESUMED (auto)")
+    } else {
+        ShowCenteredToolTip("RESUMED (auto)")
+        SetTimer(() => RemoveToolTip(), -900)
+    }
+}
+
+; ---- Open Config Folder ----
+OpenConfigFolder() {
+    Run('explorer.exe "' . A_ScriptDir . '\\config"')
+}
+
+; ---- View Log File ----
+ViewLogFile() {
+    logFile := A_ScriptDir . "\\hybrid_log.txt"
+    if (FileExist(logFile)) {
+        Run('notepad.exe "' . logFile . '"')
+    } else {
+        ShowCenteredToolTip("No log file found")
+        SetTimer(() => RemoveToolTip(), -1500)
+    }
+}
+
+; ==============================
+; Register Hybrid Keymaps
+; ==============================
+; Desactivado - moved to keymap.ahk
+; Ruta: Leader → h (Hybrid) → key
+; RegisterCategoryKeymap("leader", "h", "Hybrid Management", 1)
+;
+; RegisterKeymap("leader", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
+; RegisterKeymap("leader", "h", "l", "View Log File", ViewLogFile, false, 4)
+; RegisterKeymap("leader", "h", "c", "Open Config Folder", OpenConfigFolder, false, 5)
+; RegisterKeymap("leader", "h", "k", "Restart Kanata Only", RestartKanataOnly, false, 6)
+; RegisterKeymap("leader", "h", "R", "Reload Script", ReloadHybridScript, true, 8)
+; RegisterKeymap("leader", "h", "e", "Exit Script", ExitHybridScript, true, 9)

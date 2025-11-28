@@ -77,30 +77,6 @@ SetTempStatus(status, duration) {
     tempStatusExpiry := A_TickCount + duration
 }
 
-; Status helpers using either C# or native fallback
-ShowCopyNotification() {
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        ShowCopyNotificationCS()
-    } else {
-        ShowCenteredToolTip("COPIED")
-        SetTimer(() => RemoveToolTip(), -800)
-    }
-    ; Post-copy motion to emulate NVIM yank feedback: move cursor Up when NVIM layer is active
-    try {
-        global isNvimLayerActive, ConfigIni
-        if (IsSet(isNvimLayerActive) && isNvimLayerActive) {
-            Sleep 30
-            Send("{Up}")
-            ; Optionally return cursor with Down after Up (NVIM-like yank feedback)
-            ret := "true"
-            try ret := IniRead(ConfigIni, "Nvim", "yank_feedback_return", "true")
-            if (StrLower(Trim(ret)) = "true") {
-                Sleep 25
-                Send("{Down}")
-            }
-        }
-    }
-}
 
 ShowLeftClickStatus(isActive) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
@@ -134,48 +110,15 @@ ShowProcessTerminated() {
     }
 }
 
-ShowNvimLayerStatus(isActive) {
+ShowGenericLayerStatus(layerName, isActive) {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowNvimLayerToggleCS(isActive)
+        try ShowGenericLayerStatusCS(layerName, isActive)
     } else {
-        ShowCenteredToolTip(isActive ? "◉ NVIM" : "○ NVIM")
-        SetTimer(() => RemoveToolTip(), -900)
-    }
-}
-
-ShowVisualModeStatus(isActive) {
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try {
-            global isNvimLayerActive
-            if (!isActive && isNvimLayerActive)
-                ShowNvimLayerToggleCS(true)
+        if (isActive) {
+            ShowCenteredToolTip("◉ " . StrUpper(layerName))
+        } else {
+            ShowCenteredToolTip("○ " . StrUpper(layerName))
+            SetTimer(() => RemoveToolTip(), -900)
         }
-    } else {
-        ShowCenteredToolTip(isActive ? "◉ VISUAL" : "○ VISUAL")
-        SetTimer(() => RemoveToolTip(), -900)
-    }
-}
-
-ShowVisualLayerStatus(isActive) {
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-    } else {
-        ShowCenteredToolTip(isActive ? "◉ VISUAL" : "○ VISUAL")
-        SetTimer(() => RemoveToolTip(), -900)
-    }
-}
-
-ShowDeleteMenu() {
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        ShowDeleteMenuCS()
-    } else {
-        ShowCenteredToolTip("DELETE: w=word, d=line, a=all")
-    }
-}
-
-ShowYankMenu() {
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        ShowYankMenuCS()
-    } else {
-        ShowCenteredToolTip("YANK: y=line, w=word, a=all, p=paragraph")
     }
 }

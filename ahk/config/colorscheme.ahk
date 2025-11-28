@@ -50,7 +50,16 @@ TokyoNightTheme := {
     position: {
         anchor: "bottom_right",
         offset_x: -10,
-        offset_y: -10
+        offset_y: -10,
+        ; monitor: 1, ; 1 = Primary, 2 = Secondary...
+        ; x: 100,     ; Absolute X (overrides anchor)
+        ; y: 100      ; Absolute Y (overrides anchor)
+    },
+    
+    position_status: {
+        anchor: "bottom_left",
+        offset_x: 0,
+        offset_y: 0
     },
     
     navigation: {
@@ -101,7 +110,16 @@ DarkTheme := {
     position: {
         anchor: "bottom_right",
         offset_x: -10,
-        offset_y: -10
+        offset_y: -10,
+        ; monitor: 1,
+        ; x: 0,
+        ; y: 0
+    },
+    
+    position_status: {
+        anchor: "bottom_right",
+        offset_x: -20,
+        offset_y: -20
     },
     
     navigation: {
@@ -152,7 +170,16 @@ LightTheme := {
     position: {
         anchor: "bottom_right",
         offset_x: -10,
-        offset_y: -10
+        offset_y: -10,
+        ; monitor: 1,
+        ; x: 0,
+        ; y: 0
+    },
+    
+    position_status: {
+        anchor: "bottom_right",
+        offset_x: -20,
+        offset_y: -20
     },
     
     navigation: {

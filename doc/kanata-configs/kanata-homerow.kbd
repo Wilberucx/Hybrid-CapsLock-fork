@@ -1,0 +1,54 @@
+;; kanata.kbd - Full configuration with homerow mods
+;; This is an advanced configuration that includes homerow mods
+;; Copy this to ahk/config/kanata.kbd if you want homerow mods
+
+(defcfg
+  process-unmapped-keys yes
+  danger-enable-cmd no
+  windows-altgr add-lctl-release
+)
+
+;; Teclado completo
+(defsrc
+  esc  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt rmet rctl
+)
+
+;; Aliases
+(defalias
+  ;; CapsLock: tap=F23 (Dynamic Layer), hold=vim-nav layer
+  nav (tap-hold 200 200 f23 (layer-while-held vim-nav))
+  
+  ;; Homerow mods (left hand)
+  a (tap-hold 200 200 a lctl)  ;; a = Ctrl when held
+  s (tap-hold 200 200 s lalt)  ;; s = Alt when held
+  d (tap-hold 200 200 d lmet)  ;; d = Win when held
+  f (tap-hold 200 200 f lsft)  ;; f = Shift when held
+  
+  ;; Homerow mods (right hand)
+  j (tap-hold 200 200 j rsft)  ;; j = Shift when held
+  k (tap-hold 200 200 k rmet)  ;; k = Win when held
+  l (tap-hold 200 200 l ralt)  ;; l = Alt when held
+  ; (tap-hold 200 200 ; rctl)  ;; ; = Ctrl when held
+)
+
+;; Capa base con homerow mods
+(deflayer base
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  @nav @a   @s   @d   @f   _    _    @j   @k   @l   @;   _    _
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _              _              _    _    _
+)
+
+;; Capa de navegación vim (CapsLock held)
+(deflayer vim-nav
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    left down up   rght _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _              f24             _    _    _
+)

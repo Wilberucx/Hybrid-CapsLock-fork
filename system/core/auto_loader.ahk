@@ -1,9 +1,9 @@
 ; ===================================================================
-; Auto Loader - Dynamic Actions & Layers Discovery (Neovim-style)
+; Auto Loader - Dynamic Plugins & Layers Discovery (Neovim-style)
 ; ===================================================================
 ; Automatically scans and includes new .ahk files with priority system:
-; 1. ahk/actions/ and ahk/layers/ (USER - highest priority)
-; 2. system/actions/ and system/layers/ (SYSTEM - fallback)
+; 1. ahk/plugins/ and ahk/layers/ (USER - highest priority)
+; 2. system/plugins/ and system/layers/ (SYSTEM - fallback)
 ;
 ; Features:
 ; - User files override system files (like Neovim's lua/ folder)
@@ -27,20 +27,20 @@ global AUTO_LOADER_LAYER_REGISTRY_FILE := A_ScriptDir . "\data\layer_registry.in
 global AUTO_LOADER_INIT_FILE := A_ScriptDir . "\init.ahk"
 
 ; Scan directories (User - priority 1)
-global AUTO_LOADER_USER_ACTIONS_DIR := A_ScriptDir . "\ahk\actions"
-global AUTO_LOADER_USER_LAYERS_DIR := A_ScriptDir . "\ahk\layers"
+global AUTO_LOADER_USER_PLUGINS_DIR := A_ScriptDir . "\ahk\plugins"
+; global AUTO_LOADER_USER_LAYERS_DIR := A_ScriptDir . "\ahk\layers" ; Deprecated
 
 ; Scan directories (System - priority 2)
-global AUTO_LOADER_SYSTEM_ACTIONS_DIR := A_ScriptDir . "\system\actions"
+global AUTO_LOADER_SYSTEM_PLUGINS_DIR := A_ScriptDir . "\system\plugins"
 global AUTO_LOADER_SYSTEM_LAYERS_DIR := A_ScriptDir . "\system\layers"
 
 ; Exclude directories (files here won't be included)
-global AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE := A_ScriptDir . "\system\actions\no_include"
+global AUTO_LOADER_SYSTEM_PLUGINS_NO_INCLUDE := A_ScriptDir . "\system\plugins\no_include"
 global AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE := A_ScriptDir . "\system\layers\no_include"
 
 ; Markers in init.ahk for auto-injection
-global AUTO_LOADER_ACTIONS_MARKER_START := "; ===== AUTO-LOADED ACTIONS START ====="
-global AUTO_LOADER_ACTIONS_MARKER_END := "; ===== AUTO-LOADED ACTIONS END ====="
+global AUTO_LOADER_PLUGINS_MARKER_START := "; ===== AUTO-LOADED PLUGINS START ====="
+global AUTO_LOADER_PLUGINS_MARKER_END := "; ===== AUTO-LOADED PLUGINS END ====="
 global AUTO_LOADER_LAYERS_MARKER_START := "; ===== AUTO-LOADED LAYERS START ====="
 global AUTO_LOADER_LAYERS_MARKER_END := "; ===== AUTO-LOADED LAYERS END ====="
 
@@ -66,33 +66,33 @@ AutoLoaderInit() {
     
     ; Scan current files from BOTH user and system directories
     ; Priority: User files override system files with same name
-    currentActions := MergeWithPriority(
-        ScanDirectory(AUTO_LOADER_USER_ACTIONS_DIR, ""),
-        ScanDirectory(AUTO_LOADER_SYSTEM_ACTIONS_DIR, AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE)
+    currentPlugins := MergeWithPriority(
+        ScanDirectory(AUTO_LOADER_USER_PLUGINS_DIR, ""),
+        ScanDirectory(AUTO_LOADER_SYSTEM_PLUGINS_DIR, AUTO_LOADER_SYSTEM_PLUGINS_NO_INCLUDE)
     )
     
     currentLayers := MergeWithPriority(
-        ScanDirectory(AUTO_LOADER_USER_LAYERS_DIR, ""),
+        [], ; No user layers folder anymore
         ScanDirectory(AUTO_LOADER_SYSTEM_LAYERS_DIR, AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE)
     )
     
     ; Get hardcoded includes (needed for filtering)
     hardcoded := GetHardcodedIncludes()
-    hardcodedActions := hardcoded["actions"]
+    hardcodedPlugins := hardcoded["plugins"]
     hardcodedLayers := hardcoded["layers"]
     
     ; Detect changes
-    changes := DetectChanges(memory, currentActions, currentLayers)
+    changes := DetectChanges(memory, currentPlugins, currentLayers)
     
     ; Apply changes if any
     if (changes["hasChanges"]) {
         OutputDebug("[AutoLoader] Changes detected, updating init.ahk...")
         
         ; Filter out hardcoded files before applying changes
-        filteredActions := []
-        for action in currentActions {
-            if (!hardcodedActions.Has(action["name"])) {
-                filteredActions.Push(action)
+        filteredPlugins := []
+        for plugin in currentPlugins {
+            if (!hardcodedPlugins.Has(plugin["name"])) {
+                filteredPlugins.Push(plugin)
             }
         }
         
@@ -103,10 +103,10 @@ AutoLoaderInit() {
             }
         }
         
-        ApplyChanges(changes, filteredActions, filteredLayers)
+        ApplyChanges(changes, filteredPlugins, filteredLayers)
         
         ; Save new memory (with filtered lists)
-        SaveAutoLoaderMemory(filteredActions, filteredLayers)
+        SaveAutoLoaderMemory(filteredPlugins, filteredLayers)
         
         OutputDebug("[AutoLoader] Changes applied successfully")
         
@@ -135,21 +135,21 @@ LoadAutoLoaderMemory() {
     
     if (!FileExist(AUTO_LOADER_MEMORY_FILE)) {
         OutputDebug("[AutoLoader] No memory file found, creating new")
-        return Map("actions", [], "layers", [], "version", "1.0")
+        return Map("plugins", [], "layers", [], "version", "1.0")
     }
     
     try {
         content := FileRead(AUTO_LOADER_MEMORY_FILE)
         memory := Jxon_Load(&content)
-        OutputDebug("[AutoLoader] Memory loaded: " . memory["actions"].Length . " actions, " . memory["layers"].Length . " layers")
+        OutputDebug("[AutoLoader] Memory loaded: " . memory["plugins"].Length . " plugins, " . memory["layers"].Length . " layers")
         return memory
     } catch as loadErr {
         OutputDebug("[AutoLoader] Error loading memory: " . loadErr.Message)
-        return Map("actions", [], "layers", [], "version", "1.0")
+        return Map("plugins", [], "layers", [], "version", "1.0")
     }
 }
 
-SaveAutoLoaderMemory(actions, layers) {
+SaveAutoLoaderMemory(plugins, layers) {
     global AUTO_LOADER_MEMORY_FILE
     
     ; Ensure data directory exists
@@ -159,7 +159,7 @@ SaveAutoLoaderMemory(actions, layers) {
     }
     
     memory := Map(
-        "actions", actions,
+        "plugins", plugins,
         "layers", layers,
         "version", "1.0",
         "lastUpdate", A_Now
@@ -180,11 +180,11 @@ SaveAutoLoaderMemory(actions, layers) {
 ; ===================================================================
 
 EnsureNoIncludeDirectories() {
-    global AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE, AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE
+    global AUTO_LOADER_SYSTEM_PLUGINS_NO_INCLUDE, AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE
     
-    if (!DirExist(AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE)) {
-        DirCreate(AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE)
-        OutputDebug("[AutoLoader] Created: " . AUTO_LOADER_SYSTEM_ACTIONS_NO_INCLUDE)
+    if (!DirExist(AUTO_LOADER_SYSTEM_PLUGINS_NO_INCLUDE)) {
+        DirCreate(AUTO_LOADER_SYSTEM_PLUGINS_NO_INCLUDE)
+        OutputDebug("[AutoLoader] Created: " . AUTO_LOADER_SYSTEM_PLUGINS_NO_INCLUDE)
     }
     
     if (!DirExist(AUTO_LOADER_SYSTEM_LAYERS_NO_INCLUDE)) {
@@ -236,7 +236,7 @@ ScanDirectory(dirPath, excludePath) {
         fullPath := A_LoopFileFullPath
         
         ; Skip if in no_include directory
-        if (InStr(fullPath, excludePath)) {
+        if (excludePath != "" && InStr(fullPath, excludePath)) {
             OutputDebug("[AutoLoader] Excluded: " . A_LoopFileName)
             continue
         }
@@ -260,18 +260,18 @@ ScanDirectory(dirPath, excludePath) {
 ; ===================================================================
 
 GetHardcodedIncludes() {
-    global AUTO_LOADER_INIT_FILE, AUTO_LOADER_ACTIONS_MARKER_START, AUTO_LOADER_LAYERS_MARKER_START
+    global AUTO_LOADER_INIT_FILE, AUTO_LOADER_PLUGINS_MARKER_START, AUTO_LOADER_LAYERS_MARKER_START
     
-    hardcodedActions := Map()
+    hardcodedPlugins := Map()
     hardcodedLayers := Map()
     
     if (!FileExist(AUTO_LOADER_INIT_FILE))
-        return Map("actions", hardcodedActions, "layers", hardcodedLayers)
+        return Map("plugins", hardcodedPlugins, "layers", hardcodedLayers)
     
     content := FileRead(AUTO_LOADER_INIT_FILE)
     lines := StrSplit(content, "`n")
     
-    inActionsSection := false
+    inPluginsSection := false
     inLayersSection := false
     inAutoLoadedSection := false
     
@@ -279,19 +279,19 @@ GetHardcodedIncludes() {
         trimmed := Trim(line)
         
         ; Detect sections
-        if (InStr(trimmed, "Actions (funciones reutilizables")) {
-            inActionsSection := true
+        if (InStr(trimmed, "Plugins (funciones reutilizables")) {
+            inPluginsSection := true
             inLayersSection := false
             continue
         }
-        if (InStr(trimmed, AUTO_LOADER_ACTIONS_MARKER_START)) {
+        if (InStr(trimmed, AUTO_LOADER_PLUGINS_MARKER_START)) {
             inAutoLoadedSection := true
-            inActionsSection := false
+            inPluginsSection := false
             continue
         }
         if (InStr(trimmed, "Layers & Leader")) {
             inLayersSection := true
-            inActionsSection := false
+            inPluginsSection := false
             inAutoLoadedSection := false
             continue
         }
@@ -324,43 +324,46 @@ GetHardcodedIncludes() {
                 }
                 
                 ; Categorize by section
-                if (inActionsSection && InStr(path, "actions")) {
-                    hardcodedActions[filename] := true
-                    OutputDebug("[AutoLoader] Hardcoded action detected: " . filename)
+                if (inPluginsSection && InStr(path, "plugins")) {
+                    hardcodedPlugins[filename] := true
+                    OutputDebug("[AutoLoader] Hardcoded plugin detected: " . filename)
                 } else if (inLayersSection && InStr(path, "layer")) {
-                    hardcodedLayers[filename] := true
-                    OutputDebug("[AutoLoader] Hardcoded layer detected: " . filename)
+                    ; Special case: leader_router is now core, ignore it if found
+                    if (!InStr(filename, "leader_router")) {
+                        hardcodedLayers[filename] := true
+                        OutputDebug("[AutoLoader] Hardcoded layer detected: " . filename)
+                    }
                 }
             }
         }
     }
     
-    return Map("actions", hardcodedActions, "layers", hardcodedLayers)
+    return Map("plugins", hardcodedPlugins, "layers", hardcodedLayers)
 }
 
 ; ===================================================================
 ; CHANGE DETECTION
 ; ===================================================================
 
-DetectChanges(memory, currentActions, currentLayers) {
+DetectChanges(memory, currentPlugins, currentLayers) {
     ; Get hardcoded includes to exclude from auto-loading
     hardcoded := GetHardcodedIncludes()
-    hardcodedActions := hardcoded["actions"]
+    hardcodedPlugins := hardcoded["plugins"]
     hardcodedLayers := hardcoded["layers"]
     
     changes := Map(
         "hasChanges", false,
-        "newActions", [],
-        "removedActions", [],
+        "newPlugins", [],
+        "removedPlugins", [],
         "newLayers", [],
         "removedLayers", []
     )
     
     ; Convert memory arrays to maps for easier lookup
-    memoryActionsMap := Map()
-    if (memory.Has("actions")) {
-        for item in memory["actions"] {
-            memoryActionsMap[item["name"]] := true
+    memoryPluginsMap := Map()
+    if (memory.Has("plugins")) {
+        for item in memory["plugins"] {
+            memoryPluginsMap[item["name"]] := true
         }
     }
     
@@ -371,30 +374,30 @@ DetectChanges(memory, currentActions, currentLayers) {
         }
     }
     
-    ; Detect new actions (exclude hardcoded)
-    for action in currentActions {
+    ; Detect new plugins (exclude hardcoded)
+    for plugin in currentPlugins {
         ; Skip if hardcoded manually in init.ahk
-        if (hardcodedActions.Has(action["name"])) {
-            OutputDebug("[AutoLoader] Skipping hardcoded action: " . action["name"])
+        if (hardcodedPlugins.Has(plugin["name"])) {
+            OutputDebug("[AutoLoader] Skipping hardcoded plugin: " . plugin["name"])
             continue
         }
         
-        if (!memoryActionsMap.Has(action["name"])) {
-            changes["newActions"].Push(action)
+        if (!memoryPluginsMap.Has(plugin["name"])) {
+            changes["newPlugins"].Push(plugin)
             changes["hasChanges"] := true
         }
     }
     
-    ; Detect removed actions
-    if (memory.Has("actions")) {
-        currentActionsMap := Map()
-        for action in currentActions {
-            currentActionsMap[action["name"]] := true
+    ; Detect removed plugins
+    if (memory.Has("plugins")) {
+        currentPluginsMap := Map()
+        for plugin in currentPlugins {
+            currentPluginsMap[plugin["name"]] := true
         }
         
-        for item in memory["actions"] {
-            if (!currentActionsMap.Has(item["name"])) {
-                changes["removedActions"].Push(item)
+        for item in memory["plugins"] {
+            if (!currentPluginsMap.Has(item["name"])) {
+                changes["removedPlugins"].Push(item)
                 changes["hasChanges"] := true
             }
         }
@@ -432,8 +435,8 @@ DetectChanges(memory, currentActions, currentLayers) {
     ; Log changes
     if (changes["hasChanges"]) {
         OutputDebug("[AutoLoader] Changes detected:")
-        OutputDebug("  New actions: " . changes["newActions"].Length)
-        OutputDebug("  Removed actions: " . changes["removedActions"].Length)
+        OutputDebug("  New plugins: " . changes["newPlugins"].Length)
+        OutputDebug("  Removed plugins: " . changes["removedPlugins"].Length)
         OutputDebug("  New layers: " . changes["newLayers"].Length)
         OutputDebug("  Removed layers: " . changes["removedLayers"].Length)
     }
@@ -445,7 +448,7 @@ DetectChanges(memory, currentActions, currentLayers) {
 ; APPLY CHANGES TO init.ahk
 ; ===================================================================
 
-ApplyChanges(changes, currentActions, currentLayers) {
+ApplyChanges(changes, currentPlugins, currentLayers) {
     global AUTO_LOADER_INIT_FILE
     
     ; Read current init.ahk
@@ -456,12 +459,12 @@ ApplyChanges(changes, currentActions, currentLayers) {
     
     content := FileRead(AUTO_LOADER_INIT_FILE)
     
-    ; Update actions section
+    ; Update plugins section
     content := UpdateSection(
         content,
-        AUTO_LOADER_ACTIONS_MARKER_START,
-        AUTO_LOADER_ACTIONS_MARKER_END,
-        GenerateIncludes(currentActions)
+        AUTO_LOADER_PLUGINS_MARKER_START,
+        AUTO_LOADER_PLUGINS_MARKER_END,
+        GenerateIncludes(currentPlugins)
     )
     
     ; Update layers section
@@ -534,11 +537,11 @@ Jxon_Load(&src, args*) {
     ; Parse as map
     result := Map()
     
-    ; Extract actions array
-    if (RegExMatch(src, '"actions":\s*\[(.*?)\]', &matchActions)) {
-        result["actions"] := ParseJsonArray(matchActions[1])
+    ; Extract plugins array
+    if (RegExMatch(src, '"plugins":\s*\[(.*?)\]', &matchPlugins)) {
+        result["plugins"] := ParseJsonArray(matchPlugins[1])
     } else {
-        result["actions"] := []
+        result["plugins"] := []
     }
     
     ; Extract layers array
@@ -598,10 +601,10 @@ Jxon_Dump(obj, indent := "") {
         output .= '`n  "lastUpdate": "' . obj["lastUpdate"] . '",'
     }
     
-    ; Actions array
-    output .= '`n  "actions": ['
-    if (obj["actions"].Length > 0) {
-        for item in obj["actions"] {
+    ; Plugins array
+    output .= '`n  "plugins": ['
+    if (obj["plugins"].Length > 0) {
+        for item in obj["plugins"] {
             output .= "`n    " . SerializeItem(item) . ","
         }
         output := RTrim(output, ",")
@@ -709,222 +712,4 @@ ExtractLayerNameFromFile(filename) {
     return ""
 }
 
-; ===================================================================
-; LAYER SWITCHING SYSTEM
-; ===================================================================
 
-; Global state for layer switching
-global CurrentActiveLayer := ""
-global PreviousLayer := ""
-global LayerRegistry := Map()
-
-LoadLayerRegistry() {
-    global AUTO_LOADER_LAYER_REGISTRY_FILE, LayerRegistry
-    
-    LayerRegistry := Map()
-    
-    if (!FileExist(AUTO_LOADER_LAYER_REGISTRY_FILE)) {
-        Log.e("Registry file not found: " . AUTO_LOADER_LAYER_REGISTRY_FILE, "LAYER")
-        return false
-    }
-    
-    try {
-        content := FileRead(AUTO_LOADER_LAYER_REGISTRY_FILE)
-        lines := StrSplit(content, "`n")
-        
-        inLayersSection := false
-        for line in lines {
-            trimmed := Trim(line)
-            
-            ; Skip comments and empty lines
-            if (trimmed == "" || InStr(trimmed, ";") == 1) {
-                continue
-            }
-            
-            ; Check for [Layers] section
-            if (trimmed == "[Layers]") {
-                inLayersSection := true
-                continue
-            }
-            
-            ; Parse layer entries
-            if (inLayersSection && InStr(trimmed, "=")) {
-                parts := StrSplit(trimmed, "=", " `t")
-                if (parts.Length >= 2) {
-                    layerName := Trim(parts[1])
-                    layerPath := Trim(parts[2])
-                    LayerRegistry[layerName] := layerPath
-                    Log.d("Registered layer: " . layerName . " -> " . layerPath, "LAYER")
-                }
-            }
-        }
-        
-        Log.d("Registry loaded: " . LayerRegistry.Count . " layers", "LAYER")
-        return true
-    } catch as regLoadErr {
-        Log.e("Error loading registry: " . regLoadErr.Message, "LAYER")
-        return false
-    }
-}
-
-SwitchToLayer(targetLayer, originLayer := "") {
-    global CurrentActiveLayer, PreviousLayer, LayerRegistry
-    
-    Log.t(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "LAYER")
-    Log.d("SWITCH TO LAYER CALLED", "LAYER")
-    Log.d("From: " . originLayer . " ? To: " . targetLayer, "LAYER")
-    Log.d("CurrentActiveLayer before: " . CurrentActiveLayer, "LAYER")
-    Log.d("PreviousLayer before: " . PreviousLayer, "LAYER")
-    
-    ; Load registry if not loaded
-    if (LayerRegistry.Count == 0) {
-        if (!LoadLayerRegistry()) {
-            Log.e("Could not load layer registry", "LAYER")
-            return false
-        }
-    }
-    
-    ; Validate target layer exists
-    if (!LayerRegistry.Has(targetLayer)) {
-        Log.e("Layer not found: " . targetLayer, "LAYER")
-        return false
-    }
-    
-    ; CRITICAL: Deactivate origin layer explicitly to avoid #HotIf conflicts
-    if (originLayer != "" && originLayer != "leader") {
-        ; Use full deactivation to ensure proper cleanup
-        DeactivateLayer(originLayer)
-    }
-    
-    ; Deactivate current layer (if switching from intermediate state)
-    if (CurrentActiveLayer != "" && CurrentActiveLayer != originLayer) {
-        DeactivateLayer(CurrentActiveLayer)
-    }
-    
-    ; Set state
-    PreviousLayer := originLayer
-    CurrentActiveLayer := targetLayer
-    
-    ; Activate new layer
-    ActivateLayer(targetLayer)
-    
-    Log.d("Switched to layer: " . targetLayer . " (from: " . PreviousLayer . ")", "LAYER")
-    return true
-}
-
-ReturnToPreviousLayer() {
-    global CurrentActiveLayer, PreviousLayer
-    
-    Log.t("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "LAYER")
-    Log.d("RETURN TO PREVIOUS LAYER CALLED", "LAYER")
-    Log.d("CurrentActiveLayer: " . CurrentActiveLayer, "LAYER")
-    Log.d("PreviousLayer: " . PreviousLayer, "LAYER")
-    Log.t("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "LAYER")
-    
-    if (PreviousLayer == "" || PreviousLayer == "leader") {
-        ; Return to base state - completely exit current layer
-        if (CurrentActiveLayer != "") {
-            DeactivateLayer(CurrentActiveLayer)
-        }
-        CurrentActiveLayer := ""
-        PreviousLayer := ""
-        Log.d("Returned to base state", "LAYER")
-    } else {
-        ; Return to previous layer - use intelligent restoration
-        if (CurrentActiveLayer != "") {
-            DeactivateLayer(CurrentActiveLayer)
-        }
-        
-        ; CRITICAL FIX: Update CurrentActiveLayer BEFORE restoring context
-        ; This ensures the listener sees the correct CurrentActiveLayer immediately
-        tempPrevious := PreviousLayer
-        CurrentActiveLayer := tempPrevious
-        PreviousLayer := ""
-        Log.d("Updated CurrentActiveLayer to: " . CurrentActiveLayer, "LAYER")
-        
-        ; Smart reactivation: preserve original context
-        RestoreOriginLayerContext(tempPrevious)
-        Log.d("Returned to previous layer: " . CurrentActiveLayer, "LAYER")
-    }
-}
-
-ActivateLayer(layerName) {
-    Log.t("+++++ ACTIVATING LAYER: " . layerName . " +++++", "LAYER")
-    
-    ; Call layer-specific activation hook if it exists
-    hookFunction := "On" . StrTitle(layerName) . "LayerActivate"
-    try {
-        if (IsSet(%hookFunction%)) {
-            %hookFunction%()
-            Log.d("Called activation hook: " . hookFunction, "LAYER")
-        }
-    } catch as hookErr {
-        Log.w("Activation hook not found or failed: " . hookFunction . " - " . hookErr.Message, "LAYER")
-    }
-    
-    ; Set layer state variable
-    layerStateVar := "is" . StrTitle(layerName) . "LayerActive"
-    try {
-        %layerStateVar% := true
-        Log.d("Set state variable: " . layerStateVar . " = true", "LAYER")
-    } catch {
-        Log.d("Could not set state variable: " . layerStateVar, "LAYER")
-    }
-}
-
-DeactivateLayer(layerName) {
-    Log.t("----- DEACTIVATING LAYER: " . layerName . " -----", "LAYER")
-    
-    ; Call layer-specific deactivation hook if it exists
-    hookFunction := "On" . StrTitle(layerName) . "LayerDeactivate"
-    try {
-        if (IsSet(%hookFunction%)) {
-            %hookFunction%()
-            Log.d("Called deactivation hook: " . hookFunction, "LAYER")
-        }
-    } catch as deactivationErr {
-        Log.w("Deactivation hook not found or failed: " . hookFunction . " - " . deactivationErr.Message, "LAYER")
-    }
-    
-    ; Unset layer state variable
-    layerStateVar := "is" . StrTitle(layerName) . "LayerActive"
-    try {
-        %layerStateVar% := false
-        Log.d("Set state variable: " . layerStateVar . " = false", "LAYER")
-        
-        ; Give time for the listener to stop completely
-        Sleep(50)
-    } catch {
-        Log.d("Could not unset state variable: " . layerStateVar, "LAYER")
-    }
-}
-
-
-RestoreOriginLayerContext(layerName) {
-    Log.d("Restoring origin layer context: " . layerName, "LAYER")
-    
-    ; Longer delay to ensure previous layer is completely deactivated and listeners stopped
-    Sleep(150)
-    
-    ; CRITICAL FIX: Clear any pending input hooks before reactivation
-    ; This prevents ESC key issues when returning to origin layer
-    try {
-        ; Create and immediately stop a dummy InputHook to clear any pending state
-        clearHook := InputHook("L1")
-        clearHook.Stop()
-        Log.d("Cleared pending InputHook state", "LAYER")
-    } catch as clearErr {
-        Log.w("Error clearing InputHook: " . clearErr.Message, "LAYER")
-    }
-    
-    ; Small delay after clearing to ensure clean state
-    Sleep(75)
-    
-    ; Use ActivateLayer directly - this is cleaner and ensures proper activation sequence
-    ; ActivateLayer will:
-    ; 1. Call the activation hook (which sets state var and starts listener)
-    ; 2. Set the state variable (redundant but safe)
-    ActivateLayer(layerName)
-    
-    Log.d("Origin layer context fully restored: " . layerName, "LAYER")
-}

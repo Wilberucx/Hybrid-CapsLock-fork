@@ -5,6 +5,7 @@
 
 ; ---- Layer runtime states ----
 global isNvimLayerActive := false
+global CurrentLayerInputHook := "" ; Track active input hook for direct control
 
 ; Hybrid pause state
 global hybridPauseActive := false

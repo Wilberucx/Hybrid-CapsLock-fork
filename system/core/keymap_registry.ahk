@@ -22,6 +22,7 @@
 global KeymapRegistry := Map()      ; Keymaps jerárquicos: layer.path → Map de teclas
 global CategoryRegistry := Map()    ; Categories with metadata (legacy flat system)
 global CategoryOrder := []          ; Orden de categorías (legacy)
+global LayerRegistry := Map()       ; Registry for layer metadata (color, display name)
 
 ; ==============================
 ; REGISTRO DE CATEGORÍAS
@@ -340,6 +341,97 @@ RegisterCategoryKeymap(args*) {
         "isCategory", true,
         "order", order
     )
+}
+
+; ==============================
+; REGISTRO DE METADATA DE LAYERS
+; ==============================
+
+; RegisterLayer(layerId, displayName, color, textColor := "#ffffff")
+; Registra metadata visual para un layer
+; layerId: identificador interno (ej: "scroll", "nvim")
+; displayName: nombre para mostrar (ej: "SCROLL MODE")
+; color: color hex para el status pill background (ej: "#E6C07B")
+; textColor: color hex para el texto del status pill (ej: "#ffffff")
+RegisterLayer(layerId, displayName, color, textColor := "#ffffff") {
+    global LayerRegistry
+    
+    LayerRegistry[layerId] := Map(
+        "id", layerId,
+        "name", displayName,
+        "color", color,
+        "textColor", textColor
+    )
+    
+    ; Persist to centralized JSON file
+    UpdateLayersJsonFile()
+}
+
+; GetLayerMetadata(layerId)
+; Retorna el mapa de metadata o valores por defecto
+GetLayerMetadata(layerId) {
+    global LayerRegistry
+    
+    if (LayerRegistry.Has(layerId)) {
+        return LayerRegistry[layerId]
+    }
+    
+    ; Default fallback
+    return Map(
+        "id", layerId,
+        "name", StrUpper(layerId),
+        "color", "#007acc",      ; Default blue
+        "textColor", "#ffffff"   ; Default white
+    )
+}
+
+; UpdateLayersJsonFile()
+; Actualiza el archivo centralizado data/layers.json con todos los layers registrados
+; Solo guarda id y name para cada layer
+UpdateLayersJsonFile() {
+    global LayerRegistry
+    
+    ; Ensure data directory exists
+    dataDir := A_ScriptDir . "\data"
+    if (!DirExist(dataDir)) {
+        try {
+            DirCreate(dataDir)
+        } catch as e {
+            ; Silently fail if can't create directory
+            return
+        }
+    }
+    
+    ; Build layers array with only id and name
+    layersArray := []
+    for layerId, metadata in LayerRegistry {
+        layerEntry := Map(
+            "id", metadata["id"],
+            "name", metadata["name"]
+        )
+        layersArray.Push(layerEntry)
+    }
+    
+    ; Build complete JSON structure
+    jsonData := Map(
+        "layers", layersArray,
+        "lastUpdate", FormatTime(, "yyyyMMddHHmmss")
+    )
+    
+    ; Serialize to JSON
+    try {
+        jsonContent := SerializeJson(jsonData)
+        
+        ; Write to file
+        layersFile := dataDir . "\layers.json"
+        try {
+            FileDelete(layersFile)
+        }
+        FileAppend(jsonContent, layersFile, "UTF-8")
+    } catch as e {
+        ; Silently fail if serialization or file write fails
+        ; This prevents breaking the layer registration if JSON functions aren't available yet
+    }
 }
 
 ; ==============================
@@ -736,10 +828,11 @@ HasKeymaps(category) {
 ;     ListenForLayerKeymaps("scroll", "isScrollLayerActive")
 ;
 ListenForLayerKeymaps(layerName, layerActiveVarName) {
+    global CurrentLayerInputHook
+    
     Log.t("========================================", "LAYER")
-    Log.d("STARTING NEW LISTENER", "LAYER")
+    Log.d("STARTING OPTIMIZED LISTENER", "LAYER")
     Log.d("Layer: " . layerName, "LAYER")
-    Log.d("State Variable: " . layerActiveVarName, "LAYER")
     Log.t("========================================", "LAYER")
     
     ; Verificar que el layer existe en KeymapRegistry
@@ -750,83 +843,63 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
     
     ; Loop persistente mientras la layer esté activa
     Loop {
-        ; Verificar si layer sigue activa ANTES de esperar input
+        ; Verificar estado inicial
         try {
-            isActive := %layerActiveVarName%
+            isActive := false
+            if (layerActiveVarName == "CurrentActiveLayer") {
+                isActive := (CurrentActiveLayer == layerName)
+            } else {
+                isActive := %layerActiveVarName%
+            }
+            
             if (!isActive) {
-                Log.d("LISTENER STOPPING", "LAYER")
-                Log.d("Layer deactivated before waiting for input: " . layerName, "LAYER")
-                Log.d("LISTENER STOPPED", "LAYER")
+                Log.d("Layer inactive at loop start, stopping", "LAYER")
                 break
             }
         } catch {
-            Log.e("State variable not found: " . layerActiveVarName, "LAYER")
             break
         }
         
-        ; CRITICAL FIX: Usar InputHook con timeout corto para poder verificar estado periódicamente
-        ; Esto permite detectar cuando la capa se desactiva mientras esperamos input
-        ih := InputHook("L1 T0.1", "{Escape}")  ; 100ms timeout
+        ; CRITICAL OPTIMIZATION: Persistent InputHook (No Timeout)
+        ; We wait indefinitely for a key or for the hook to be stopped by DeactivateLayer
+        ih := InputHook("L1", "{Escape}") 
         ih.KeyOpt("{Escape}", "S")
+        
+        ; Register global hook for external control
+        CurrentLayerInputHook := ih
+        
         ih.Start()
-        ih.Wait()
+        ih.Wait() ; Waits forever until key press or Stop()
         
-        ; Si fue timeout, verificar estado y continuar loop
-        if (ih.EndReason = "Timeout") {
-            ih.Stop()
-            continue  ; Volver al inicio del loop para verificar isActive
-        }
-        
-        ; CRITICAL: Verificar inmediatamente si layer fue desactivada durante el input
-        ; Esto previene que un InputHook procese ESC después de que la capa se desactivó
-        try {
-            isActive := %layerActiveVarName%
-            if (!isActive) {
-                Log.d("Layer deactivated during input, discarding key: " . layerName, "LAYER")
-                ih.Stop()
-                break
-            }
-        } catch {
-            Log.e("State variable lost during input: " . layerActiveVarName, "LAYER")
-            ih.Stop()
+        ; Case 1: Hook stopped externally (DeactivateLayer called Stop)
+        if (ih.EndReason = "Stopped") {
+            Log.d("InputHook stopped externally (Layer Deactivated)", "LAYER")
             break
         }
         
-        ; Handle Escape - try to execute keymap if registered
+        ; Case 2: Escape Pressed
         if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
-            ih.Stop()
             Log.d("ESCAPE PRESSED", "LAYER")
-            Log.d("Layer: " . layerName, "LAYER")
-            Log.d("State Variable: " . layerActiveVarName . " = " . %layerActiveVarName%, "LAYER")
-            Log.d("CurrentActiveLayer: " . CurrentActiveLayer, "LAYER")
-            Log.d("PreviousLayer: " . PreviousLayer, "LAYER")
             
-            ; Try to execute registered Escape keymap if it exists
-            try {
-                result := ExecuteKeymapAtPath(layerName, "Escape")
-                if (result) {
-                    ; Keymap executed successfully
-                    continue
-                }
-            } catch as execErr {
-                Log.e("Error executing Escape keymap: " . execErr.Message, "LAYER")
+            ; Check if ESC is registered in keymap
+            if (ExecuteKeymapAtPath(layerName, "Escape")) {
+                Log.d("Executed registered Escape action", "LAYER")
+            } else {
+                Log.d("No Escape action registered - Defaulting to Exit", "LAYER")
+                ReturnToPreviousLayer()
             }
-            
-            ; If no Escape keymap registered or execution failed, just exit
-            Log.d("No Escape keymap registered, exiting layer", "LAYER")
-            break
+            continue
         }
-        
-        ; Get pressed key
+
+        ; Case 3: Key Pressed
         key := ih.Input
-        ih.Stop()
         
         ; Empty or invalid key
         if (key = "" || key = Chr(0)) {
             continue
         }
         
-        ; Ejecutar keymap registrado (con soporte para navegación jerárquica)
+        ; Ejecutar keymap registrado
         Log.d("Key pressed: " . key . " in layer: " . layerName, "LAYER")
         
         try {
@@ -842,6 +915,8 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         }
     }
     
+    ; Cleanup
+    CurrentLayerInputHook := ""
     Log.d("Stopped listener for layer: " . layerName, "LAYER")
     return true
 }

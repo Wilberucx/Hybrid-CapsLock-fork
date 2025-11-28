@@ -37,6 +37,11 @@ try {
     
     OutputDebug("[HybridCapsLock] Dependencies OK, launching main application...")
     
+    ; Run Auto-Loader to update init.ahk with new layers/actions
+    OutputDebug("[HybridCapsLock] Running Auto-Loader...")
+    #Include system\core\auto_loader.ahk
+    AutoLoaderInit()
+    
     ; Launch the main application (init.ahk)
     if (FileExist("init.ahk")) {
         OutputDebug("[HybridCapsLock] Launching init.ahk...")

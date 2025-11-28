@@ -20,32 +20,22 @@
 ; --------------------
 ; Core System (from system/)
 ; --------------------
-#Include system\core\auto_loader.ahk
-#Include system\core\kanata_launcher.ahk
 #Include system\core\globals.ahk
 #Include system\core\config.ahk
 #Include system\core\keymap_registry.ahk
+#Include system\core\layer_manager.ahk
+#Include system\core\auto_loader.ahk
+#Include system\core\kanata_launcher.ahk
+#Include system\core\leader_router.ahk
 
 
 
-; ===== AUTO-LOADED ACTIONS START =====
-#Include system\actions\adb_actions.ahk
-#Include system\actions\folder_actions.ahk
-#Include system\actions\git_actions.ahk
-#Include system\actions\hybrid_actions.ahk
-#Include system\actions\monitoring_actions.ahk
-#Include system\actions\network_actions.ahk
-#Include system\actions\power_actions.ahk
-#Include system\actions\scroll_actions.ahk
-#Include system\actions\sendinfo_actions.ahk
-#Include system\actions\shell_exec_actions.ahk
-#Include system\actions\system_actions.ahk
-#Include system\actions\timestamp_actions.ahk
-#Include system\actions\vaultflow_actions.ahk
-#Include system\actions\vim_edit.ahk
-#Include system\actions\vim_nav.ahk
-#Include system\actions\vim_visual.ahk
-; ===== AUTO-LOADED ACTIONS END =====
+; ===== AUTO-LOADED PLUGINS START =====
+#Include system\plugins\context_utils.ahk
+#Include system\plugins\dynamic_layer.ahk
+#Include system\plugins\hybrid_actions.ahk
+#Include system\plugins\shell_exec.ahk
+; ===== AUTO-LOADED PLUGINS END =====
 
 ; --------------------
 ; User Config (from ahk/)
@@ -60,36 +50,22 @@
 #Include system\ui\tooltip_csharp_integration.ahk
 #Include system\ui\tooltips_native_wrapper.ahk
 #Include system\ui\scroll_tooltip_integration.ahk
+#Include system\ui\welcome_screen.ahk
 
 ; ===== AUTO-LOADED LAYERS START =====
-#Include system\layers\insert_layer.ahk
-#Include system\layers\leader_router.ahk
-#Include system\layers\nvim_layer.ahk
-#Include system\layers\scroll_layer.ahk
-#Include system\layers\visual_layer.ahk
+; (No auto-loaded files)
 ; ===== AUTO-LOADED LAYERS END =====
 
 ; --------------------
 ; Startup logic
 ; --------------------
 try {
-    ; Auto-loader already executed by HybridCapslock.ahk preprocessor
-    
-    ; Start Kanata first (if it exists)
     StartKanataIfNeeded()
-    
-    ; Registrar keymaps (Fase 2 - Sistema Declarativo)
-    ; ELIMINADO: ahora se maneja desde InitializeCategoryKeymaps()
-    
-    ; Configuration loaded via #Include directives above
-    ; HybridConfig is now global from settings.ahk
     if (IsSet(HybridConfig)) {
         LogInfo("Config loaded from: ahk", "INIT")
         
-        ; Inicializar el sistema de debug centralizado
         InitDebugSystem()
         
-        ; Sincronizar con el sistema legacy
         SyncDebugMode()
         
         LogInfo("HybridCapsLock v" . HybridConfig.app.version . " iniciado correctamente", "INIT")
@@ -97,29 +73,35 @@ try {
         LogError("Config not loaded, will use INI fallback", "INIT")
     }
     
-    ; Luego cargar configuración de AHK
+}
+; ===== AUTO-LOADED LAYERS END =====
+
+; --------------------
+; Startup logic
+; --------------------
+try {
+    StartKanataIfNeeded()
+    if (IsSet(HybridConfig)) {
+        LogInfo("Config loaded from: ahk", "INIT")
+        
+        InitDebugSystem()
+        
+        SyncDebugMode()
+        
+        LogInfo("HybridCapsLock v" . HybridConfig.app.version . " iniciado correctamente", "INIT")
+    } else {
+        LogError("Config not loaded, will use INI fallback", "INIT")
+    }
+    
     LoadLayerFlags()
     StartTooltipApp()  ; Start C# tooltip application
 } catch {
 }
 
-; --------------------
-; Minimal startup to confirm no errors
-; --------------------
-; NOTA: SetCapsLockState desactivado - Kanata maneja CapsLock ahora
-; try {
-;     SetCapsLockState("AlwaysOff")
-; } catch {
-;     ; Ignorar si no se puede ajustar el estado de CapsLock en este entorno
-; }
-
-; Initialize Category Keymaps (Sistema de categorías jerárquico)
-InitializeCategoryKeymaps()
-
-; Startup welcome (C# only)
 try {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        ShowWelcomeStatusCS()
+        ; Schedule welcome screen to avoid startup race conditions
+        ; SetTimer(ShowWelcomeScreen, -1000)
     }
 } catch {
 }
