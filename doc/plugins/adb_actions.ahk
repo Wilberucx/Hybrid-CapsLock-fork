@@ -9,47 +9,11 @@
 
 GetAdbDataPath() {
     ; Centralized data path in root/data
-    dataPath := "data\adb_data.ini"
+    dataPath := "data\\adb_data.ini"
     SplitPath(dataPath, , &dir)
     if !DirExist(dir)
         DirCreate(dir)
     return dataPath
-}
-
-LoadHistory(key) {
-    iniFile := GetAdbDataPath()
-    try {
-        historyStr := IniRead(iniFile, "History", key, "")
-        return StrSplit(historyStr, "|")
-    }
-    return []
-}
-
-SaveHistory(key, value) {
-    iniFile := GetAdbDataPath()
-    currentHistory := LoadHistory(key)
-    
-    ; Remove if exists to move to top
-    for index, item in currentHistory {
-        if (item == value) {
-            currentHistory.RemoveAt(index)
-            break
-        }
-    }
-    
-    ; Add to top
-    currentHistory.InsertAt(1, value)
-    
-    ; Keep max 10 items
-    if (currentHistory.Length > 10)
-        currentHistory.Pop()
-        
-    ; Save back
-    historyStr := ""
-    for item in currentHistory {
-        historyStr .= (historyStr == "" ? "" : "|") . item
-    }
-    IniWrite(historyStr, iniFile, "History", key)
 }
 
 RunAdbCommand(cmd, title := "ADB Command") {
@@ -95,7 +59,8 @@ ShowConnectGui() {
     
     g.Add("Text",, "Enter Device IP:Port:")
     
-    history := LoadHistory("ConnectIP")
+    iniFile := GetAdbDataPath()
+    history := LoadHistory("ConnectIP", iniFile)
     cb := g.Add("ComboBox", "w300 vIP", history)
     if (history.Length > 0)
         cb.Text := history[1]
@@ -109,7 +74,8 @@ ShowConnectGui() {
             return
             
         guiObj.Destroy()
-        SaveHistory("ConnectIP", ip)
+        iniFile := GetAdbDataPath()
+        SaveHistory("ConnectIP", ip, iniFile)
         RunAdbCommand("adb connect " . ip, "Connecting to " . ip)
     }
 }

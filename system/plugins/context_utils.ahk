@@ -71,3 +71,70 @@ GetActiveProcessName() {
     }
     return ""
 }
+
+; ==============================
+; DATA PERSISTENCE
+; ==============================
+
+/**
+ * LoadHistory - Loads history from an INI file
+ * @param key - Key in the "History" section of the INI file
+ * @param iniFile - Path to the INI file
+ * @returns Array of strings (history items), or empty array if not found
+ * 
+ * Example:
+ *   history := LoadHistory("RecentFolders", "data\my_plugin.ini")
+ *   for index, item in history {
+ *       MsgBox("Item " . index . ": " . item)
+ *   }
+ */
+LoadHistory(key, iniFile) {
+    try {
+        historyStr := IniRead(iniFile, "History", key, "")
+        if (historyStr == "")
+            return []
+        return StrSplit(historyStr, "|")
+    }
+    return []
+}
+
+/**
+ * SaveHistory - Saves a value to history in an INI file
+ * @param key - Key in the "History" section of the INI file
+ * @param value - Value to add to the history
+ * @param iniFile - Path to the INI file
+ * 
+ * Behavior:
+ *   - Removes the value if it already exists (to move it to the top)
+ *   - Inserts the value at position 1
+ *   - Keeps a maximum of 10 items
+ *   - Saves back to the INI file with format: "item1|item2|item3"
+ * 
+ * Example:
+ *   SaveHistory("RecentFolders", "C:\Users\Documents", "data\my_plugin.ini")
+ */
+SaveHistory(key, value, iniFile) {
+    currentHistory := LoadHistory(key, iniFile)
+    
+    ; Remove if exists to move to top
+    for index, item in currentHistory {
+        if (item == value) {
+            currentHistory.RemoveAt(index)
+            break
+        }
+    }
+    
+    ; Add to top
+    currentHistory.InsertAt(1, value)
+    
+    ; Keep max 10 items
+    if (currentHistory.Length > 10)
+        currentHistory.Pop()
+        
+    ; Save back
+    historyStr := ""
+    for item in currentHistory {
+        historyStr .= (historyStr == "" ? "" : "|") . item
+    }
+    IniWrite(historyStr, iniFile, "History", key)
+}

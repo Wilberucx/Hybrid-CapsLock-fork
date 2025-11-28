@@ -136,6 +136,69 @@ ActivateDynamicLayer() {
 
 ---
 
+### `LoadHistory(key, iniFile)`
+
+Carga el historial almacenado en un archivo INI.
+
+**Parámetros:**
+- `key` (String): Clave en la sección "History" del archivo INI
+- `iniFile` (String): Ruta al archivo INI
+
+**Retorna:** `Array` - Array de strings con el historial, o array vacío si no existe
+
+**Ejemplo:**
+
+```autohotkey
+; Cargar historial de carpetas
+GetMyDataPath() {
+    dataPath := "data\\my_plugin.ini"
+    SplitPath(dataPath, , &dir)
+    if !DirExist(dir)
+        DirCreate(dir)
+    return dataPath
+}
+
+iniFile := GetMyDataPath()
+history := LoadHistory("CustomFolders", iniFile)
+
+for index, path in history {
+    MsgBox("Carpeta " . index . ": " . path)
+}
+```
+
+---
+
+### `SaveHistory(key, value, iniFile)`
+
+Guarda un valor en el historial de un archivo INI, moviéndolo al tope si ya existe.
+
+**Parámetros:**
+- `key` (String): Clave en la sección "History" del archivo INI
+- `value` (String): Valor a agregar al historial
+- `iniFile` (String): Ruta al archivo INI
+
+**Comportamiento:**
+- Elimina el valor si ya existe en el historial
+- Inserta el valor en la primera posición
+- Mantiene un máximo de 10 items
+- Guarda automáticamente en el archivo INI
+
+**Ejemplo:**
+
+```autohotkey
+; Guardar carpeta en historial
+iniFile := GetMyDataPath()
+SaveHistory("CustomFolders", "C:\\Users\\Documents", iniFile)
+
+; El historial ahora tiene "C:\\Users\\Documents" en la posición 1
+
+; Cargar y mostrar historial actualizado
+history := LoadHistory("CustomFolders", iniFile)
+MsgBox("Última carpeta: " . history[1])
+```
+
+---
+
 ## 🎨 Patrones de Uso Comunes
 
 ### Patrón 1: Comportamiento Context-Aware
@@ -207,6 +270,36 @@ GetLayerForCurrentApp() {
     }
     return ""
 }
+```
+
+### Patrón 5: Persistencia de Historial
+
+```autohotkey
+; Plugin: my_plugin.ahk
+GetMyDataPath() {
+    dataPath := "data\\my_plugin.ini"
+    SplitPath(dataPath, , &dir)
+    if !DirExist(dir)
+        DirCreate(dir)
+    return dataPath
+}
+
+ShowRecentItems() {
+    iniFile := GetMyDataPath()
+    history := LoadHistory("RecentItems", iniFile)
+    
+    ; Mostrar en GUI
+    g := Gui(, "Recent Items")
+    lb := g.Add("ListBox", "w400 h200", history)
+    g.Show()
+}
+
+SaveRecentItem(item) {
+    iniFile := GetMyDataPath()
+    SaveHistory("RecentItems", item, iniFile)
+}
+
+RegisterKeymap("leader", "r", "h", "Recent Items", ShowRecentItems, false, 1)
 ```
 
 ---
@@ -281,7 +374,7 @@ Log.d("Es terminal: " . isTerminal, "CONTEXT")
 
 | Plugin | Propósito | Retorna |
 |--------|-----------|---------|
-| **context_utils** | Detectar contexto del sistema | Información (strings, booleans) |
+| **context_utils** | Detectar contexto del sistema y persistir datos | Información (strings, booleans, arrays) |
 | **shell_exec** | Ejecutar comandos | Closures para RegisterKeymap |
 | **dynamic_layer** | Activar capas por proceso | Acciones (void) |
 | **hybrid_actions** | Gestión del sistema | Acciones (void) |

@@ -40,13 +40,15 @@ RegisterKeymap("leader", "t", "cmd", "Terminal", ShellExec("cmd.exe", "Show"), f
 **Archivo**: `system/plugins/context_utils.ahk`  
 **Documentación**: [API Reference](api-context-utils.md)
 
-**Propósito**: Detectar contexto del sistema (rutas activas, tipos de ventanas, procesos).
+**Propósito**: Detectar contexto del sistema (rutas activas, tipos de ventanas, procesos) y persistir datos en archivos INI.
 
 **Funciones Principales**:
 - `GetActiveExplorerPath()` - Obtener ruta de Explorer activo
 - `IsTerminalWindow()` - Verificar si es terminal
 - `GetPasteShortcut()` - Obtener atajo de pegado apropiado
 - `GetActiveProcessName()` - Obtener nombre del proceso activo
+- `LoadHistory(key, iniFile)` - Cargar historial desde archivo INI
+- `SaveHistory(key, value, iniFile)` - Guardar historial en archivo INI
 
 **Ejemplo de Uso**:
 ```autohotkey
@@ -62,9 +64,14 @@ OpenTerminalHere() {
 SmartPaste() {
     Send(GetPasteShortcut())  ; ^+v en terminales, ^v en otras apps
 }
+
+; Persistir historial
+iniFile := "data\\my_plugin.ini"
+SaveHistory("RecentItems", "C:\\Users\\Documents", iniFile)
+history := LoadHistory("RecentItems", iniFile)
 ```
 
-**Usado Por**: folder_actions, dynamic_layer, plugins personalizados
+**Usado Por**: folder_actions, adb_actions, dynamic_layer, plugins personalizados
 
 ---
 
@@ -203,7 +210,7 @@ ActivateDynamicLayer() {
 | Plugin | Tipo de Retorno | Uso Principal | Complejidad |
 |--------|-----------------|---------------|-------------|
 | **shell_exec** | Closures | Ejecutar comandos | Media |
-| **context_utils** | Datos (strings, bools) | Detectar contexto | Baja |
+| **context_utils** | Datos (strings, bools, arrays) | Detectar contexto y persistir datos | Baja |
 | **dynamic_layer** | Acciones (void) | Gestión de capas | Alta |
 | **hybrid_actions** | Acciones (void) | Gestión del sistema | Baja |
 
