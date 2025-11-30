@@ -49,17 +49,17 @@ ActivateLeaderLayer() {
     Log.i("ActivateLeaderLayer() - Activating leader", "LEADER")
     
     ; Resume script if suspended
-    if (A_IsSuspended) {
-        try SetTimer(HybridAutoResumeTimer, 0)
-        Suspend(0)
-        hybridPauseActive := false
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-            try ShowCSharpStatusNotification("HYBRID", "RESUMED")
-        } else {
-            ShowCenteredToolTip("RESUMED")
-            SetTimer(() => RemoveToolTip(), -900)
-        }
-    }
+    ; if (A_IsSuspended) {
+    ;     try SetTimer(HybridAutoResumeTimer, 0)
+    ;     Suspend(0)
+    ;     hybridPauseActive := false
+    ;     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+    ;         try ShowCSharpStatusNotification("HYBRID", "RESUMED")
+    ;     } else {
+    ;         ShowCenteredToolTip("RESUMED")
+    ;         SetTimer(() => RemoveToolTip(), -900)
+    ;     }
+    ; }
     
     leaderActive := true
     
@@ -274,25 +274,3 @@ ShowMenuForPathCS(path) {
     ShowCSharpOptionsMenu(title, items, footer)
 }
 
-; ==============================
-; EMERGENCY RESUME HOTKEY
-; ==============================
-
-#SuspendExempt
-#HotIf (enableEmergencyResumeHotkey)
-^!#r:: {
-    global hybridPauseActive
-    if (A_IsSuspended) {
-        try SetTimer(HybridAutoResumeTimer, 0)
-        Suspend(0)
-        hybridPauseActive := false
-        if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-            try ShowCSharpStatusNotification("HYBRID", "RESUMED (emergency)")
-        } else {
-            ShowCenteredToolTip("RESUMED (emergency)")
-            SetTimer(() => RemoveToolTip(), -900)
-        }
-    }
-}
-#HotIf
-#SuspendExempt False

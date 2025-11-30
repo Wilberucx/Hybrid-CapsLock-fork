@@ -88,7 +88,7 @@ class Log {
         }
     }
     
-    ; Envío optimizado a OutputDebug
+    ; Envío optimizado a OutputDebug y Archivo
     static _sendToOutput(message) {
         try {
             ; Obtener timestamp con milisegundos manualmente
@@ -98,11 +98,22 @@ class Log {
             msStr := Format("{:03}", ms)
             fullTimestamp := timestamp . "." . msStr
             
-            OutputDebug("[" . fullTimestamp . "] " . message . "`n")
+            finalMsg := "[" . fullTimestamp . "] " . message . "`n"
+            
+            ; 1. OutputDebug (para DebugView)
+            OutputDebug(finalMsg)
+            
+            ; 2. Archivo de log (para usuario final)
+            try {
+                FileAppend(finalMsg, A_ScriptDir . "\hybrid_log.txt", "UTF-8")
+            } catch {
+                ; Ignorar errores de escritura en disco para no bloquear
+            }
         } catch {
             ; Fallback sin timestamp
             try {
                 OutputDebug(message . "`n")
+                FileAppend(message . "`n", A_ScriptDir . "\hybrid_log.txt", "UTF-8")
             }
         }
     }
