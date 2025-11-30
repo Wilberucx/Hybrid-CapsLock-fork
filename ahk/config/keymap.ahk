@@ -18,6 +18,7 @@ F23:: ActivateDynamicLayer()    ; Tap CapsLock → Dynamic Layer about kanata.kb
 ; ===================================================================
 RegisterCategoryKeymap("leader", "h", "Hybrid Management", 1)
 ; Hybrid actions
+RegisterKeymap("leader", "h", "m", "Hybrid Manager", ShowHybridManager, false, 0)
 RegisterKeymap("leader", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
 RegisterKeymap("leader", "h", "l", "View Log File", ViewLogFile, false, 2)
 RegisterKeymap("leader", "h", "c", "Open Config Folder", OpenConfigFolder, false, 3)

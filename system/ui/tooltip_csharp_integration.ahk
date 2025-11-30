@@ -25,6 +25,10 @@ if (!IsSet(ConfigIni)) {
 ; Global variables for tooltip configuration
 global tooltipConfig := ReadTooltipConfig()
 
+; Global state variables
+global tooltipMenuActive := false
+global tooltipCurrentTitle := ""
+
 
 ; ===================================================================
 ; FUNCIONES DE CONFIGURACIÓN
@@ -840,11 +844,11 @@ IsSequentialArray(o) {
 }
 
 JsonEscape(s) {
-    s := StrReplace(s, "\\", "\\\\")
-    s := StrReplace(s, '"', '\\"')
-    s := StrReplace(s, "\r", "\\r")
-    s := StrReplace(s, "\n", "\\n")
-    s := StrReplace(s, "\t", "\\t")
+    s := StrReplace(s, "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    s := StrReplace(s, "`n", "\n")
+    s := StrReplace(s, "`r", "\r")
+    s := StrReplace(s, "`t", "\t")
     return s
 }
 
@@ -892,13 +896,36 @@ SerializeJson(val, parentKey := "") {
     }
 }
 ; Construir item objects desde string items "k:desc|..."
-BuildItemObjects(itemsStr) {
+; Construir item objects desde string items "k:desc|..." o Array
+BuildItemObjects(itemsInput) {
     arr := []
-    if (itemsStr = "" || !IsSet(itemsStr))
+    if (!IsSet(itemsInput) || itemsInput = "")
         return arr
-    parts := StrSplit(itemsStr, "|")
+
+    ; Si es un Array (nuevo soporte)
+    if (IsObject(itemsInput) && HasProp(itemsInput, "Length")) {
+        for _, item in itemsInput {
+            if (IsObject(item)) {
+                ; Ya es un objeto/mapa, usar tal cual
+                arr.Push(item)
+            } else {
+                ; Es un string "key:desc", parsear
+                seg := StrSplit(item, ":", , 2) ; Limit 2 to allow colons in description
+                if (seg.Length >= 2) {
+                    itm := Map()
+                    itm["key"] := seg[1]
+                    itm["description"] := seg[2]
+                    arr.Push(itm)
+                }
+            }
+        }
+        return arr
+    }
+
+    ; Si es String (legacy)
+    parts := StrSplit(itemsInput, "|")
     for _, p in parts {
-        seg := StrSplit(p, ":")
+        seg := StrSplit(p, ":", , 2)
         if (seg.Length >= 2) {
             itm := Map()
             itm["key"] := seg[1]
@@ -910,13 +937,14 @@ BuildItemObjects(itemsStr) {
 }
 
 ; Construir nav array desde string "a|b|c"
-BuildNavArray(navStr) {
+; Construir nav array desde string "a|b|c" o Array
+BuildNavArray(navInput) {
     arr := []
     theme := ReadTooltipThemeDefaults()
 
-    if (!IsSet(navStr) || navStr = "") {
+    if (!IsSet(navInput) || navInput = "") {
         if (theme.Has("navigation_label"))
-            navStr := theme["navigation_label"]
+            navInput := theme["navigation_label"]
         else
             return arr
     }
@@ -925,7 +953,21 @@ BuildNavArray(navStr) {
     if (theme.Has("navigation_label"))
         themeParts := StrSplit(theme["navigation_label"], "|")
 
-    parts := StrSplit(navStr, "|")
+    ; Si es Array (nuevo soporte)
+    if (IsObject(navInput) && HasProp(navInput, "Length")) {
+        for _, p in navInput {
+            ; Compatibilidad: reemplazar tokens antiguos
+            if (p = "\\: Back" && themeParts.Length >= 1)
+                p := Trim(themeParts[1])
+            else if ((p = "ESC: Exit" || p = "Esc: Exit") && themeParts.Length >= 2)
+                p := Trim(themeParts[2])
+            arr.Push(p)
+        }
+        return arr
+    }
+
+    ; Si es String (legacy)
+    parts := StrSplit(navInput, "|")
     for _, p in parts {
         ; Compatibilidad: reemplazar tokens antiguos por los del tema si están definidos
         if (p = "\\: Back" && themeParts.Length >= 1)
@@ -1117,6 +1159,7 @@ ShowCSharpTooltipAdvanced(title, items, navigation := "", opts := 0) {
         cmd["tooltip_type"] := "leader"
 
     json := SerializeJson(cmd)
+    Log.d("ShowCSharpTooltipAdvanced JSON: " . json, "TOOLTIP")
     ScheduleTooltipJsonWrite(json)
 }
 
