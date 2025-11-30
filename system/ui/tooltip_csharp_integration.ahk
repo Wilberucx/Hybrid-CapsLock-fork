@@ -1,8 +1,17 @@
 ; ===================================================================
-; INTEGRACIÓN C# TOOLTIP PARA HYBRIDCAPSLOCK v2
+; INTEGRACIÓN C# TOOLTIP PARA HYBRIDCAPSLOCK v2.1
 ; ===================================================================
 ; Integration file to replace basic tooltips with C# + WPF
 ; Incluir este archivo en HybridCapsLock.ahk con: #Include tooltip_csharp_integration.ahk
+;
+; TooltipApp v2.1 Features:
+; - NerdFont icon support (use Chr() for Unicode glyphs)
+; - Animation system (fade, slide with easing functions)
+; - Multi-monitor positioning with DPI awareness
+; - Multi-window support (unique IDs for independent tooltips)
+; - Granular configuration: layout, window, animation objects
+;
+; Documentation: See tooltip_doc/Tooltip_Api_Protocol.md for full API reference
 
 ; ===================================================================
 ; VARIABLES GLOBALES NECESARIAS
@@ -13,12 +22,9 @@ if (!IsSet(ConfigIni)) {
     global ConfigIni := A_ScriptDir . "\ahk\config\configuration.ini"
 }
 
-
 ; Global variables for tooltip configuration
 global tooltipConfig := ReadTooltipConfig()
 
-; Stop/kills the TooltipApp process if running
-; duplicate removed
 
 ; ===================================================================
 ; FUNCIONES DE CONFIGURACIÓN
@@ -147,15 +153,22 @@ ShowCSharpTooltipWithType(title, items, navigation := "", timeout := 0, tooltipT
     ; Leer defaults de tema desde configuration.ini
     theme := ReadTooltipThemeDefaults()
 
-    ; Aplicar layout/columns por defecto de tema
-    if (theme.window.Has("layout"))
-        cmd["layout"] := theme.window["layout"]
-    if (theme.window.Has("columns") && theme.window["columns"] > 0)
-        cmd["columns"] := theme.window["columns"]
+    ; === NEW: Layout object (v2.1 API) ===
+    ; Use new layout object structure for better organization
+    if (theme.window.Has("layout") || theme.window.Has("columns")) {
+        cmd["layout"] := Map()
+        if (theme.window.Has("layout"))
+            cmd["layout"]["mode"] := theme.window["layout"]
+        if (theme.window.Has("columns") && theme.window["columns"] > 0)
+            cmd["layout"]["columns"] := theme.window["columns"]
+    }
 
     ; Si tooltipType implica lista, forzar layout=list
-    if (tooltipType = "bottom_right_list")
-        cmd["layout"] := "list"
+    if (tooltipType = "bottom_right_list") {
+        if (!cmd.Has("layout"))
+            cmd["layout"] := Map()
+        cmd["layout"]["mode"] := "list"
+    }
 
     ; Copiar estilo y posición desde tema (si existen)
     if (theme.style.Count) {
@@ -167,15 +180,28 @@ ShowCSharpTooltipWithType(title, items, navigation := "", timeout := 0, tooltipT
     if (theme.position.Count)
         cmd["position"] := theme.position
 
-    ; Flags de ventana desde tema
-    if (theme.window.Has("topmost"))
-        cmd["topmost"] := theme.window["topmost"]
-    if (theme.window.Has("click_through"))
-        cmd["click_through"] := theme.window["click_through"]
-    if (theme.window.Has("opacity"))
-        cmd["opacity"] := theme.window["opacity"]
+    ; === NEW: Window object (v2.1 API) ===
+    ; Group window-level properties in window object
+    if (theme.window.Has("topmost") || theme.window.Has("click_through") || theme.window.Has("opacity")) {
+        cmd["window"] := Map()
+        if (theme.window.Has("topmost"))
+            cmd["window"]["topmost"] := theme.window["topmost"]
+        if (theme.window.Has("click_through"))
+            cmd["window"]["click_through"] := theme.window["click_through"]
+        if (theme.window.Has("opacity"))
+            cmd["window"]["opacity"] := theme.window["opacity"]
+    }
 
-    ; Compatibilidad: incluir tooltip_type explícito
+    ; === NEW: Animation support (v2.1 API) ===
+    ; Add default fade animation if enabled in config
+    if (tooltipConfig.fadeAnimation) {
+        cmd["animation"] := Map()
+        cmd["animation"]["type"] := "fade"
+        cmd["animation"]["duration_ms"] := 200
+        cmd["animation"]["easing"] := "ease_out"
+    }
+
+    ; Compatibilidad: incluir tooltip_type explícito (DEPRECATED but supported)
     cmd["tooltip_type"] := tooltipType
 
     ; Serializar y escribir
@@ -968,7 +994,7 @@ ShowWelcomeStatusCS() {
     ScheduleTooltipJsonWrite(json)
 }
 
-; API avanzada: admite layout, columnas, estilo, posición y flags
+; API avanzada: admite layout, columnas, estilo, posición, animación y flags (v2.1)
 ShowCSharpTooltipAdvanced(title, items, navigation := "", opts := 0) {
     global tooltipConfig
     StartTooltipApp()
@@ -993,21 +1019,38 @@ ShowCSharpTooltipAdvanced(title, items, navigation := "", opts := 0) {
     ; Leer defaults de tema
     theme := ReadTooltipThemeDefaults()
 
-    ; Aplicar window/layout defaults y opts
-    if (theme.window.Has("layout"))
-        cmd["layout"] := theme.window["layout"]
-    if (theme.window.Has("columns") && theme.window["columns"] > 0)
-        cmd["columns"] := theme.window["columns"]
-    if (IsObject(opts)) {
-        if (opts.Has("layout"))
-            cmd["layout"] := opts["layout"]
-        if (opts.Has("columns"))
-            cmd["columns"] := opts["columns"]
+    ; === NEW: Layout object (v2.1 API) ===
+    if (theme.window.Has("layout") || theme.window.Has("columns")) {
+        cmd["layout"] := Map()
+        if (theme.window.Has("layout"))
+            cmd["layout"]["mode"] := theme.window["layout"]
+        if (theme.window.Has("columns") && theme.window["columns"] > 0)
+            cmd["layout"]["columns"] := theme.window["columns"]
+    }
+    
+    ; Override from opts
+    if (IsObject(opts) && opts.Has("layout")) {
+        if (!cmd.Has("layout"))
+            cmd["layout"] := Map()
+        if (IsObject(opts["layout"])) {
+            ; New v2.1 style: layout is an object
+            cmd["layout"] := DeepMerge(cmd["layout"], opts["layout"])
+        } else {
+            ; Legacy: layout is a string ("grid" or "list")
+            cmd["layout"]["mode"] := opts["layout"]
+        }
+    }
+    if (IsObject(opts) && opts.Has("columns")) {
+        if (!cmd.Has("layout"))
+            cmd["layout"] := Map()
+        cmd["layout"]["columns"] := opts["columns"]
     }
 
     ; tooltip_type compat si layout=list y no definido
-    if (!cmd.Has("layout") && tooltipConfig.menuLayout = "list_vertical")
-        cmd["layout"] := "list"
+    if (!cmd.Has("layout") && tooltipConfig.menuLayout = "list_vertical") {
+        cmd["layout"] := Map()
+        cmd["layout"]["mode"] := "list"
+    }
 
     ; Style merge
     if (theme.style.Count)
@@ -1015,30 +1058,60 @@ ShowCSharpTooltipAdvanced(title, items, navigation := "", opts := 0) {
     if (IsObject(opts) && opts.Has("style"))
         cmd["style"] := DeepMerge(cmd.Has("style") ? cmd["style"] : Map(), opts["style"])
 
-    ; Position merge
+    ; Position merge (with multi-monitor support)
     if (theme.position.Count)
         cmd["position"] := theme.position
     if (IsObject(opts) && opts.Has("position"))
         cmd["position"] := DeepMerge(cmd.Has("position") ? cmd["position"] : Map(), opts["position"])
 
-    ; Flags de ventana
-    if (theme.window.Has("topmost"))
-        cmd["topmost"] := theme.window["topmost"]
-    if (theme.window.Has("click_through"))
-        cmd["click_through"] := theme.window["click_through"]
-    if (theme.window.Has("opacity"))
-        cmd["opacity"] := theme.window["opacity"]
+    ; === NEW: Window object (v2.1 API) ===
+    if (theme.window.Has("topmost") || theme.window.Has("click_through") || theme.window.Has("opacity")) {
+        cmd["window"] := Map()
+        if (theme.window.Has("topmost"))
+            cmd["window"]["topmost"] := theme.window["topmost"]
+        if (theme.window.Has("click_through"))
+            cmd["window"]["click_through"] := theme.window["click_through"]
+        if (theme.window.Has("opacity"))
+            cmd["window"]["opacity"] := theme.window["opacity"]
+    }
+    
+    ; Override from opts
+    if (IsObject(opts) && opts.Has("window")) {
+        if (!cmd.Has("window"))
+            cmd["window"] := Map()
+        cmd["window"] := DeepMerge(cmd["window"], opts["window"])
+    }
+    
+    ; Legacy support: direct window properties
     if (IsObject(opts)) {
         for k in ["topmost","click_through","opacity"] {
-            if (opts.Has(k))
-                cmd[k] := opts[k]
+            if (opts.Has(k)) {
+                if (!cmd.Has("window"))
+                    cmd["window"] := Map()
+                cmd["window"][k] := opts[k]
+            }
         }
     }
 
-    ; Back-compat: tooltip_type si layout es list
+    ; === NEW: Animation support (v2.1 API) ===
+    if (IsObject(opts) && opts.Has("animation")) {
+        cmd["animation"] := opts["animation"]
+    } else if (tooltipConfig.fadeAnimation) {
+        ; Default fade animation if enabled
+        cmd["animation"] := Map()
+        cmd["animation"]["type"] := "fade"
+        cmd["animation"]["duration_ms"] := 200
+        cmd["animation"]["easing"] := "ease_out"
+    }
+
+    ; === NEW: Multi-window support (v2.1 API) ===
+    if (IsObject(opts) && opts.Has("id"))
+        cmd["id"] := opts["id"]
+
+    ; Back-compat: tooltip_type (DEPRECATED)
     if (IsObject(opts) && opts.Has("tooltip_type"))
         cmd["tooltip_type"] := opts["tooltip_type"]
-    else if (cmd.Has("layout") && StrLower(cmd["layout"]) = "list")
+    else if (cmd.Has("layout") && cmd["layout"].Has("mode") && StrLower(cmd["layout"]["mode"]) = "list")
         cmd["tooltip_type"] := "bottom_right_list"
     else
         cmd["tooltip_type"] := "leader"
