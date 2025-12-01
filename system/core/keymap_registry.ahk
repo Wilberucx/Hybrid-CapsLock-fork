@@ -806,6 +806,37 @@ GenerateCategoryItemsForPath(path) {
     return result
 }
 
+; ==============================
+; REGISTRO DE TRIGGERS
+; ==============================
+
+; RegisterTrigger(key, action, condition := "")
+; Registra un hotkey global con condición opcional y SuspendExempt
+; Reemplaza el uso de #HotIf y #SuspendExempt en keymap.ahk
+;
+; Ejemplos:
+;   RegisterTrigger("F24", ActivateLeaderLayer, "LeaderLayerEnabled")
+;   RegisterTrigger("F23", ActivateDynamicLayer, "DYNAMIC_LAYER_ENABLED")
+RegisterTrigger(key, action, condition := "") {
+    if (condition != "") {
+        ; Si la condición es una variable global, usar una función lambda para evaluarla
+        if (Type(condition) = "String") {
+            HotIf (*) => %condition%
+        } else {
+            HotIf condition
+        }
+    } else {
+        HotIf
+    }
+    
+    ; Registrar hotkey con opción "S" (SuspendExempt)
+    ; Envolver la acción en una función lambda para crear un callback válido
+    Hotkey(key, (*) => action(), "S")
+    
+    ; Resetear HotIf
+    HotIf
+}
+
 ; HasKeymaps(category)
 ; FLAT
 HasKeymaps(category) {
