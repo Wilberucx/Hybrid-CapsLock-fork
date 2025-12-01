@@ -26,6 +26,27 @@ GetActiveExplorerPath() {
     return ""
 }
 
+/**
+ * GetSelectedExplorerItem - Returns the full path of the currently selected file/folder in Explorer
+ * Returns: String (full path) or "" if no item is selected or Explorer is not active
+ */
+GetSelectedExplorerItem() {
+    if WinActive("ahk_class CabinetWClass") {
+        try {
+            hwnd := WinExist("A")
+            for window in ComObject("Shell.Application").Windows {
+                if (window.hwnd == hwnd) {
+                    selectedItems := window.Document.SelectedItems()
+                    if (selectedItems.Count > 0) {
+                        return selectedItems.Item(0).Path
+                    }
+                }
+            }
+        }
+    }
+    return ""
+}
+
 ; ==============================
 ; WINDOW TYPE DETECTION
 ; ==============================
