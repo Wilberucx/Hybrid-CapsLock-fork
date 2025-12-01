@@ -228,10 +228,18 @@ RegisterKeymapFlat(category, key, description, actionFunc, needsConfirm, order) 
 RegisterKeymapHierarchical(layer, pathKeys, description, actionFunc, needsConfirm, order) {
     global KeymapRegistry
     
+    ; Parsear todas las keys en el path
+    parsedPathKeys := []
+    Loop pathKeys.Length {
+        keyInfo := ParseModifierKey(pathKeys[A_Index])
+        parsedPathKeys.Push(keyInfo["parsed"])
+    }
+    
     ; Construir path completo: layer.key1.key2...
-    if (pathKeys.Length > 0) {
-        fullPath := layer . "." . JoinArray(pathKeys, ".")
-        lastKey := pathKeys[pathKeys.Length]
+    if (parsedPathKeys.Length > 0) {
+        fullPath := layer . "." . JoinArray(parsedPathKeys, ".")
+        lastKey := parsedPathKeys[parsedPathKeys.Length]
+        lastKeyDisplay := pathKeys[pathKeys.Length]  ; Original para display
     } else {
         ; Si no hay keys (solo layer), error
         throw Error("RegisterKeymapHierarchical requiere al menos una key")
@@ -239,10 +247,10 @@ RegisterKeymapHierarchical(layer, pathKeys, description, actionFunc, needsConfir
     
     ; Construir path del padre
     parentPath := layer
-    if (pathKeys.Length > 1) {
+    if (parsedPathKeys.Length > 1) {
         parentKeys := []
-        Loop pathKeys.Length - 1 {
-            parentKeys.Push(pathKeys[A_Index])
+        Loop parsedPathKeys.Length - 1 {
+            parentKeys.Push(parsedPathKeys[A_Index])
         }
         parentPath := layer . "." . JoinArray(parentKeys, ".")
     }
@@ -258,9 +266,10 @@ RegisterKeymapHierarchical(layer, pathKeys, description, actionFunc, needsConfir
         return false
     }
     
-    ; Registrar en el padre
+    ; Registrar en el padre con ambas versiones de la key
     KeymapRegistry[parentPath][lastKey] := Map(
-        "key", lastKey,
+        "key", lastKey,                    ; Parsed (para ejecución)
+        "displayKey", lastKeyDisplay,      ; Original (para UI)
         "path", fullPath,
         "desc", description,
         "action", actionFunc,
@@ -314,16 +323,24 @@ RegisterCategoryKeymap(args*) {
         }
     }
     
+    ; Parsear todas las keys en el path
+    parsedPathKeys := []
+    Loop pathKeys.Length {
+        keyInfo := ParseModifierKey(pathKeys[A_Index])
+        parsedPathKeys.Push(keyInfo["parsed"])
+    }
+    
     ; Construir path completo: layer.key1.key2...
-    fullPath := layer . "." . JoinArray(pathKeys, ".")
-    lastKey := pathKeys[pathKeys.Length]
+    fullPath := layer . "." . JoinArray(parsedPathKeys, ".")
+    lastKey := parsedPathKeys[parsedPathKeys.Length]
+    lastKeyDisplay := pathKeys[pathKeys.Length]  ; Original para display
     
     ; Path del padre
     parentPath := layer
-    if (pathKeys.Length > 1) {
+    if (parsedPathKeys.Length > 1) {
         parentKeys := []
-        Loop pathKeys.Length - 1 {
-            parentKeys.Push(pathKeys[A_Index])
+        Loop parsedPathKeys.Length - 1 {
+            parentKeys.Push(parsedPathKeys[A_Index])
         }
         parentPath := layer . "." . JoinArray(parentKeys, ".")
     }
@@ -333,9 +350,10 @@ RegisterCategoryKeymap(args*) {
         KeymapRegistry[parentPath] := Map()
     }
     
-    ; Registrar como categoría
+    ; Registrar como categoría con ambas versiones de la key
     KeymapRegistry[parentPath][lastKey] := Map(
-        "key", lastKey,
+        "key", lastKey,                    ; Parsed (para ejecución)
+        "displayKey", lastKeyDisplay,      ; Original (para UI)
         "path", fullPath,
         "desc", title,
         "isCategory", true,
@@ -447,6 +465,82 @@ JoinArray(arr, separator := "") {
         }
     }
     return result
+}
+
+; ==============================
+; PARSER DE MODIFICADORES
+; ==============================
+
+; ParseModifierKey(key)
+; Parsea sintaxis estilo Vim de modificadores: <C-a>, <S-C-a>, <A-S-k>, etc.
+; Convierte a sintaxis de AutoHotkey: ^a, +^a, !+k, etc.
+;
+; Modificadores soportados:
+;   C = Ctrl  → ^
+;   S = Shift → +
+;   A = Alt   → !
+;
+; Ejemplos:
+;   "<C-a>"     → {parsed: "^a", display: "<C-a>"}
+;   "<S-C-a>"   → {parsed: "+^a", display: "<S-C-a>"}
+;   "<A-S-k>"   → {parsed: "!+k", display: "<A-S-k>"}
+;   "<C-A-S-x>" → {parsed: "^!+x", display: "<C-A-S-x>"}
+;   "a"         → {parsed: "a", display: "a"}
+;   "R"         → {parsed: "R", display: "R"}
+;
+; Retorna: Map con "parsed" (sintaxis AHK) y "display" (sintaxis original)
+;
+; NOTA: Shift (S) es solo para combinaciones con Ctrl/Alt.
+;       Para Shift+key simple, usar mayúscula: "A" en vez de "<S-a>"
+ParseModifierKey(key) {
+    ; Si no tiene el patrón <...>, retornar sin cambios
+    if (!RegExMatch(key, "^<(.+)>$", &match)) {
+        return Map("parsed", key, "display", key)
+    }
+    
+    ; Extraer contenido entre < y >
+    content := match[1]
+    
+    ; Dividir por guión
+    parts := StrSplit(content, "-")
+    
+    ; Si solo hay una parte, es inválido (debería ser <X-key>)
+    if (parts.Length < 2) {
+        return Map("parsed", key, "display", key)
+    }
+    
+    ; La última parte es la tecla base
+    baseKey := parts[parts.Length]
+    
+    ; Las partes anteriores son modificadores
+    hasCtrl := false
+    hasAlt := false
+    hasShift := false
+    
+    Loop parts.Length - 1 {
+        modifier := parts[A_Index]
+        if (modifier = "C") {
+            hasCtrl := true
+        } else if (modifier = "A") {
+            hasAlt := true
+        } else if (modifier = "S") {
+            hasShift := true
+        }
+        ; Ignorar modificadores desconocidos
+    }
+    
+    ; Construir sintaxis de AutoHotkey
+    ; Orden correcto: ^ (Ctrl), ! (Alt), + (Shift)
+    ahkKey := ""
+    if (hasCtrl)
+        ahkKey .= "^"
+    if (hasAlt)
+        ahkKey .= "!"
+    if (hasShift)
+        ahkKey .= "+"
+    ahkKey .= baseKey
+    
+    return Map("parsed", ahkKey, "display", key)
 }
 
 ; ==============================
@@ -675,12 +769,16 @@ ShowUnifiedConfirmation(description) {
 ; ExecuteKeymapAtPath(path, key)
 ; JERÁRQUICO
 ExecuteKeymapAtPath(path, key) {
+    ; Parsear la key de entrada para soportar sintaxis de modificadores
+    keyInfo := ParseModifierKey(key)
+    parsedKey := keyInfo["parsed"]
+    
     keymaps := GetKeymapsForPath(path)
     
-    if (!keymaps.Has(key))
+    if (!keymaps.Has(parsedKey))
         return false
     
-    data := keymaps[key]
+    data := keymaps[parsedKey]
     
     ; Si es categoría, retornar el nuevo path
     if (data["isCategory"]) {
@@ -764,7 +862,9 @@ BuildMenuForPath(path, title := "") {
     
     for item in items {
         icon := item["isCategory"] ? "→" : "-"
-        menuText .= item["key"] . " " . icon . " " . item["desc"] . "`n"
+        ; Usar displayKey si existe, sino usar key
+        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
+        menuText .= displayKey . " " . icon . " " . item["desc"] . "`n"
     }
     
     return menuText
@@ -800,7 +900,9 @@ GenerateCategoryItemsForPath(path) {
     for item in items {
         if (result != "")
             result .= "|"
-        result .= item["key"] . ":" . item["desc"]
+        ; Usar displayKey si existe, sino usar key
+        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
+        result .= displayKey . ":" . item["desc"]
     }
     
     return result
@@ -817,7 +919,12 @@ GenerateCategoryItemsForPath(path) {
 ; Ejemplos:
 ;   RegisterTrigger("F24", ActivateLeaderLayer, "LeaderLayerEnabled")
 ;   RegisterTrigger("F23", ActivateDynamicLayer, "DYNAMIC_LAYER_ENABLED")
+;   RegisterTrigger("<C-s>", SaveFile, "EditorActive")
 RegisterTrigger(key, action, condition := "") {
+    ; Parsear la key para soportar sintaxis de modificadores
+    keyInfo := ParseModifierKey(key)
+    parsedKey := keyInfo["parsed"]
+    
     if (condition != "") {
         ; Si la condición es una variable global, usar una función lambda para evaluarla
         if (Type(condition) = "String") {
@@ -831,7 +938,7 @@ RegisterTrigger(key, action, condition := "") {
     
     ; Registrar hotkey con opción "S" (SuspendExempt)
     ; Envolver la acción en una función lambda para crear un callback válido
-    Hotkey(key, (*) => action(), "S")
+    Hotkey(parsedKey, (*) => action(), "S")
     
     ; Resetear HotIf
     HotIf

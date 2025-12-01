@@ -9,27 +9,12 @@
 
 GetGitWorkingDir() {
     ; 1. Try to get path from active Explorer window
-    explorerPath := GetExplorerPath()
+    explorerPath := GetActiveExplorerPath()
     if (explorerPath != "")
         return explorerPath
     
     ; 2. Fallback to script directory
     return A_WorkingDir
-}
-
-GetExplorerPath() {
-    try {
-        if !WinActive("ahk_class CabinetWClass")
-            return ""
-            
-        hwnd := WinExist("A")
-        for window in ComObject("Shell.Application").Windows {
-            if (window.hwnd == hwnd) {
-                return window.Document.Folder.Self.Path
-            }
-        }
-    }
-    return ""
 }
 
 IsGitRepo(wd) {
