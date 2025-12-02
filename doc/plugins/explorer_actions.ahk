@@ -90,8 +90,8 @@ RenameSelectedItem() {
     if WinActive("ahk_class CabinetWClass") {
         Send("{F2}")
         ; Switch to insert layer (provided by vim_actions.ahk)
-        ; User can press Esc to exit insert mode
-        SwitchToLayer("insert")
+        ; User can press Escape to exit insert mode
+        SwitchToLayer("explorer_insert")
     }
 }
 
@@ -224,6 +224,30 @@ EditInNotepad() {
     }
 }
 
+/**
+ * Motions tabs
+ */ 
+PreviousTab() {
+    Send("^+{Tab}")
+}
+
+NextTab() {
+    Send("^{Tab}")
+}
+
+CloseTabAction() {
+    Send("^w")
+}
+
+NewTabAction() {
+    Send("^t")
+}
+; ==============================
+; LAYER REGISTRATION
+; ==============================
+RegisterLayer("explorer_visual", "VISUAL MODE", "#ffafcc", "#000000")
+RegisterLayer("explorer_insert", "INSERT MODE", "#d0f0c0", "#000000", false)
+
 ; ==============================
 ; KEYMAP REGISTRATION
 ; ==============================
@@ -233,42 +257,40 @@ RegisterKeymap("leader", "e", "Explorer Mode", () => SwitchToLayer("explorer"), 
 
 ; --- EXPLORER LAYER ---
 
+; Motion Keys
 RegisterKeymap("explorer", "h", "Left", VimMoveLeft)
 RegisterKeymap("explorer", "j", "Down", VimMoveDown)
 RegisterKeymap("explorer", "k", "Up", VimMoveUp)
 RegisterKeymap("explorer", "l", "Right", VimMoveRight)
 
-RegisterKeymap("explorer", "w", "Word Fwd", VimWordForward)
-RegisterKeymap("explorer", "b", "Word Back", VimWordBackward)
-RegisterKeymap("explorer", "e", "End Word", VimEndOfWord)
-
-RegisterKeymap("explorer", "0", "Start Line", VimStartOfLine)
-RegisterKeymap("explorer", "$", "End Line", VimEndOfLine)
+; Motions to Navigate between files alternaive to Arrows, but need view list type
+; RegisterKeymap("explorer", "h", "Select Left", () => Send("{backspace}"))
+; RegisterKeymap("explorer", "l", "Select Right", () => Send("{Enter}"))
 
 RegisterCategoryKeymap("explorer", "g", "Go To", 1) 
 RegisterKeymap("explorer", "g", "g", "Top File", VimTopOfFile) 
 RegisterKeymap("explorer", "G", "Bottom File", VimBottomOfFile)
-
-RegisterKeymap("explorer", "x", "Cut Char", VimDelete)
+; Motions Tabs 
+RegisterKeymap("explorer", "H", "Prev Tab", PreviousTab)
+RegisterKeymap("explorer", "L", "Next Tab", NextTab)
+; Edit Commands
+RegisterKeymap("explorer", "x", "Cut", VimCut)
 RegisterKeymap("explorer", "d", "Cut/Delete", VimDelete)
-RegisterCategoryKeymap("explorer", "y", "Yank menu")
-RegisterKeymap("explorer", "y", "y", "Yank line", VimYankLine)
-RegisterKeymap("explorer", "y", "0", "Start of Line", VimYankStartLine)
-RegisterKeymap("explorer", "y", "$", "End of Line", VimYankEndLine)
+RegisterKeymap("explorer", "y", "Yank line", VimYank)
 RegisterKeymap("explorer", "p", "Paste", VimPaste)
 RegisterKeymap("explorer", "u", "Undo", VimUndo)
-RegisterKeymap("explorer", "r", "Redo", VimRedo)
+RegisterKeymap("explorer", "R", "Redo", VimRedo)
 
-RegisterKeymap("explorer", "v", "Visual Mode", EnterVisualMode)
+RegisterKeymap("explorer", "v", "Visual Mode", () => SwitchToLayer("explorer_visual"))
 ; Rename action
-RegisterKeymap("explorer", "r", "Rename (F2)", RenameSelectedItem)
+RegisterKeymap("explorer", "r", "Rename", RenameSelectedItem)
 
 ; Tab Manager Category
 RegisterCategoryKeymap("explorer", "b", "Tab Manager", 4)
-RegisterKeymap("explorer", "b", "d", "Close Window", CloseExplorerWindow, false, 1)
-RegisterKeymap("explorer", "b", "n", "New Window", NewExplorerWindow, false, 2)
-RegisterKeymap("explorer", "b", "H", "Previous Folder", NavigatePrevious, false, 3)
-RegisterKeymap("explorer", "b", "L", "Next Folder", NavigateNext, false, 4)
+RegisterKeymap("explorer", "b", "d", "Close Window", CloseTabAction, false, 1)
+RegisterKeymap("explorer", "b", "n", "New Window", NewTabAction, false, 2)
+; RegisterKeymap("explorer", "b", "H", "Previous Folder", NavigatePrevious, false, 3)
+; RegisterKeymap("explorer", "b", "L", "Next Folder", NavigateNext, false, 4)
 
 ; Copy Actions Category
 RegisterCategoryKeymap("explorer", "c", "Copy Actions", 3)
@@ -286,4 +308,19 @@ RegisterKeymap("explorer", "e", "n", "Nvim", EditInNvim, false, 1)
 RegisterKeymap("explorer", "e", "t", "Notepad", EditInNotepad, false, 2)
 
 ; Exit Explorer Layer
-RegisterKeymap("explorer", "Esc", "Exit Explorer", () => DeactivateLayer("explorer"))
+RegisterKeymap("explorer_visual", "h", "Select Left", VimVisualMoveLeft)
+RegisterKeymap("explorer_visual", "j", "Select Down", VimVisualMoveDown)
+RegisterKeymap("explorer_visual", "k", "Select Up", VimVisualMoveUp)
+RegisterKeymap("explorer_visual", "l", "Select Right", VimVisualMoveRight)
+
+RegisterCategoryKeymap("explorer_visual", "g", "Go To", 1) 
+RegisterKeymap("explorer_visual", "g", "g", " Select Top File", VimVisualTopOfFile) 
+RegisterKeymap("explorer_visual", "G", "Select Bottom", VimVisualBottomOfFile)
+
+RegisterKeymap("explorer_visual", "d", "Cut Selection", VimDelete)
+RegisterKeymap("explorer_visual", "x", "Cut Selection", VimCut)
+RegisterKeymap("explorer_visual", "y", "Copy Selection", VimYank)
+
+RegisterKeymap("explorer_visual", "Escape", "Normal Mode", () => SwitchToLayer("explorer"))
+RegisterKeymap("explorer_visual", "v", "Normal Mode", ExitVisualMode)
+RegisterKeymap("explorer_insert", "Escape", "Exit Insert Mode",  () => switchToLayer("explorer"))

@@ -365,20 +365,22 @@ RegisterCategoryKeymap(args*) {
 ; REGISTRO DE METADATA DE LAYERS
 ; ==============================
 
-; RegisterLayer(layerId, displayName, color, textColor := "#ffffff")
+; RegisterLayer(layerId, displayName, color, textColor := "#ffffff", suppressUnmapped := true)
 ; Registra metadata visual para un layer
 ; layerId: identificador interno (ej: "scroll", "nvim")
 ; displayName: nombre para mostrar (ej: "SCROLL MODE")
 ; color: color hex para el status pill background (ej: "#E6C07B")
 ; textColor: color hex para el texto del status pill (ej: "#ffffff")
-RegisterLayer(layerId, displayName, color, textColor := "#ffffff") {
+; suppressUnmapped: si true (default), suprime teclas no mapeadas. Si false, las deja pasar.
+RegisterLayer(layerId, displayName, color, textColor := "#ffffff", suppressUnmapped := true) {
     global LayerRegistry
     
     LayerRegistry[layerId] := Map(
         "id", layerId,
         "name", displayName,
         "color", color,
-        "textColor", textColor
+        "textColor", textColor,
+        "suppressUnmapped", suppressUnmapped
     )
     
     ; Persist to centralized JSON file
@@ -399,7 +401,8 @@ GetLayerMetadata(layerId) {
         "id", layerId,
         "name", StrUpper(layerId),
         "color", "#007acc",      ; Default blue
-        "textColor", "#ffffff"   ; Default white
+        "textColor", "#ffffff",  ; Default white
+        "suppressUnmapped", true ; Default: suppress unmapped keys
     )
 }
 
@@ -952,6 +955,85 @@ HasKeymaps(category) {
 }
 
 ; ==============================
+; DYNAMIC LAYER HELP SYSTEM
+; ==============================
+
+; GenerateLayerHelpItems(layerName)
+; Genera dinámicamente los items de ayuda para un layer consultando el KeymapRegistry
+; Retorna un string formateado para tooltips C# (key:desc|key:desc|...)
+GenerateLayerHelpItems(layerName) {
+    global KeymapRegistry
+    
+    ; Verificar que el layer existe
+    if (!KeymapRegistry.Has(layerName)) {
+        Log.w("Layer not found in registry: " . layerName, "HELP")
+        return ""
+    }
+    
+    ; Obtener keymaps ordenados
+    items := GetSortedKeymapsForPath(layerName)
+    
+    if (items.Length = 0) {
+        return ""
+    }
+    
+    ; Generar string de items
+    result := ""
+    for item in items {
+        if (result != "")
+            result .= "|"
+        
+        ; Usar displayKey si existe, sino usar key
+        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
+        
+        ; Agregar indicador visual para categorías
+        desc := item["desc"]
+        if (item["isCategory"]) {
+            desc .= " →"
+        }
+        
+        result .= displayKey . ":" . desc
+    }
+    
+    return result
+}
+
+; ShowLayerHelp(layerName)
+; Muestra un tooltip C# con todos los keymaps disponibles en el layer actual
+ShowLayerHelp(layerName) {
+    Log.d("Showing help for layer: " . layerName, "HELP")
+    
+    ; Generar items de ayuda
+    items := GenerateLayerHelpItems(layerName)
+    
+    if (items = "") {
+        ShowCenteredToolTip("No keymaps registered for layer: " . layerName)
+        SetTimer(() => RemoveToolTip(), -2000)
+        return
+    }
+    
+    ; Verificar si tooltips C# están habilitados
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        ; Obtener metadata del layer para el título
+        layerMeta := GetLayerMetadata(layerName)
+        title := "Layer: " . layerMeta["name"] . " - Help"
+        
+        ; IMPORTANT: Mark menu as active so ListenForLayerKeymaps knows to handle ESC
+        global tooltipMenuActive
+        tooltipMenuActive := true
+        
+        ; Mostrar tooltip C# con timeout 0 (permanece hasta ESC)
+        ShowCSharpTooltipWithType(title, items, "Esc: Close", 0, "leader")
+    } else {
+        ; Fallback a tooltip nativo
+        menuText := "Layer: " . StrUpper(layerName) . " - Help`n`n"
+        menuText .= BuildMenuForPath(layerName)
+        menuText .= "`n[Esc: Close]"
+        ShowCenteredToolTip(menuText)
+    }
+}
+
+; ==============================
 ; LISTEN FOR PERSISTENT LAYER KEYMAPS
 ; ==============================
 ; Similar to NavigateHierarchical but for persistent layers (nvim, scroll, excel, etc.)
@@ -979,6 +1061,12 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         return false
     }
     
+    ; Obtener configuración de supresión de teclas no mapeadas
+    layerMeta := GetLayerMetadata(layerName)
+    suppressUnmapped := layerMeta.Has("suppressUnmapped") ? layerMeta["suppressUnmapped"] : true
+    
+    Log.d("Layer suppress mode: " . (suppressUnmapped ? "SUPPRESS" : "PASSTHROUGH"), "LAYER")
+    
     ; Loop persistente mientras la layer esté activa
     Loop {
         ; Verificar estado inicial
@@ -1000,7 +1088,9 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         
         ; CRITICAL OPTIMIZATION: Persistent InputHook (No Timeout)
         ; We wait indefinitely for a key or for the hook to be stopped by DeactivateLayer
-        ih := InputHook("L1", "{Escape}") 
+        ; NOTA: Siempre capturamos y suprimimos con "L1"
+        ; En modo passthrough, enviamos manualmente las teclas no mapeadas después
+        ih := InputHook("L1", "{Escape}")
         ih.KeyOpt("{Escape}", "S")
         
         ; Register global hook for external control
@@ -1018,6 +1108,14 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         ; Case 2: Escape Pressed
         if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
             Log.d("ESCAPE PRESSED", "LAYER")
+            
+            ; Check if tooltip is active (e.g. Help Menu)
+            ; If so, close tooltip but keep layer active
+            if (IsSet(tooltipMenuActive) && tooltipMenuActive) {
+                Log.d("Tooltip active, closing tooltip but keeping layer", "LAYER")
+                HideCSharpTooltip()
+                continue
+            }
             
             ; Check if ESC is registered in keymap
             if (ExecuteKeymapAtPath(layerName, "Escape")) {
@@ -1037,16 +1135,44 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
             continue
         }
         
+        ; ==============================
+        ; HELP KEY INTERCEPTOR
+        ; ==============================
+        ; Si el usuario presiona '?', mostrar ayuda del layer
+        ; FIX: También chequear si es '/' con Shift presionado (para teclados US donde ? es Shift+/)
+        if (key = "?" || (key = "/" && GetKeyState("Shift", "P"))) {
+            Log.d("Help key pressed, showing layer help", "LAYER")
+            try {
+                ShowLayerHelp(layerName)
+            } catch as helpErr {
+                Log.e("Error showing layer help: " . helpErr.Message, "LAYER")
+            }
+            continue
+        }
+        
         ; Ejecutar keymap registrado
         Log.d("Key pressed: " . key . " in layer: " . layerName, "LAYER")
         
         try {
             result := ExecuteKeymapAtPath(layerName, key)
             
-            ; Si es una categoría, entrar en navegación jerárquica
-            if (result && Type(result) = "String") {
-                Log.d("Category detected, entering hierarchical navigation: " . result, "LAYER")
-                NavigateHierarchicalInLayer(result, layerActiveVarName)
+            if (result) {
+                ; Keymap encontrado y ejecutado
+                if (Type(result) = "String") {
+                    ; Es una categoría, entrar en navegación jerárquica
+                    Log.d("Category detected, entering hierarchical navigation: " . result, "LAYER")
+                    NavigateHierarchicalInLayer(result, layerActiveVarName)
+                }
+            } else {
+                ; NO se encontró keymap para esta tecla
+                if (!suppressUnmapped) {
+                    ; MODO PASSTHROUGH: Enviar la tecla manualmente
+                    Log.d("Key not mapped, passing through: " . key, "LAYER")
+                    Send("{Blind}" . key)
+                } else {
+                    ; MODO SUPPRESS: No hacer nada (tecla ya fue suprimida por InputHook)
+                    Log.d("Key not mapped, suppressed: " . key, "LAYER")
+                }
             }
         } catch as execErr {
             Log.e("Error executing keymap: " . execErr.Message, "LAYER")
@@ -1083,36 +1209,55 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
         
         currentPath := pathStack[pathStack.Length]
         
-        ; Mostrar menú para el path actual
-        try {
-            if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-                ; Use C# tooltip if available
-                items := GenerateCategoryItemsForPath(currentPath)
-                if (items != "") {
-                    ; Extract title from path (last part after last dot)
-                    title := currentPath
-                    if (InStr(currentPath, ".")) {
-                        parts := StrSplit(currentPath, ".")
-                        title := parts[parts.Length]
-                    }
-                }
-            } else {
-                ; Fallback to native tooltip
-                menuText := BuildMenuForPath(currentPath)
-                if (menuText != "") {
-                    ShowCenteredToolTip(menuText . "`n[Backspace: Back] [Esc: Exit]")
-                }
-            }
-        } catch as tooltipErr {
-            Log.e("Error showing tooltip: " . tooltipErr.Message, "LAYER")
-        }
+        ; ==============================
+        ; DELAYED FEEDBACK LOGIC
+        ; ==============================
         
-        ; Esperar input con timeout para verificar estado periódicamente
-        ih := InputHook("L1 T0.1", "{Escape}{Backspace}")  ; 100ms timeout
+        ; 1. First attempt: Wait with short timeout (500ms)
+        ih := InputHook("L1 T0.5", "{Escape}{Backspace}")
         ih.KeyOpt("{Escape}", "S")
         ih.KeyOpt("{Backspace}", "S")
         ih.Start()
         ih.Wait()
+        
+        ; 2. Check if timeout occurred (User is thinking...)
+        if (ih.EndReason = "Timeout") {
+            Log.d("Navigation timeout - Showing help for: " . currentPath, "LAYER")
+            
+            ; Show menu for current path
+            try {
+                if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+                    ; Use C# tooltip if available
+                    items := GenerateCategoryItemsForPath(currentPath)
+                    if (items != "") {
+                        ; Extract title from path
+                        title := currentPath
+                        if (InStr(currentPath, ".")) {
+                            parts := StrSplit(currentPath, ".")
+                            title := parts[parts.Length]
+                        }
+                        
+                        ; Show tooltip
+                        ShowCSharpTooltipWithType("Category: " . title, items, "Esc: Exit", 0, "leader")
+                    }
+                } else {
+                    ; Fallback to native tooltip
+                    menuText := BuildMenuForPath(currentPath)
+                    if (menuText != "") {
+                        ShowCenteredToolTip(menuText . "`n[Backspace: Back] [Esc: Exit]")
+                    }
+                }
+            } catch as tooltipErr {
+                Log.e("Error showing tooltip: " . tooltipErr.Message, "LAYER")
+            }
+            
+            ; 3. Second attempt: Wait indefinitely
+            ih := InputHook("L1", "{Escape}{Backspace}")
+            ih.KeyOpt("{Escape}", "S")
+            ih.KeyOpt("{Backspace}", "S")
+            ih.Start()
+            ih.Wait()
+        }
         
         ; Si fue timeout, verificar estado y continuar
         if (ih.EndReason = "Timeout") {

@@ -7,8 +7,11 @@
 ; ==============================
 ; LAYER REGISTRATION
 ; ==============================
+; Vim layers with passthrough mode (false = no suprimir teclas no mapeadas)
+; Solo interceptamos teclas específicas, el resto pasa a la aplicación
 RegisterLayer("vim", "VIM MODE", "#7F9C5D", "#ffffff")
-RegisterLayer("vim_visual", "VISUAL MODE", "#ffafcc", "#000000") 
+RegisterLayer("vim_visual", "VISUAL MODE", "#ffafcc", "#000000")
+RegisterLayer("vim_insert", "INSERT MODE", "#d0f0c0", "#000000", false)
 
 ; ==============================
 ; MODE SWITCHING FUNCTIONS
@@ -229,6 +232,19 @@ VimYankStartLine() {
 }
 
 VimDelete() {
+    Send("{delete}")
+}
+
+VimCut() {
+    Send("^x")
+}
+
+VimVisualDelete() {
+    Send("delete")
+    ExitVisualMode() ; Usually delete exits visual mode
+}
+
+VimVisualCut() {
     Send("^x")
     ExitVisualMode() ; Usually delete exits visual mode
 }
@@ -331,7 +347,7 @@ VimDeleteAll() {
 ; ==============================
 
 ; --- Global Entry Point ---
-RegisterKeymap("leader", "v", "Vim Mode", ToggleVimMode)
+RegisterKeymap("leader", "V", "Vim Mode", ToggleVimMode)
 
 ; --- VIM MODE (Normal) ---
 RegisterKeymap("vim", "h", "Left", VimMoveLeft)
@@ -359,9 +375,8 @@ RegisterKeymap("vim", "y", "$", "End of Line", VimYankEndLine)
 RegisterKeymap("vim", "p", "Paste", VimPaste)
 RegisterKeymap("vim", "u", "Undo", VimUndo)
 RegisterKeymap("vim", "r", "Redo", VimRedo)
-
+RegisterKeymap("vim", "i", "Insert", () => SwitchToLayer("insert"))
 RegisterKeymap("vim", "v", "Visual Mode", EnterVisualMode)
-RegisterKeymap("vim", "Esc", "Exit Vim", ExitVimMode)
 
 ; --- VISUAL MODE ---
 RegisterKeymap("vim_visual", "h", "Select Left", VimVisualMoveLeft)
@@ -380,10 +395,13 @@ RegisterCategoryKeymap("vim_visual", "g", "Go To", 1)
 RegisterKeymap("vim_visual", "g", "g", " Select Top File", VimVisualTopOfFile) 
 RegisterKeymap("vim_visual", "G", "Select Bottom", VimVisualBottomOfFile)
 
-RegisterKeymap("vim_visual", "d", "Cut Selection", VimDelete)
-RegisterKeymap("vim_visual", "x", "Cut Selection", VimDelete)
+RegisterKeymap("vim_visual", "d", "Cut Selection", VimVisualDelete)
+RegisterKeymap("vim_visual", "x", "Cut Selection", VimVisualCut)
 RegisterKeymap("vim_visual", "c", "Change Selection", VimChange)
 RegisterKeymap("vim_visual", "y", "Copy Selection", VimYank)
 
-RegisterKeymap("vim_visual", "Esc", "Normal Mode", ExitVisualMode)
+RegisterKeymap("vim_visual", "Escape", "Normal Mode", ReturnToPreviousLayer)
 RegisterKeymap("vim_visual", "v", "Normal Mode", ExitVisualMode)
+
+; Exit insert mode with Esc
+RegisterKeymap("vim_insert", "Escape", "Exit Insert Mode",  () => SwitchToLayer("vim"))
