@@ -17,10 +17,10 @@ El objeto raíz es un **TooltipCommand**. Todos los campos son opcionales, pero 
 | Campo | Tipo | Por Defecto | Descripción |
 | :--- | :--- | :--- | :--- |
 | `show` | `bool` | `false` | `true` para mostrar el tooltip, `false` para ocultarlo. |
-| `id` | `string` | `\"main\"` | Identificador único para la ventana de tooltip. Permite múltiples tooltips independientes (ej: uno para menú, uno para estado). |
-| `title` | `string` | `\"\"` | El texto del encabezado principal del tooltip. |
+| `id` | `string` | `"main"` | Identificador único para la ventana de tooltip. Permite múltiples tooltips independientes (ej: uno para menú, uno para estado). |
+| `title` | `string` | `""` | El texto del encabezado principal del tooltip. |
 | `timeout_ms` | `int` | `7000` | Tiempo en milisegundos antes de que el tooltip se oculte automáticamente. Establecer en `0` para persistente. |
-| `tooltip_type` | `string` | `\"leader\"` | Presets para comportamiento/diseño. Opciones: `\"leader\"`, `\"status_persistent\"`, `\"sidebar_right\"`, `\"bottom_right_list\"`, `\"text_block\"`. |
+| `tooltip_type` | `string` | `"leader"` | **⚠️ DEPRECADO:** Usar objetos granulares en su lugar. Presets: `"leader"`, `"status_persistent"`, `"sidebar_right"`, `"bottom_right_list"`, `"text_block"`. |
 
 ### Campos de Contenido
 
@@ -30,15 +30,71 @@ El objeto raíz es un **TooltipCommand**. Todos los campos son opcionales, pero 
 | `content` | `string` | Contenido de texto sin procesar. Usado cuando `tooltip_type` es `\"text_block\"`. Preserva espacios/saltos de línea. |
 | `navigation` | `Array<string>` | Lista de cadenas para mostrar en la barra de navegación inferior (ej: `[\"ESC: Cerrar\", \"ENTER: Seleccionar\"]`). |
 
-### Diseño y Comportamiento
+### Diseño y Comportamiento (v2.1+ Configuración Granular)
+
+**Nuevo en v2.1:** Usar objetos de configuración granulares para mejor control:
+
+| Objeto | Tipo | Descripción |
+| :--- | :--- | :--- |
+| `layout` | `object` | Configuración de diseño: `{ mode: "grid", columns: 4 }` |
+| `window` | `object` | Propiedades de ventana: `{ topmost: true, click_through: false, opacity: 1.0 }` |
+| `animation` | `object` | Configuración de animación: `{ type: "fade", duration_ms: 300, easing: "ease_out" }` |
+| `position` | `object` | Configuración de posición: `{ monitor: 1, x: 100, y: 100 }` |
+| `style` | `object` | Configuración de estilo incluyendo `font_family` para soporte de NerdFont |
+
+#### Objeto Layout
 
 | Campo | Tipo | Por Defecto | Descripción |
 | :--- | :--- | :--- | :--- |
-| `layout` | `string` | `\"grid\"` | `\"grid\"` (multi-columna) o `\"list\"` (columna única). |
-| `columns` | `int` | `4` | Número de columnas cuando `layout` es `\"grid\"`. |
-| `topmost` | `bool` | `null` | Si es `true`, fuerza la ventana a permanecer encima de todas las demás. |
-| `click_through` | `bool` | `null` | Si es `true`, los clics del mouse pasan a través de la ventana. |
-| `opacity` | `double` | `null` | Opacidad de la ventana (0.0 a 1.0). |
+| `mode` | `string` | `"grid"` | `"grid"` (multi-columna) o `"list"` (columna única). |
+| `columns` | `int` | `4` | Número de columnas cuando mode es `"grid"`. |
+
+#### Objeto Window
+
+| Campo | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- |
+| `topmost` | `bool` | `true` | Si es `true`, fuerza la ventana a permanecer encima. |
+| `click_through` | `bool` | `false` | Si es `true`, los clics del mouse pasan a través de la ventana. |
+| `opacity` | `double` | `1.0` | Opacidad de la ventana (0.0 a 1.0). |
+
+#### Objeto Animation (¡Nuevo en v2.1!)
+
+| Campo | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- |
+| `type` | `string` | `"none"` | Tipo de animación: `"none"`, `"fade"`, `"slide_left"`, `"slide_right"`, `"slide_up"`, `"slide_down"` |
+| `duration_ms` | `int` | `300` | Duración de la animación en milisegundos |
+| `easing` | `string` | `"ease_out"` | Función de easing: `"linear"`, `"ease_in"`, `"ease_out"`, `"ease_in_out"`, `"bounce"` |
+
+#### Objeto Position
+
+| Campo | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- |
+| `monitor` | `int` | `0` | Índice de monitor para configuraciones multi-monitor (consciente de DPI) |
+| `x` | `int` | `null` | Posición X (opcional, auto-calculada si no se establece) |
+| `y` | `int` | `null` | Posición Y (opcional, auto-calculada si no se establece) |
+
+#### Objeto Style
+
+| Campo | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- |
+| `font_family` | `string` | Fuente del sistema | Nombre de familia de fuente (ej: `"FiraCode Nerd Font"` para iconos NerdFont) |
+| `font_size` | `int` | `12` | Tamaño de fuente |
+| `bg_color` | `string` | `"#1e1e1e"` | Color de fondo |
+| `text_color` | `string` | `"#ffffff"` | Color de texto |
+
+---
+
+### Campos Legados (Compatible Hacia Atrás)
+
+> ⚠️ **DEPRECADO:** Los siguientes campos todavía se soportan para compatibilidad hacia atrás pero deberían migrarse a objetos granulares.
+
+| Campo | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- |
+| `layout` | `string` | `"grid"` | Usar `layout.mode` en su lugar |
+| `columns` | `int` | `4` | Usar `layout.columns` en su lugar |
+| `topmost` | `bool` | `null` | Usar `window.topmost` en su lugar |
+| `click_through` | `bool` | `null` | Usar `window.click_through` en su lugar |
+| `opacity` | `double` | `null` | Usar `window.opacity` en su lugar |
 
 ---
 

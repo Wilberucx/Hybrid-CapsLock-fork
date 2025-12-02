@@ -20,7 +20,7 @@ The root object is a **TooltipCommand**. All fields are optional, but `show` is 
 | `id` | `string` | `"main"` | Unique identifier for the tooltip window. Allows multiple independent tooltips (e.g., one for menu, one for status). |
 | `title` | `string` | `""` | The main header text of the tooltip. |
 | `timeout_ms` | `int` | `7000` | Time in milliseconds before the tooltip automatically hides. Set to `0` for persistent. |
-| `tooltip_type` | `string` | `"leader"` | Presets for behavior/layout. Options: `"leader"`, `"status_persistent"`, `"sidebar_right"`, `"bottom_right_list"`, `"text_block"`. |
+| `tooltip_type` | `string` | `"leader"` | **⚠️ DEPRECATED:** Use granular objects instead. Presets: `"leader"`, `"status_persistent"`, `"sidebar_right"`, `"bottom_right_list"`, `"text_block"`. |
 
 ### Content Fields
 
@@ -30,15 +30,71 @@ The root object is a **TooltipCommand**. All fields are optional, but `show` is 
 | `content` | `string` | Raw text content. Used when `tooltip_type` is `"text_block"`. Preserves whitespace/newlines. |
 | `navigation` | `Array<string>` | List of strings to display in the bottom navigation bar (e.g., `["ESC: Close", "ENTER: Select"]`). |
 
-### Layout & Behavior
+### Layout & Behavior (v2.1+ Granular Configuration)
+
+**New in v2.1:** Use granular configuration objects for better control:
+
+| Object | Type | Description |
+| :--- | :--- | :--- |
+| `layout` | `object` | Layout configuration: `{ mode: "grid", columns: 4 }` |
+| `window` | `object` | Window properties: `{ topmost: true, click_through: false, opacity: 1.0 }` |
+| `animation` | `object` | Animation settings: `{ type: "fade", duration_ms: 300, easing: "ease_out" }` |
+| `position` | `object` | Position settings: `{ monitor: 1, x: 100, y: 100 }` |
+| `style` | `object` | Style settings including `font_family` for NerdFont support |
+
+#### Layout Object
 
 | Field | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `layout` | `string` | `"grid"` | `"grid"` (multi-column) or `"list"` (single column). |
-| `columns` | `int` | `4` | Number of columns when `layout` is `"grid"`. |
-| `topmost` | `bool` | `null` | If `true`, forces the window to stay on top of all other windows. |
-| `click_through` | `bool` | `null` | If `true`, mouse clicks pass through the window. |
-| `opacity` | `double` | `null` | Opacity of the window (0.0 to 1.0). |
+| `mode` | `string` | `"grid"` | `"grid"` (multi-column) or `"list"` (single column). |
+| `columns` | `int` | `4` | Number of columns when mode is `"grid"`. |
+
+#### Window Object
+
+| Field | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `topmost` | `bool` | `true` | If `true`, forces the window to stay on top. |
+| `click_through` | `bool` | `false` | If `true`, mouse clicks pass through the window. |
+| `opacity` | `double` | `1.0` | Opacity of the window (0.0 to 1.0). |
+
+#### Animation Object (New in v2.1!)
+
+| Field | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `type` | `string` | `"none"` | Animation type: `"none"`, `"fade"`, `"slide_left"`, `"slide_right"`, `"slide_up"`, `"slide_down"` |
+| `duration_ms` | `int` | `300` | Animation duration in milliseconds |
+| `easing` | `string` | `"ease_out"` | Easing function: `"linear"`, `"ease_in"`, `"ease_out"`, `"ease_in_out"`, `"bounce"` |
+
+#### Position Object
+
+| Field | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `monitor` | `int` | `0` | Monitor index for multi-monitor setups (DPI-aware) |
+| `x` | `int` | `null` | X position (optional, auto-calculated if not set) |
+| `y` | `int` | `null` | Y position (optional, auto-calculated if not set) |
+
+#### Style Object
+
+| Field | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `font_family` | `string` | System font | Font family name (e.g., `"FiraCode Nerd Font"` for NerdFont icons) |
+| `font_size` | `int` | `12` | Font size |
+| `bg_color` | `string` | `"#1e1e1e"` | Background color |
+| `text_color` | `string` | `"#ffffff"` | Text color |
+
+---
+
+### Legacy Fields (Backward Compatible)
+
+> ⚠️ **DEPRECATED:** The following fields are still supported for backward compatibility but should be migrated to granular objects.
+
+| Field | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `layout` | `string` | `"grid"` | Use `layout.mode` instead |
+| `columns` | `int` | `4` | Use `layout.columns` instead |
+| `topmost` | `bool` | `null` | Use `window.topmost` instead |
+| `click_through` | `bool` | `null` | Use `window.click_through` instead |
+| `opacity` | `double` | `null` | Use `window.opacity` instead |
 
 ---
 

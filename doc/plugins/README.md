@@ -102,6 +102,7 @@ Si eres nuevo en Hybrid CapsLock, te recomendamos empezar con estos plugins:
 ## 📑 Index
 
 - [ADB Actions](#adb-actions-adb_actionsahk)
+- [Explorer Actions](#explorer-actions-explorer_actionsahk)
 - [Folder Actions](#folder-actions-folder_actionsahk)
 - [Power Actions](#power-actions-power_actionsahk)
 - [SendInfo Actions](#sendinfo-actions-sendinfo_actionsahk)
@@ -130,6 +131,42 @@ Advanced integration with Android Debug Bridge for developers.
 - `d`: **Clear App Data** (Searchable list)
 - `r`: **Reboot Device**
 - `k`: **Kill Server**
+
+---
+
+## 📁 Explorer Actions (`explorer_actions.ahk`)
+
+Vim-style navigation and file management for Windows Explorer.
+
+**Key Features:**
+- **Vim-Inspired Keybindings**: Navigate Explorer with familiar vim commands.
+- **File Operations**: Rename, add files/folders, edit files, toggle hidden files.
+- **Tab Management**: Open/close Explorer windows, navigate folder history.
+- **Copy Actions**: Copy paths, filenames, directory paths with one key.
+
+**Entry Point:**
+- Access via `Leader → e → x` to activate Explorer layer
+
+**Keymaps (Explorer Layer):**
+- `r`: **Rename** (Sends F2, switches to insert mode)
+- `a`: **Add File/Folder** (Dynamic GUI, auto-detects type)
+- `e`: **Edit File** (Opens in configured editor)
+- `.`: **Toggle Hidden Files**
+
+**Tab Manager (b):**
+- `bd`: Close current Explorer window
+- `bn`: Open new Explorer window
+- `H`: Navigate to previous folder
+- `L`: Navigate to next folder
+
+**Copy Actions (c):**
+- `cp`: Copy full path of selected item
+- `cd`: Copy current directory path
+- `cf`: Copy filename only
+
+**Dependencies:**
+- Uses `GetSelectedExplorerItem()` from `context_utils.ahk`
+- Uses `GetActiveExplorerPath()` from `context_utils.ahk`
 
 ---
 

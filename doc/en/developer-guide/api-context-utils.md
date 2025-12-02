@@ -44,6 +44,41 @@ RegisterKeymap("leader", "t", "h", "Terminal Here", OpenTerminalHere, false, 1)
 
 ---
 
+### `GetSelectedExplorerItem()`
+
+Returns the full path of the currently selected file or folder in Windows Explorer.
+
+**Parameters:** None
+
+**Returns:** `String` - Full path of the selected item, or empty string (`""`) if no item is selected or no Explorer window is active
+
+**Technical:** Uses COM (`Shell.Application`) to query the active Explorer window for the selected item.
+
+**Example:**
+
+```autohotkey
+; Get currently selected file/folder in Explorer
+selectedItem := GetSelectedExplorerItem()
+if (selectedItem != "") {
+    MsgBox("Selected: " . selectedItem)
+} else {
+    MsgBox("No item selected in Explorer")
+}
+
+; Copy path of selected item
+CopySelectedItemPath() {
+    path := GetSelectedExplorerItem()
+    if (path != "") {
+        A_Clipboard := path
+        ShowQuickTip("Path copied!", "")
+    }
+}
+
+RegisterKeymap("explorer", "c", "p", "Copy Path", CopySelectedItemPath, false, 1)
+```
+
+---
+
 ### `IsTerminalWindow()`
 
 Checks if the active window is a known terminal emulator.
@@ -342,3 +377,4 @@ Log.d("Is terminal: " . isTerminal, "CONTEXT")
 - [Shell Exec API](api-shell-exec.md) - Execute commands with context
 - [Dynamic Layer](../../../system/plugins/dynamic_layer.ahk) - Use GetActiveProcessName() for layers
 - [Folder Actions Plugin](../../plugins/folder_actions.ahk) - Example using GetActiveExplorerPath()
+- [Explorer Actions Plugin](../../plugins/explorer_actions.ahk) - Example using GetSelectedExplorerItem()

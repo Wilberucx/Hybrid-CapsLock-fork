@@ -22,20 +22,31 @@ Before assigning keys, you must register the layer. This is crucial because the 
 ### Syntax
 
 ```autohotkey
-RegisterLayer(layerId, displayName, color, textColor)
+RegisterLayer(layerId, displayName, color, textColor, suppressUnmapped)
 ```
 
 - **`layerId`** (string): Unique internal identifier (e.g., `"gaming"`, `"photoshop"`).
 - **`displayName`** (string): Human-readable name the user will see (e.g., `"GAMING MODE"`).
 - **`color`** (string): Background color of the indicator in HEX format (e.g., `"#FF0000"`).
 - **`textColor`** (string): Text color of the indicator (optional, default `"#ffffff"`).
+- **`suppressUnmapped`** (boolean): Controls unmapped key behavior (optional, default `true`)
+  - `true`: Only mapped keys work, unmapped keys are blocked (default behavior)
+  - `false`: Unmapped keys pass through to the application
 
-### Example
+### Examples
 
 ```autohotkey
-; In your configuration file or plugin
+; Standard layer (blocks all unmapped keys)
 RegisterLayer("gaming", "GAMING MODE", "#FF5555", "#FFFFFF")
+
+; Passthrough layer (only intercepts specific keys)
+RegisterLayer("vim", "VIM MODE", "#7F9C5D", "#ffffff", false)
 ```
+
+**When to use `suppressUnmapped := false`:**
+- Vim-style layers that only need to intercept ESC or specific commands
+- Layers where you want normal typing to work while intercepting shortcuts
+- Text editing contexts where blocking unmapped keys would be disruptive
 
 ---
 
@@ -50,7 +61,7 @@ RegisterKeymap(layerId, key, description, action, [confirm], [order])
 ```
 
 - **`layerId`**: The ID you defined in `RegisterLayer`.
-- **`key`**: The key to map (e.g., `"w"`, `"Esc"`).
+- **`key`**: The key to map (e.g., `"w"`, `"Esc"`, or `"<C-s>"` for Ctrl+s).
 - **`description`**: Text that will appear in the help menu/tooltip.
 - **`action`**: The function to execute. Can be an existing function or a lambda `() => ...`.
 - **`confirm`** (bool, optional): If `true`, will ask for confirmation before executing.
@@ -67,7 +78,15 @@ RegisterKeymap("gaming", "r", "Reload", ReloadWeapon, false, 2)
 
 ; Action with confirmation
 RegisterKeymap("gaming", "q", "Quit Game", () => WinClose("A"), true, 9)
+
+; Using Vim-style modifier syntax (recommended for modifiers)
+RegisterKeymap("gaming", "<C-s>", "Quick Save", QuickSave, false, 3)
+RegisterKeymap("gaming", "<S-C-r>", "Force Reload", ForceReload, false, 4)
 ```
+
+### Built-in Layer Help
+
+Press `?` in any active layer to automatically see all registered keymaps! No configuration needed.
 
 ---
 

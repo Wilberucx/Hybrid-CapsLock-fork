@@ -32,7 +32,40 @@ RegisterKeymap("scroll", "j", "Scroll Down", ScrollDown, false)
 ListenForLayerKeymaps("scroll", "isScrollLayerActive")  // Loop without timeout
 ```
 
-### 2. Key Function: ListenForLayerKeymaps()
+### 2. Vim-Style Modifier Keys (New!)
+
+You can now use Vim-style modifier syntax for better readability:
+
+```ahk
+; Vim-style syntax (recommended for modifiers)
+RegisterKeymap("leader", "<C-s>", "Save All", SaveAllFunc, false, 1)
+RegisterKeymap("leader", "<S-C-a>", "Advanced", AdvancedFunc, false, 2)
+RegisterKeymap("leader", "<A-S-k>", "Special", SpecialFunc, false, 3)
+
+; Works with triggers too
+RegisterTrigger("<C-F1>", ShowHelp, "AppActive")
+```
+
+**Modifier Mapping:**
+- `C` → Ctrl (`^`)
+- `S` → Shift (`+`)
+- `A` → Alt (`!`)
+
+The UI will display the original readable syntax (`<C-a>`) while execution uses AutoHotkey format (`^a`).
+
+### 3. Dynamic Layer Help
+
+Press `?` in any active layer to see all available keybindings automatically:
+
+```ahk
+; No configuration needed! Works in all layers automatically
+; While in any layer, press ? to see help
+; Press Esc to close help (layer remains active)
+```
+
+Categories also show help after 500ms timeout for better discoverability.
+
+### 4. Key Function: ListenForLayerKeymaps()
 
 ```ahk
 ListenForLayerKeymaps(layerName, layerActiveVarName) {
@@ -115,6 +148,32 @@ RegisterKeymap("scroll", "j", "Scroll Down", ScrollDown, false)
 
 Use `RegisterLayer(id, display_name, color_hex_background, color_hex_text)` to create new layers, more information in [layers](../user-guide/layers.md)
 
+## Declarative Trigger Registration
+
+Use `RegisterTrigger()` for clean, declarative global hotkey registration:
+
+```ahk
+; Old way (verbose, not recommended)
+#SuspendExempt
+#HotIf (LeaderLayerEnabled)
+F24:: ActivateLeaderLayer()
+#HotIf
+#SuspendExempt False
+
+; New way (declarative, recommended)
+RegisterTrigger("F24", ActivateLeaderLayer, "LeaderLayerEnabled")
+RegisterTrigger("F23", ActivateDynamicLayer, "DYNAMIC_LAYER_ENABLED")
+
+; Works with modifier syntax too
+RegisterTrigger("<C-F1>", ShowHelp)
+```
+
+**Benefits:**
+- Cleaner, more readable code
+- Automatic SuspendExempt handling
+- Consistent with `RegisterKeymap()` style
+- Supports Vim-style modifier syntax
+
 ## Hotkeys vs Keymaps
 
 ### Why can't F24 be a keymap?
@@ -130,8 +189,8 @@ Kanata (hardware) → F24 → ActivateLeaderLayer() → NavigateHierarchical()
 **Keymaps only work INSIDE active layers:**
 
 ```ahk
-; F24 MUST be hotkey (global trigger)
-F24:: ActivateLeaderLayer()  // ← Activates the system
+; F24 MUST be trigger (global entry point)
+RegisterTrigger("F24", ActivateLeaderLayer, "LeaderLayerEnabled")
 
 ; 's' CAN be keymap (action inside leader)
 RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false)  // ← Uses the system
@@ -139,7 +198,7 @@ RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false)  // ← Uses
 
 **Rule:**
 
-- **Hotkeys = Entry points** (activate layers)
+- **Triggers = Entry points** (activate layers from outside)
 - **Keymaps = Functions** (work inside layers)
 
 F24 is the entry door. The door can't be inside the house it opens.

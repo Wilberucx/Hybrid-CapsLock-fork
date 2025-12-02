@@ -129,6 +129,37 @@ RegisterKeymap("leader", "h", "p", "Pause Hybrid", PauseHybridScript, false, 1)
 
 ---
 
+### 5. Welcome Screen
+**File**: `system/plugins/welcome_screen.ahk`  
+**Documentation**: [README](../../../system/plugins/no_include/welcome_screen_README.md)
+
+**Purpose**: Display an animated welcome screen on startup with system information and tips.
+
+**Main Functions**:
+- `ShowWelcomeScreen()` - Display welcome screen with system info
+- `ShowQuickTip(message, icon)` - Show temporary notification tooltip
+
+**Features**:
+- Auto-start on script load (800ms delay)
+- NerdFont icon support
+- Fade animations
+- Configurable via `HybridConfig.welcome`
+- Can be disabled in configuration
+
+**Usage Example**:
+```autohotkey
+; Show a quick notification
+ShowQuickTip("✓ Settings saved!", "")
+
+; Welcome screen runs automatically on startup
+; To disable, set in config:
+; HybridConfig.welcome := { enabled: false }
+```
+
+**Used By**: Startup experience, user notifications
+
+---
+
 ## 🔄 How Core Plugins Work
 
 ### Load Cycle
