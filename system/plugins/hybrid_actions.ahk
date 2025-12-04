@@ -21,8 +21,8 @@ ReloadHybridScript() {
     try StopTooltipApp()
     
     ; Reiniciar Kanata (si estaba corriendo)
-    if (IsKanataRunning()) {
-        RestartKanata()
+    if (KanataIsRunning()) {
+        KanataRestart()
     }
     
     ; Reiniciar AHK
@@ -31,7 +31,7 @@ ReloadHybridScript() {
 }
 
 ; ---- Restart solo Kanata ----
-RestartKanataOnly() {
+KanataRestartOnly() {
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         try ShowCSharpStatusNotification("KANATA", "RESTARTING...")
     } else {
@@ -39,7 +39,7 @@ RestartKanataOnly() {
         SetTimer(() => RemoveToolTip(), -800)
     }
     
-    RestartKanata()
+    KanataRestart()
     
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
         Sleep(600)
@@ -66,8 +66,8 @@ ExitHybridScript() {
     }
     
     ; Detener Kanata (si estaba corriendo)
-    if (IsKanataRunning()) {
-        StopKanata()
+    if (KanataIsRunning()) {
+        KanataStop()
     }
     
     ; Salir de AHK

@@ -103,6 +103,24 @@ BehaviorConfig := {
 }
 
 ; ===============================
+; KANATA MANAGER CONFIG
+; ===============================
+
+KanataConfig := {
+    enabled: true,                              ; Enable Kanata management
+    exePath: "kanata.exe",                      ; Kanata binary path (can be full path or in PATH)
+    configFile: "ahk\config\kanata.kbd",        ; Config file path (relative to script dir)
+    startDelay: 500,                            ; Milliseconds to wait after starting
+    autoStart: true,                            ; Start Kanata automatically with HybridCapsLock
+    fallbackPaths: [                            ; Paths to search for kanata.exe
+        A_ScriptDir . "\bin\kanata.exe",
+        A_ScriptDir . "\kanata.exe",
+        "C:\Program Files\kanata\kanata.exe",
+        A_AppData . "\..\Local\kanata\kanata.exe"
+    ]
+}
+
+; ===============================
 ; UNIFIED CONFIG EXPORT
 ; ===============================
 
@@ -111,6 +129,7 @@ global HybridConfig := {
     layers: LayerConfig,
     tooltips: TooltipConfig,
     behavior: BehaviorConfig,
+    kanata: KanataConfig,
     
     ; Computed properties
     isDeveloper: AppConfig.debug_mode,

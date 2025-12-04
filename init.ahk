@@ -1,4 +1,3 @@
-; ===================================================================
 ; HybridCapsLock - Main Application (init.ahk)
 ; ===================================================================
 ; Like Neovim's init.lua, this is the main configuration file.
@@ -25,7 +24,6 @@
 #Include system\core\keymap_registry.ahk
 #Include system\core\layer_manager.ahk
 #Include system\core\auto_loader.ahk
-#Include system\core\kanata_launcher.ahk
 #Include system\core\leader_router.ahk
 
 
@@ -34,7 +32,9 @@
 #Include system\plugins\context_utils.ahk
 #Include system\plugins\dynamic_layer.ahk
 #Include system\plugins\hybrid_actions.ahk
+#Include system\plugins\kanata_manager.ahk
 #Include system\plugins\shell_exec.ahk
+#Include system\plugins\welcome_screen.ahk
 ; ===== AUTO-LOADED PLUGINS END =====
 
 ; --------------------
@@ -49,8 +49,6 @@
 ; --------------------
 #Include system\ui\tooltip_csharp_integration.ahk
 #Include system\ui\tooltips_native_wrapper.ahk
-#Include system\ui\scroll_tooltip_integration.ahk
-#Include system\ui\welcome_screen.ahk
 
 ; ===== AUTO-LOADED LAYERS START =====
 ; (No auto-loaded files)
@@ -60,27 +58,6 @@
 ; Startup logic
 ; --------------------
 try {
-    StartKanataIfNeeded()
-    if (IsSet(HybridConfig)) {
-        LogInfo("Config loaded from: ahk", "INIT")
-        
-        InitDebugSystem()
-        
-        SyncDebugMode()
-        
-        LogInfo("HybridCapsLock v" . HybridConfig.app.version . " iniciado correctamente", "INIT")
-    } else {
-        LogError("Config not loaded, will use INI fallback", "INIT")
-    }
-    
-}
-; ===== AUTO-LOADED LAYERS END =====
-
-; --------------------
-; Startup logic
-; --------------------
-try {
-    StartKanataIfNeeded()
     if (IsSet(HybridConfig)) {
         LogInfo("Config loaded from: ahk", "INIT")
         
