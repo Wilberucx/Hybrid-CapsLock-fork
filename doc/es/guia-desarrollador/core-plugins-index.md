@@ -247,6 +247,108 @@ ActivateDynamicLayer() {
 
 ---
 
+### 5. Kanata Manager
+**Archivo**: `system/plugins/kanata_manager.ahk`  
+**Documentación**: Documentación inline en el archivo del plugin
+
+**Propósito**: Gestionar el ciclo de vida de Kanata (start, stop, restart, toggle) usando funciones nativas de AutoHotkey v2.
+
+**Funciones Principales**:
+- `KanataStart()` - Iniciar Kanata con detección automática y validación
+- `KanataStop()` - Detener proceso de Kanata
+- `KanataRestart()` - Reiniciar Kanata (stop + start)
+- `KanataToggle()` - Alternar Kanata on/off
+- `KanataIsRunning()` - Verificar si Kanata está corriendo
+- `KanataShowStatus(duration := 1500)` - Mostrar estado de Kanata en tooltip
+- `KanataGetStatus()` - Obtener string de estado legible
+- `KanataGetPID()` - Obtener ID de proceso de Kanata
+- `KanataStartWithRetry(maxRetries := 3, retryDelay := 1000)` - Iniciar con lógica de reintentos
+
+**Funciones Legacy (Deprecated pero funcionales):**
+> **DEPRECATED:** Las siguientes funciones se mantienen por compatibilidad:
+> - `StartKanataIfNeeded()` → Usar `KanataStart()` en su lugar
+> - `StopKanata()` → Usar `KanataStop()` en su lugar
+> - `RestartKanata()` → Usar `KanataRestart()` en su lugar
+> - `IsKanataRunning()` → Usar `KanataIsRunning()` en su lugar
+
+**Configuración** (`ahk/config/settings.ahk`):
+```autohotkey
+HybridConfig.kanata := {
+    enabled: true,
+    exePath: "kanata.exe",           ; Auto-detectado si no se encuentra
+    configFile: "ahk\config\kanata.kbd",
+    startDelay: 500,
+    autoStart: true,
+    fallbackPaths: [
+        A_ScriptDir . "\bin\kanata.exe",
+        A_ScriptDir . "\kanata.exe",
+        "C:\Program Files\kanata\kanata.exe",
+        A_AppData . "\..\Local\kanata\kanata.exe"
+    ]
+}
+```
+
+**Ejemplo de Uso**:
+```autohotkey
+; Iniciar Kanata con auto-detección y validación
+KanataStart()  ; Valida config primero, luego inicia
+
+; Verificar estado
+if (KanataIsRunning()) {
+    MsgBox("Kanata está corriendo con PID: " . KanataGetPID())
+}
+
+; Alternar on/off
+KanataToggle()
+
+; Mostrar estado en tooltip (2 segundos)
+KanataShowStatus(2000)
+
+; Iniciar con lógica de reintentos (5 intentos, 2 segundos entre reintentos)
+KanataStartWithRetry(5, 2000)
+
+; Configurado en keymap.ahk (vía hybrid_actions.ahk)
+RegisterKeymap("leader", "h", "k", "t", "Toggle Kanata", (*) => KanataToggle())
+RegisterKeymap("leader", "h", "k", "s", "Kanata Status", (*) => KanataShowStatus())
+```
+
+**Cómo Funciona KanataStart()**:
+1. Verifica si Kanata ya está corriendo (retorna true si es así)
+2. Verifica que el archivo de config existe
+3. **Valida config** con `kanata.exe --cfg config.kbd --check`
+4. Parsea output de validación en busca de errores (9 tipos)
+5. Si encuentra errores, muestra diálogo contextual y aborta
+6. Si validación pasa, inicia Kanata en background (oculto)
+7. Monitorea proceso por crashes inmediatos (verifica dos veces)
+8. Retorna true en éxito, false en fallo
+
+**Ejemplos de Diálogos de Error**:
+- **Error de Sintaxis**: Muestra número de línea, mensaje de error, snippet de contexto y sugerencias
+- **Conflicto de Puerto**: Muestra qué puerto está en uso y sugiere soluciones
+- **Archivo No Encontrado**: Muestra instrucciones de instalación y configuración de PATH
+- **Detección de Crash**: Detecta si el proceso muere inmediatamente después de iniciar
+
+**Características Clave**:
+- **AHK v2 Nativo**: Sin dependencias de VBScript externos
+- **Auto-detección**: Busca en ubicaciones comunes por `kanata.exe` con rutas de fallback
+- **Pre-validación**: Valida config con flag `--check` antes de iniciar
+- **Manejo Avanzado de Errores**: Parsing inteligente de errores con 9 tipos:
+  - `SYNTAX_ERROR`: Errores de sintaxis con números de línea y contexto
+  - `PORT_IN_USE`: Conflictos de puerto de red
+  - `INVALID_KEY`: Definiciones de teclas inválidas
+  - `NOT_FOUND`: kanata.exe no encontrado
+  - `FILE_ERROR`: Errores de acceso al archivo de config
+  - `NO_OUTPUT`: Detección de crash inmediato
+  - `RUNTIME_ERROR`: Excepciones de runtime
+- **Diálogos de Error Contextuales**: Mensajes amigables con sugerencias de solución
+- **Detección de Crash de Proceso**: Monitorea si Kanata crashea después de iniciar
+- **Limpieza de Códigos ANSI**: Remueve códigos de color y caracteres de box-drawing
+- **Captura de Output**: Usa `shell.Exec` para capturar STDOUT/STDERR
+- **Lógica de Reintentos**: Reintentos automáticos con delays configurables
+- **Configurable**: Configuración centralizada en `settings.ahk`
+
+---
+
 ## 🆚 Core vs Optional Plugins
 
 | Aspecto | Core Plugins | Optional Plugins |

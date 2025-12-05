@@ -79,9 +79,18 @@ cd HybridCapslock
 
 ---
 
-### Paso 4: Configurar Ruta de Kanata
+### Paso 4: Configurar Kanata (Opcional)
 
-Edita `config/settings.ahk` para apuntar a tu instalación de Kanata:
+**Buenas noticias**: El plugin Kanata Manager **detecta automáticamente** `kanata.exe` en ubicaciones comunes:
+- `{ScriptDir}\bin\kanata.exe` (releases portables)
+- `{ScriptDir}\kanata.exe`
+- `C:\Program Files\kanata\kanata.exe`
+- `%LOCALAPPDATA%\kanata\kanata.exe`
+- PATH del sistema
+
+**Solo configura si usas una ubicación personalizada:**
+
+Edita `ahk/config/settings.ahk` y agrega/modifica la sección de configuración de Kanata:
 
 ```ahk
 ; Ruta al ejecutable de Kanata
@@ -91,7 +100,12 @@ global KanataPath := "C:\Program Files\Kanata\kanata.exe"
 global KanataConfigPath := A_ScriptDir . "\config\../../../config/kanata.kbd"
 ```
 
-**Nota**: Si instalaste Kanata en una ubicación diferente, actualiza `KanataPath` en consecuencia.
+**Opciones de Configuración:**
+- `enabled`: Habilitar/deshabilitar integración con Kanata (default: `true`)
+- `exePath`: Ruta personalizada a `kanata.exe` (default: auto-detectado)
+- `configFile`: Ruta al archivo de config de Kanata (default: `ahk\config\kanata.kbd`)
+- `startDelay`: Delay antes de iniciar Kanata en milisegundos (default: `500`)
+- `autoStart`: Iniciar Kanata automáticamente al lanzar el script (default: `true`)
 
 ---
 
@@ -228,10 +242,10 @@ Si todas las pruebas pasan, ¡la instalación está completa! 🎉
 **Soluciones**:
 
 1. Verifica que tanto HybridCapslock como Kanata estén ejecutándose
-2. Verifica que `KanataPath` en `config/settings.ahk` sea correcto
+2. Verifica estado de Kanata: Presiona `Leader → h → k → s` (Mostrar Estado de Kanata)
 3. Prueba Kanata solo: `kanata.exe --cfg config\../../../config/kanata.kbd`
 4. Busca software de teclado conflictivo (ej: otros scripts AHK)
-5. Intenta recargar: `Ctrl+Alt+R`
+8. Intenta recargar: `Leader → h → R` o reinicia Kanata: `Leader → h → k`
 
 ---
 

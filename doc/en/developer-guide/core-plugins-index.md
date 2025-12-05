@@ -247,6 +247,108 @@ ActivateDynamicLayer() {
 
 ---
 
+### 5. Kanata Manager
+**File**: `system/plugins/kanata_manager.ahk`  
+**Documentation**: Inline documentation in plugin file
+
+**Purpose**: Manage Kanata lifecycle (start, stop, restart, toggle) using native AutoHotkey v2 functions.
+
+**Main Functions**:
+- `KanataStart()` - Start Kanata with automatic path detection and validation
+- `KanataStop()` - Stop Kanata process
+- `KanataRestart()` - Restart Kanata (stop + start)
+- `KanataToggle()` - Toggle Kanata on/off
+- `KanataIsRunning()` - Check if Kanata is running
+- `KanataShowStatus(duration := 1500)` - Display Kanata status in tooltip
+- `KanataGetStatus()` - Get human-readable status string
+- `KanataGetPID()` - Get Kanata process ID
+- `KanataStartWithRetry(maxRetries := 3, retryDelay := 1000)` - Start with retry logic
+
+**Legacy Functions (Deprecated but functional):**
+> **DEPRECATED:** The following functions are maintained for backward compatibility:
+> - `StartKanataIfNeeded()` → Use `KanataStart()` instead
+> - `StopKanata()` → Use `KanataStop()` instead
+> - `RestartKanata()` → Use `KanataRestart()` instead
+> - `IsKanataRunning()` → Use `KanataIsRunning()` instead
+
+**Configuration** (`ahk/config/settings.ahk`):
+```autohotkey
+HybridConfig.kanata := {
+    enabled: true,
+    exePath: "kanata.exe",           ; Auto-detected if not found
+    configFile: "ahk\config\kanata.kbd",
+    startDelay: 500,
+    autoStart: true,
+    fallbackPaths: [
+        A_ScriptDir . "\bin\kanata.exe",
+        A_ScriptDir . "\kanata.exe",
+        "C:\Program Files\kanata\kanata.exe",
+        A_AppData . "\..\Local\kanata\kanata.exe"
+    ]
+}
+```
+
+**Usage Example**:
+```autohotkey
+; Start Kanata with auto-detection and validation
+KanataStart()  ; Validates config first, then starts
+
+; Check status
+if (KanataIsRunning()) {
+    MsgBox("Kanata is running with PID: " . KanataGetPID())
+}
+
+; Toggle on/off
+KanataToggle()
+
+; Show status in tooltip (2 seconds)
+KanataShowStatus(2000)
+
+; Start with retry logic (5 attempts, 2 second delay between retries)
+KanataStartWithRetry(5, 2000)
+
+; Configured in keymap.ahk (via hybrid_actions.ahk)
+RegisterKeymap("leader", "h", "k", "t", "Toggle Kanata", (*) => KanataToggle())
+RegisterKeymap("leader", "h", "k", "s", "Kanata Status", (*) => KanataShowStatus())
+```
+
+**How KanataStart() Works**:
+1. Checks if Kanata is already running (returns true if yes)
+2. Verifies config file exists
+3. **Validates config** with `kanata.exe --cfg config.kbd --check`
+4. Parses validation output for errors (9 error types)
+5. If errors found, shows contextual error dialog and aborts
+6. If validation passes, starts Kanata in background (hidden)
+7. Monitors process for immediate crashes (checks twice)
+8. Returns true on success, false on failure
+
+**Error Dialog Examples**:
+- **Syntax Error**: Shows line number, error message, context snippet, and fix suggestions
+- **Port Conflict**: Shows which port is in use and suggests solutions
+- **File Not Found**: Shows installation instructions and PATH configuration
+- **Crash Detection**: Detects if process dies immediately after starting
+
+**Key Features**:
+- **Native AHK v2**: No external VBScript dependencies
+- **Auto-detection**: Searches common locations for `kanata.exe` with fallback paths
+- **Pre-validation**: Validates config with `--check` flag before starting
+- **Advanced Error Handling**: Intelligent error parsing with 9 error types:
+  - `SYNTAX_ERROR`: Config syntax errors with line numbers and context
+  - `PORT_IN_USE`: Network port conflicts
+  - `INVALID_KEY`: Invalid key definitions
+  - `NOT_FOUND`: kanata.exe not found
+  - `FILE_ERROR`: Config file access errors
+  - `NO_OUTPUT`: Immediate crash detection
+  - `RUNTIME_ERROR`: Runtime exceptions
+- **Contextual Error Dialogs**: User-friendly error messages with fix suggestions
+- **Process Crash Detection**: Monitors if Kanata crashes after starting
+- **ANSI Code Cleaning**: Removes color codes and box-drawing characters
+- **Output Capture**: Uses `shell.Exec` to capture STDOUT/STDERR
+- **Retry Logic**: Automatic retry on start failure with configurable delays
+- **Configurable**: Centralized settings in `settings.ahk`
+
+---
+
 ## 🆚 Core vs Optional Plugins
 
 | Aspect | Core Plugins | Optional Plugins |

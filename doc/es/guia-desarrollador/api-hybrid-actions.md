@@ -25,7 +25,7 @@ Recarga completamente el sistema (Kanata + AutoHotkey).
 **Comportamiento:**
 1. Muestra notificación "RELOADING..."
 2. Detiene TooltipApp si está corriendo
-3. Reinicia Kanata si estaba corriendo
+3. Reinicia Kanata si estaba corriendo (vía `KanataRestart()` del plugin kanata_manager)
 4. Reinicia AutoHotkey
 5. Sale del script actual
 
@@ -296,7 +296,12 @@ global hybridPauseMinutes := 5   ; Para pausas cortas
 ### Ver Estado del Sistema
 
 ```autohotkey
-; Verificar si Kanata está corriendo
+; Verificar si Kanata está corriendo (usa plugin kanata_manager)
+if (KanataIsRunning()) {
+    MsgBox("Kanata está corriendo con PID: " . KanataGetPID())
+}
+
+; Función legacy (deprecated pero aún funciona)
 if (IsKanataRunning()) {
     MsgBox("Kanata está corriendo")
 }

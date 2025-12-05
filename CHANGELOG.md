@@ -5,6 +5,124 @@ All notable changes to the HybridCapslock project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2025-12-03
+
+### Added
+
+- **Kanata Manager Plugin** (`system/plugins/kanata_manager.ahk`): New core plugin that manages Kanata lifecycle (start, stop, restart, toggle) using native AutoHotkey v2 functions.
+- **Kanata Configuration Section** in `ahk/config/settings.ahk`: Centralized configuration with auto-start control, custom paths, and automatic path detection.
+- **Extended Kanata API**:
+  - `KanataToggle()`: Toggle Kanata on/off with single command
+  - `KanataShowStatus(duration := 1500)`: Display Kanata status in tooltip with PID info
+  - `KanataStartWithRetry(maxRetries := 3, retryDelay := 1000)`: Robust start with automatic retry logic
+  - `KanataGetStatus()`: Get human-readable status string
+  - `KanataGetPID()`: Get process ID of running Kanata instance
+- **Kanata Keymaps** in `system/plugins/hybrid_actions.ahk`: New subcategory under Hybrid category (`h` → `k`) with quick access to:
+  - Toggle Kanata on/off
+  - Restart Kanata
+  - Show Kanata status
+- **Automatic Path Detection**: Plugin searches common locations for `kanata.exe` (portable releases, Program Files, AppData, PATH).
+- **Config Pre-validation**: `KanataStart()` validates config with `--check` flag before starting Kanata, preventing silent failures.
+- **Advanced Error Handling**: Intelligent error parsing with 9 error types (SYNTAX_ERROR, PORT_IN_USE, INVALID_KEY, NOT_FOUND, FILE_ERROR, NO_OUTPUT, RUNTIME_ERROR, etc.).
+- **Contextual Error Dialogs**: User-friendly error messages with line numbers, context snippets, and fix suggestions specific to each error type.
+- **Process Crash Detection**: Monitors if Kanata crashes immediately after starting (checks twice with delays).
+- **Output Capture**: Uses `shell.Exec` COM object to capture STDOUT and STDERR from Kanata for detailed error reporting.
+- **ANSI Code Cleaning**: Automatically removes ANSI color codes and box-drawing characters from Kanata output for clean error messages.
+- **Error Handling & Logging**: Integrated with HybridCapsLock logging system (`LogKanataInfo`, `LogKanataError`) for better debugging.
+
+### Changed
+
+- **Kanata Management**: Migrated from VBScript-based approach to native AutoHotkey v2 implementation using `Run()` with "Hide" flag and `ProcessClose()`.
+- **Plugin Architecture**: Moved Kanata management from `system/core/` to `system/plugins/` following established plugin pattern.
+- **Auto-Loading**: Kanata plugin now loads automatically via auto_loader instead of manual include in `init.ahk`.
+- **Configuration**: Replaced hardcoded paths in VBS scripts with centralized, user-configurable settings in `settings.ahk`.
+
+### Deprecated
+
+> **DEPRECATED:** Legacy function names (maintained for backward compatibility via aliases):
+> - `StartKanataIfNeeded()` → Use `KanataStart()` instead
+> - `StopKanata()` → Use `KanataStop()` instead (alias kept to avoid conflicts)
+> - `RestartKanata()` → Use `KanataRestart()` instead
+> - `IsKanataRunning()` → Use `KanataIsRunning()` instead
+> 
+> **Note**: Legacy functions remain fully functional as aliases. No code changes required.
+
+### Removed
+
+- **VBScript Files** (replaced by native AHK functions):
+  - `system/core/kanata/start_kanata.vbs` → Replaced by `KanataStart()` using `Run(cmd, , "Hide")`
+  - `system/core/kanata/stop_kanata.vbs` → Replaced by `KanataStop()` using `ProcessClose()`
+  - `system/core/kanata/restart_kanata.vbs` → Replaced by `KanataRestart()` combining stop + start
+- **Core Module**: `system/core/kanata_launcher.ahk` → Replaced by plugin architecture in `system/plugins/kanata_manager.ahk`
+- **Kanata Directory**: `system/core/kanata/` and its README → No longer needed with native implementation
+- **Reference Directory**: `kanata-info/` (including `kanata-script.ahk`, `kanata.bat`, `kanata-silent.vbs`, `README.md`) → External reference no longer needed after implementation
+- **Internal Function**: `GetKanataScriptPath()` → No longer needed without VBS scripts
+- **Manual Include**: Line 28 in `init.ahk` removed (plugin auto-loads)
+
+### Fixed
+
+- **Portability**: Eliminated hardcoded absolute paths in VBS scripts. Paths are now configurable and auto-detected.
+- **Complexity**: Reduced from 4+ files (AHK + VBS) to single plugin file.
+- **Maintenance**: Eliminated dependency on external VBScript files, simplifying codebase.
+- **Error Visibility**: Added proper error handling and logging (previously silent failures in VBS).
+- **Silent Failures**: Config validation now happens BEFORE starting Kanata, preventing cryptic startup failures.
+- **Error Messages**: Users now get detailed, actionable error messages instead of generic "Kanata failed to start".
+
+### Technical Notes
+
+**Architecture Improvements:**
+- **Before**: 4 files (kanata_launcher.ahk + 3 VBS scripts), hardcoded in core, manual include
+- **After**: 1 plugin file, auto-loaded, configurable, native AHK v2
+
+**Code Metrics:**
+- **Files Removed**: 7 (1 AHK + 3 VBS + 3 reference files + README)
+- **Files Added**: 1 (kanata_manager.ahk - 742 lines with comprehensive error handling)
+- **Net Reduction**: -6 files
+- **Technologies**: VBScript eliminated, pure AutoHotkey v2
+- **Error Handling**: 9 error types with pattern matching, contextual dialogs, and fix suggestions
+- **Validation**: Two-step start process (validate then run) for better reliability
+
+**Backward Compatibility:**
+- **100% compatible**: All existing code continues working without changes
+- **Aliases maintained**: Legacy function names preserved as aliases
+- **Graceful degradation**: Plugin works even if Kanata is not installed
+
+**Configuration Example:**
+```autohotkey
+HybridConfig.kanata := {
+    enabled: true,
+    exePath: "kanata.exe",
+    configFile: "ahk\config\kanata.kbd",
+    startDelay: 500,
+    autoStart: true,
+    fallbackPaths: [
+        A_ScriptDir . "\bin\kanata.exe",
+        A_ScriptDir . "\kanata.exe",
+        "C:\Program Files\kanata\kanata.exe",
+        A_AppData . "\..\Local\kanata\kanata.exe"
+    ]
+}
+```
+
+**Migration Guide:**
+
+For End Users:
+- **No action required.** All existing functionality preserved.
+
+For Developers (Optional):
+- Old: `StartKanataIfNeeded()` → New: `KanataStart()`
+- Old: `RestartKanata()` → New: `KanataRestart()`
+
+For Custom Configurations:
+- If you previously modified VBS scripts, migrate customizations to `settings.ahk`:
+  ```autohotkey
+  ; Example: Custom Kanata path
+  HybridConfig.kanata.exePath := "C:\custom\path\kanata.exe"
+  HybridConfig.kanata.autoStart := false  ; Disable auto-start
+  ```
+
+---
+
 ## [3.1.0] - 2025-12-01
 
 ### Added

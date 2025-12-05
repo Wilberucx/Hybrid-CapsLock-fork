@@ -79,19 +79,36 @@ cd HybridCapslock
 
 ---
 
-### Step 4: Configure Kanata Path
+### Step 4: Configure Kanata (Optional)
 
-Edit `config/settings.ahk` to point to your Kanata installation:
+**Good news**: Kanata Manager plugin **automatically detects** `kanata.exe` in common locations:
+- `{ScriptDir}\bin\kanata.exe` (portable releases)
+- `{ScriptDir}\kanata.exe`
+- `C:\Program Files\kanata\kanata.exe`
+- `%LOCALAPPDATA%\kanata\kanata.exe`
+- System PATH
+
+**Only configure if using a custom location:**
+
+Edit `ahk/config/settings.ahk` and add/modify the Kanata configuration section:
 
 ```ahk
-; Path to Kanata executable
-global KanataPath := "C:\Program Files\Kanata\kanata.exe"
-
-; Path to Kanata config
-global KanataConfigPath := A_ScriptDir . "\config\kanata.kbd"
+; Kanata Configuration (optional - auto-detection enabled by default)
+HybridConfig.kanata := {
+    enabled: true,
+    exePath: "C:\custom\path\kanata.exe",  ; Custom path
+    configFile: "ahk\config\kanata.kbd",
+    startDelay: 500,
+    autoStart: true
+}
 ```
 
-**Note**: If you installed Kanata in a different location, update `KanataPath` accordingly.
+**Configuration Options:**
+- `enabled`: Enable/disable Kanata integration (default: `true`)
+- `exePath`: Custom path to `kanata.exe` (default: auto-detected)
+- `configFile`: Path to Kanata config file (default: `ahk\config\kanata.kbd`)
+- `startDelay`: Delay before starting Kanata in milliseconds (default: `500`)
+- `autoStart`: Start Kanata automatically on script launch (default: `true`)
 
 ---
 
@@ -169,9 +186,15 @@ Open Notepad and try:
 
 **Solutions**:
 1. Check if Kanata is running in Task Manager
-2. Verify `KanataPath` in `config/settings.ahk`
-3. Try running Kanata manually: `"C:\Program Files\Kanata\kanata.exe" -c "path\to\kanata.kbd"`
-4. Check Windows Event Viewer for errors
+2. Check Kanata status: Press `Leader → h → k → s` (Show Kanata Status)
+3. Try manual start: Press `Leader → h → k → t` (Toggle Kanata)
+4. Verify configuration in `ahk/config/settings.ahk` (if using custom path)
+5. Check log file: Press `Leader → h → l` (View Log File)
+6. Try running Kanata manually from command line:
+   ```powershell
+   kanata.exe -c "path\to\kanata.kbd"
+   ```
+7. Check Windows Event Viewer for errors
 
 ### AutoHotkey script won't run
 
