@@ -1046,7 +1046,7 @@ ShowLayerHelp(layerName) {
 ; Uso:
 ;   En OnScrollLayerActivate():
 ;     ListenForLayerKeymaps("scroll", "isScrollLayerActive")
-;
+
 ListenForLayerKeymaps(layerName, layerActiveVarName) {
     global CurrentLayerInputHook
     
@@ -1090,8 +1090,9 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         ; We wait indefinitely for a key or for the hook to be stopped by DeactivateLayer
         ; NOTA: Siempre capturamos y suprimimos con "L1"
         ; En modo passthrough, enviamos manualmente las teclas no mapeadas después
-        ih := InputHook("L1", "{Escape}")
+        ih := InputHook("L1", "{Escape}{Enter}")
         ih.KeyOpt("{Escape}", "S")
+        ih.KeyOpt("{Enter}", "S")
         
         ; Register global hook for external control
         CurrentLayerInputHook := ih
@@ -1105,24 +1106,41 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
             break
         }
         
-        ; Case 2: Escape Pressed
-        if (ih.EndReason = "EndKey" && ih.EndKey = "Escape") {
-            Log.d("ESCAPE PRESSED", "LAYER")
+        ; Case 2: EndKey Pressed (Escape or Enter)
+        if (ih.EndReason = "EndKey") {
+            endKey := ih.EndKey
+            Log.d("ENDKEY PRESSED: " . endKey, "LAYER")
             
-            ; Check if tooltip is active (e.g. Help Menu)
-            ; If so, close tooltip but keep layer active
-            if (IsSet(tooltipMenuActive) && tooltipMenuActive) {
-                Log.d("Tooltip active, closing tooltip but keeping layer", "LAYER")
-                HideCSharpTooltip()
+            ; Special handling for Escape
+            if (endKey = "Escape") {
+                ; Check if tooltip is active (e.g. Help Menu)
+                ; If so, close tooltip but keep layer active
+                if (IsSet(tooltipMenuActive) && tooltipMenuActive) {
+                    Log.d("Tooltip active, closing tooltip but keeping layer", "LAYER")
+                    HideCSharpTooltip()
+                    continue
+                }
+                
+                ; Check if ESC is registered in keymap
+                if (ExecuteKeymapAtPath(layerName, "Escape")) {
+                    Log.d("Executed registered Escape action", "LAYER")
+                } else {
+                    Log.d("No Escape action registered - Defaulting to Exit", "LAYER")
+                    ReturnToPreviousLayer()
+                }
                 continue
             }
             
-            ; Check if ESC is registered in keymap
-            if (ExecuteKeymapAtPath(layerName, "Escape")) {
-                Log.d("Executed registered Escape action", "LAYER")
-            } else {
-                Log.d("No Escape action registered - Defaulting to Exit", "LAYER")
-                ReturnToPreviousLayer()
+            ; Handle other EndKeys (Enter, etc.) as regular keymaps
+            ; Try to execute as if it was a normal key press
+            if (!ExecuteKeymapAtPath(layerName, endKey)) {
+                ; If not mapped, pass through or suppress based on mode
+                if (!suppressUnmapped) {
+                    Log.d("EndKey not mapped, passing through: " . endKey, "LAYER")
+                    Send("{" . endKey . "}")
+                } else {
+                    Log.d("EndKey not mapped, suppressed: " . endKey, "LAYER")
+                }
             }
             continue
         }

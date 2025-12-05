@@ -201,6 +201,26 @@ ActivateGenericLayer(layerName) {
     }
 }
 
+; ===================================================================
+; DeactivateLayer(layerName)
+; ===================================================================
+; **INTERNAL HELPER FUNCTION** - Do NOT call directly from plugins!
+;
+; This is a LOW-LEVEL function used internally by:
+;   - SwitchToLayer() - to cleanup when switching between layers
+;   - ReturnToPreviousLayer() - to cleanup before restoring state
+;
+; What it does:
+;   ✅ Calls OnXxxLayerDeactivate() hooks
+;   ✅ Hides layer status tooltips
+;   ✅ Sets isXxxLayerActive := false
+;   ✅ Stops CurrentLayerInputHook
+;   ❌ Does NOT update CurrentActiveLayer/PreviousLayer globals
+;   ❌ Does NOT handle layer stack/restoration
+;
+; **PLUGINS SHOULD USE**: ReturnToPreviousLayer()
+; That function handles complete state management and calls this internally.
+; ===================================================================
 DeactivateLayer(layerName) {
     Log.t("----- DEACTIVATING LAYER: " . layerName . " -----", "LAYER")
     

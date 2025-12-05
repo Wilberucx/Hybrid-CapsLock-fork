@@ -63,16 +63,6 @@ ActivateLeaderLayer() {
     
     leaderActive := true
     
-    ; Deactivate NVIM layer to avoid conflicts using proper layer system
-    if (isNvimLayerActive) {
-        try {
-            DeactivateLayer("nvim")
-            Log.d("Deactivated nvim layer through proper system", "LEADER")
-        } catch as e {
-            Log.e("Error deactivating nvim layer: " . e.Message, "LEADER")
-        }
-    }
-    
     ; Start hierarchical navigation at root
     NavigateHierarchical("leader")
     
