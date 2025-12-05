@@ -202,3 +202,188 @@ RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false)  // ← Uses
 - **Keymaps = Functions** (work inside layers)
 
 F24 is the entry door. The door can't be inside the house it opens.
+
+## Context-Aware Triggers (Advanced)
+
+### Problem: Modifier Keys and InputHook Limitations
+
+`RegisterKeymap()` uses `InputHook` internally, which **cannot capture modifier combinations** like `Ctrl+R`, `Alt+S`, etc. It only captures:
+- Simple keys: `a`, `b`, `1`, `Escape`
+- Shift combinations: `A` (uppercase), `!` (Shift+1)
+
+**InputHook CANNOT capture:**
+- `Ctrl+R`
+- `Alt+S`
+- `Ctrl+Shift+X`
+
+### Solution: Contextual Triggers with Manual Layer Detection
+
+Use `RegisterTrigger()` for modifier keys with manual layer context detection:
+
+```ahk
+; ❌ WRONG: This won't work (InputHook limitation)
+RegisterKeymap("vim", "^r", "Redo", VimRedo)  // Ctrl+R never captured
+
+; ✅ CORRECT: Use RegisterTrigger with context detection
+RegisterTrigger("^r", CtrlRContextual, "")
+
+CtrlRContextual() {
+    global CurrentActiveLayer
+    
+    switch CurrentActiveLayer {
+        case "vim":
+            VimRedo()          // Ctrl+Y in vim
+        case "explorer":
+            Send("{F5}")       // Refresh in explorer
+        default:
+            Send("^r")         // Passthrough to application
+    }
+}
+```
+
+### Best Practices for Contextual Triggers
+
+#### 1. ⚠️ **ONE TRIGGER PER KEY COMBINATION**
+
+**CRITICAL:** Only register ONE `RegisterTrigger()` per hotkey combination. Multiple registrations will cause conflicts:
+
+```ahk
+; ❌ WRONG: Hotkey collision (last one wins)
+// In vim_actions.ahk:
+RegisterTrigger("^r", VimCtrlR, "")
+
+// In explorer_actions.ahk:
+RegisterTrigger("^r", ExplorerCtrlR, "")  // Overwrites previous!
+
+; ✅ CORRECT: Single unified trigger in keymap.ahk
+RegisterTrigger("^r", CtrlRContextual, "")
+
+CtrlRContextual() {
+    global CurrentActiveLayer
+    switch CurrentActiveLayer {
+        case "vim": VimRedo()
+        case "explorer": Send("{F5}")
+        default: Send("^r")
+    }
+}
+```
+
+#### 2. 📍 **Centralize in keymap.ahk**
+
+To avoid collisions and maintain clarity:
+- **Simple keys in layers** → Use `RegisterKeymap()` in plugins
+- **Modifier keys with context** → Use unified `RegisterTrigger()` in `keymap.ahk`
+
+```ahk
+; In ahk/config/keymap.ahk:
+RegisterTrigger("^r", CtrlRContextual, "")
+RegisterTrigger("^s", CtrlSContextual, "")
+RegisterTrigger("^w", CtrlWContextual, "")
+
+; In plugins (vim_actions.ahk, explorer_actions.ahk):
+; Just register simple key keymaps
+RegisterKeymap("vim", "r", "Replace", VimReplace)
+RegisterKeymap("vim", "u", "Undo", VimUndo)
+```
+
+#### 3. 🔄 **Always Provide Fallback**
+
+Always include a `default` case to passthrough the hotkey when no layer matches:
+
+```ahk
+CtrlRContextual() {
+    global CurrentActiveLayer
+    
+    switch CurrentActiveLayer {
+        case "vim": VimRedo()
+        case "excel": ReloadWorkbook()
+        default:
+            Send("^r")  // ← IMPORTANT: Passthrough to app
+    }
+}
+```
+
+#### 4. 🚫 **Avoid Infinite Loops**
+
+**Potential issue:** `Send("^r")` inside a `^r` hotkey can create infinite loops.
+
+**AutoHotkey protection:** AHK has internal reentry protection, but it's not 100% reliable.
+
+**Robust solution (if loops occur):** Modify `RegisterTrigger` to use `$` prefix:
+
+```ahk
+; In system/core/keymap_registry.ahk line 943:
+Hotkey("$" . parsedKey, (*) => action(), "S")  // $ prevents Send() from re-triggering
+```
+
+The `$` prefix makes the hotkey **only trigger from physical keyboard input**, not from `Send()`.
+
+### Architecture Summary
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    USER INPUT                           │
+└─────────────────────────────────────────────────────────┘
+                          │
+                ┌─────────┴─────────┐
+                │                   │
+         Simple Key            Modifier Key
+         (a, j, k)             (Ctrl+R, Alt+S)
+                │                   │
+                ▼                   ▼
+         ┌─────────────┐     ┌──────────────┐
+         │ InputHook   │     │ Hotkey()     │
+         │ (in layer)  │     │ (global)     │
+         └─────────────┘     └──────────────┘
+                │                   │
+                ▼                   ▼
+    ┌────────────────────┐  ┌──────────────────────┐
+    │ RegisterKeymap()   │  │ RegisterTrigger()    │
+    │ ExecuteKeymapAtPath│  │ + Context Detection  │
+    └────────────────────┘  └──────────────────────┘
+                │                   │
+                └─────────┬─────────┘
+                          ▼
+                   ┌─────────────┐
+                   │   ACTION    │
+                   └─────────────┘
+```
+
+### Real-World Example
+
+From `keymap.ahk`:
+
+```ahk
+; Global system triggers (no context)
+RegisterTrigger("F24", ActivateLeaderLayer, "LeaderLayerEnabled")
+RegisterTrigger("F23", ActivateDynamicLayer, "DYNAMIC_LAYER_ENABLED")
+
+; Context-aware modifier keys
+RegisterTrigger("^r", CtrlRContextual, "")
+
+CtrlRContextual() {
+    global CurrentActiveLayer
+    
+    switch CurrentActiveLayer {
+        case "vim":
+            VimRedo()           // From vim_actions.ahk
+        case "explorer":
+            Send("{F5}")        // Refresh Explorer
+        default:
+            Send("^r")          // Passthrough
+    }
+}
+```
+
+From `vim_actions.ahk`:
+
+```ahk
+; Simple keys (work via InputHook in layer)
+RegisterKeymap("vim", "r", "Replace", VimReplace)
+RegisterKeymap("vim", "u", "Undo", VimUndo)
+RegisterKeymap("vim", "j", "Down", VimDown)
+RegisterKeymap("vim", "k", "Up", VimUp)
+
+; Modifier keys handled in keymap.ahk via RegisterTrigger
+; (see CtrlRContextual above)
+```
