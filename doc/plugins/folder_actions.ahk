@@ -2,6 +2,10 @@
 ; Folder Actions Plugin
 ; ==============================
 ; Standardized and Enhanced
+;
+; DEPENDENCIES:
+; - Requires context_utils.ahk to be loaded (NavigateExplorer function)
+;   Location: system/plugins/context_utils.ahk
 
 ; ==============================
 ; HELPER FUNCTIONS
@@ -167,6 +171,53 @@ CopyFolderPath() {
     }
 }
 
+; ==============================
+; GO TO FUNCTIONS (Vim-Style Navigation)
+; ==============================
+; These functions use NavigateExplorer() for intelligent navigation:
+; - If Explorer is active: navigates the current window
+; - If Explorer is not active: opens a new window at the target location
+
+GoToDesktop() {
+    NavigateExplorer(EnvGet("USERPROFILE") . "\Desktop")
+}
+
+GoToHome() {
+    NavigateExplorer(EnvGet("USERPROFILE"))
+}
+
+GoToTemp() {
+    NavigateExplorer(EnvGet("TEMP"))
+}
+
+GoToAppData() {
+    NavigateExplorer(EnvGet("APPDATA"))
+}
+
+GoToLocalAppData() {
+    NavigateExplorer(EnvGet("LOCALAPPDATA"))
+}
+
+GoToProgramFiles() {
+    NavigateExplorer("C:\Program Files")
+}
+
+GoToSystem32() {
+    NavigateExplorer("C:\Windows\System32")
+}
+
+GoToDownloads() {
+    NavigateExplorer(EnvGet("USERPROFILE") . "\Downloads")
+}
+
+GoToDocuments() {
+    NavigateExplorer(EnvGet("USERPROFILE") . "\Documents")
+}
+
+GoToRoot() {
+    NavigateExplorer("C:\")
+}
+
 ; ===================================================================
 ; DEFAULT KEYMAPS
 ; ===================================================================
@@ -183,3 +234,20 @@ RegisterKeymap("leader", "f", "s", "System32", OpenSystem32Folder, false, 6)
 RegisterKeymap("leader", "f", "o", "Open Custom", OpenCustomFolder, false, 7)
 RegisterKeymap("leader", "f", "T", "Term Here", OpenInTerminal, false, 8)
 RegisterKeymap("leader", "f", "y", "Copy Path", CopyFolderPath, false, 9)
+
+; Go To Navigation (leader → g → KEY) - Vim-style intelligent navigation
+; NOTE: These keymaps are commented out because the Go To system is implemented
+; in ahk/plugins/explorer_actions.ahk within the 'explorer' layer.
+; To use Discomment this lines but I recommend using explorer_actions.ahk instead
+;
+; RegisterCategoryKeymap("leader", "g", "Go To", 10)
+; RegisterKeymap("leader", "g", "d", "Desktop", GoToDesktop, false, 1)
+; RegisterKeymap("leader", "g", "h", "Home", GoToHome, false, 2)
+; RegisterKeymap("leader", "g", "t", "Temp", GoToTemp, false, 3)
+; RegisterKeymap("leader", "g", "a", "AppData", GoToAppData, false, 4)
+; RegisterKeymap("leader", "g", "l", "LocalAppData", GoToLocalAppData, false, 5)
+; RegisterKeymap("leader", "g", "p", "Program Files", GoToProgramFiles, false, 6)
+; RegisterKeymap("leader", "g", "s", "System32", GoToSystem32, false, 7)
+; RegisterKeymap("leader", "g", "D", "Downloads", GoToDownloads, false, 8)
+; RegisterKeymap("leader", "g", "c", "Documents", GoToDocuments, false, 9)
+; RegisterKeymap("leader", "g", "r", "Root (C:\)", GoToRoot, false, 10)

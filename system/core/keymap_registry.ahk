@@ -639,6 +639,19 @@ FindKeymap(category, key) {
 ; ShowUnifiedConfirmation(description)
 ; Función unificada que detecta si C# tooltips están activos y usa el apropiado
 ShowUnifiedConfirmation(description) {
+    ; Native Windows MsgBox with Yes/No/Cancel buttons
+    ; More visible and standard than tooltips
+    result := MsgBox(
+        "Execute: " . description . "?",
+        "Confirm Action",
+        "YesNoCancel Icon?"
+    )
+    
+    ; Return true only if user clicked "Yes"
+    return (result = "Yes")
+}
+
+ShowUnifiedConfirmation_OLD(description) {
     ; DEBUG: Log confirmation attempt
     
     ; Check if C# tooltips are enabled via HybridConfig
@@ -1090,9 +1103,10 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
         ; We wait indefinitely for a key or for the hook to be stopped by DeactivateLayer
         ; NOTA: Siempre capturamos y suprimimos con "L1"
         ; En modo passthrough, enviamos manualmente las teclas no mapeadas después
-        ih := InputHook("L1", "{Escape}{Enter}")
+        ih := InputHook("L1", "{Escape}{Enter}{Space}")
         ih.KeyOpt("{Escape}", "S")
         ih.KeyOpt("{Enter}", "S")
+        ih.KeyOpt("{Space}", "S")
         
         ; Register global hook for external control
         CurrentLayerInputHook := ih

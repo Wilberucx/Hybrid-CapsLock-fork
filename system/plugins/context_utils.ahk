@@ -27,6 +27,33 @@ GetActiveExplorerPath() {
 }
 
 /**
+ * NavigateExplorer - Intelligently navigates to a folder path
+ * @param path - Folder path to navigate to
+ * 
+ * Behavior:
+ *   - If an Explorer window is active, navigates that window to the new path
+ *   - If no Explorer is active, opens a new Explorer window at the path
+ * 
+ * Example:
+ *   NavigateExplorer("C:\Users\Documents")
+ */
+NavigateExplorer(path) {
+    if WinActive("ahk_class CabinetWClass") {
+        try {
+            hwnd := WinExist("A")
+            for window in ComObject("Shell.Application").Windows {
+                if (window.hwnd == hwnd) {
+                    window.Navigate(path)
+                    return
+                }
+            }
+        }
+    }
+    ; No active Explorer found, open a new one
+    Run("explorer.exe " . path)
+}
+
+/**
  * GetSelectedExplorerItem - Returns the full path of the currently selected file/folder in Explorer
  * Returns: String (full path) or "" if no item is selected or Explorer is not active
  */

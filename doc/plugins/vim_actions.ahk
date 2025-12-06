@@ -29,6 +29,10 @@ ExitVisualMode() {
     SwitchToLayer("vim")
 }
 
+ExitVimMode() {
+    DeactivateLayer("vim")
+}
+
 ; ==============================
 ; 1. NAVIGATION (Normal Mode)
 ; ==============================

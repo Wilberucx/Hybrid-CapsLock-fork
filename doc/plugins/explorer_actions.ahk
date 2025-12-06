@@ -242,11 +242,104 @@ CloseTabAction() {
 NewTabAction() {
     Send("^t")
 }
+
+SearchBox() {
+    Send("^e")
+}
+
+TogglePreviewPane() {
+    Send("!p")
+}
+
+PermanentlyDelete() {
+    Send("+{Delete}")
+}
+
+; ==============================
+; MULTISELECT FUNCTIONS (Ctrl+Arrow+Space)
+; ==============================
+
+/**
+ * MultiSelect Movement Functions
+ * These functions send Ctrl+Arrow combinations to maintain multi-select mode
+ */
+MultiSelectMoveLeft() {
+    Send("^{Left}")
+}
+
+MultiSelectMoveDown() {
+    Send("^{Down}")
+}
+
+MultiSelectMoveUp() {
+    Send("^{Up}")
+}
+
+MultiSelectMoveRight() {
+    Send("^{Right}")
+}
+
+/**
+ * ToggleSelectionWithSpace - Toggle selection on current item while keeping Ctrl pressed
+ * This simulates pressing Space while Ctrl is held down
+ */
+ToggleSelectionWithSpace() {
+    Send("^{Space}")
+}
+
+; ==============================
+; GO TO FUNCTIONS (Vim-Style Navigation)
+; ==============================
+; DEPENDENCIES: Requires context_utils.ahk (NavigateExplorer function)
+; These functions use NavigateExplorer() for intelligent navigation:
+; - If Explorer is active: navigates the current window
+; - If Explorer is not active: opens a new window at the target location
+
+GoToDesktop() {
+    NavigateExplorer(EnvGet("USERPROFILE") . "\Desktop")
+}
+
+GoToHome() {
+    NavigateExplorer(EnvGet("USERPROFILE"))
+}
+
+GoToTemp() {
+    NavigateExplorer(EnvGet("TEMP"))
+}
+
+GoToAppData() {
+    NavigateExplorer(EnvGet("APPDATA"))
+}
+
+GoToLocalAppData() {
+    NavigateExplorer(EnvGet("LOCALAPPDATA"))
+}
+
+GoToProgramFiles() {
+    NavigateExplorer("C:\Program Files")
+}
+
+GoToSystem32() {
+    NavigateExplorer("C:\Windows\System32")
+}
+
+GoToDownloads() {
+    NavigateExplorer(EnvGet("USERPROFILE") . "\Downloads")
+}
+
+GoToDocuments() {
+    NavigateExplorer(EnvGet("USERPROFILE") . "\Documents")
+}
+
+GoToRoot() {
+    NavigateExplorer("C:\")
+}
 ; ==============================
 ; LAYER REGISTRATION
 ; ==============================
 RegisterLayer("explorer_visual", "VISUAL MODE", "#ffafcc", "#000000")
 RegisterLayer("explorer_insert", "INSERT MODE", "#d0f0c0", "#000000", false)
+RegisterLayer("explorer_multiselect", "MULTISELECT", "#ffa500", "#000000")
 
 ; ==============================
 ; KEYMAP REGISTRATION
@@ -267,23 +360,42 @@ RegisterKeymap("explorer", "l", "Right", VimMoveRight)
 ; RegisterKeymap("explorer", "h", "Select Left", () => Send("{backspace}"))
 ; RegisterKeymap("explorer", "l", "Select Right", () => Send("{Enter}"))
 
+; Go To Category (g + KEY)
 RegisterCategoryKeymap("explorer", "g", "Go To", 1) 
 RegisterKeymap("explorer", "g", "g", "Top File", VimTopOfFile) 
 RegisterKeymap("explorer", "G", "Bottom File", VimBottomOfFile)
+; Go To System Folders
+RegisterKeymap("explorer", "g", "d", "Desktop", GoToDesktop)
+RegisterKeymap("explorer", "g", "h", "Home", GoToHome)
+RegisterKeymap("explorer", "g", "t", "Temp", GoToTemp)
+RegisterKeymap("explorer", "g", "a", "AppData", GoToAppData)
+RegisterKeymap("explorer", "g", "l", "LocalAppData", GoToLocalAppData)
+RegisterKeymap("explorer", "g", "p", "Program Files", GoToProgramFiles)
+RegisterKeymap("explorer", "g", "s", "System32", GoToSystem32)
+RegisterKeymap("explorer", "g", "D", "Downloads", GoToDownloads)
+RegisterKeymap("explorer", "g", "c", "Documents", GoToDocuments)
+RegisterKeymap("explorer", "g", "r", "Root (C:\)", GoToRoot)
 ; Motions Tabs 
 RegisterKeymap("explorer", "H", "Prev Tab", PreviousTab)
 RegisterKeymap("explorer", "L", "Next Tab", NextTab)
 ; Edit Commands
 RegisterKeymap("explorer", "x", "Cut", VimCut)
 RegisterKeymap("explorer", "d", "Cut/Delete", VimDelete)
+RegisterKeymap("explorer", "D", "Delete Permanently", PermanentlyDelete)
 RegisterKeymap("explorer", "y", "Yank line", VimYank)
 RegisterKeymap("explorer", "p", "Paste", VimPaste)
 RegisterKeymap("explorer", "u", "Undo", VimUndo)
 RegisterKeymap("explorer", "R", "Redo", VimRedo)
+; view commands
+RegisterKeymap("explorer", "P", "Toggle preview", TogglePreviewPane)
 
 RegisterKeymap("explorer", "v", "Visual Mode", () => SwitchToLayer("explorer_visual"))
+RegisterKeymap("explorer", "Space", "Multiselect Mode", () => SwitchToLayer("explorer_multiselect"))
 ; Rename action
 RegisterKeymap("explorer", "r", "Rename", RenameSelectedItem)
+
+; Search Box
+RegisterKeymap("explorer", "/", "Filter", SearchBox)
 
 ; Tab Manager Category
 RegisterCategoryKeymap("explorer", "b", "Tab Manager", 4)
@@ -323,4 +435,16 @@ RegisterKeymap("explorer_visual", "y", "Copy Selection", VimYank)
 
 RegisterKeymap("explorer_visual", "Escape", "Normal Mode", () => SwitchToLayer("explorer"))
 RegisterKeymap("explorer_visual", "v", "Normal Mode", ExitVisualMode)
-RegisterKeymap("explorer_insert", "Escape", "Exit Insert Mode",  () => switchToLayer("explorer"))
+RegisterKeymap("explorer_insert", "Escape", "Exit Insert Mode",  () => SwitchToLayer("explorer"))
+
+; --- MULTISELECT LAYER ---
+RegisterKeymap("explorer_multiselect", "h", "Move Left", MultiSelectMoveLeft)
+RegisterKeymap("explorer_multiselect", "j", "Move Down", MultiSelectMoveDown)
+RegisterKeymap("explorer_multiselect", "k", "Move Up", MultiSelectMoveUp)
+RegisterKeymap("explorer_multiselect", "l", "Move Right", MultiSelectMoveRight)
+RegisterKeymap("explorer_multiselect", "Space", "Toggle Selection", ToggleSelectionWithSpace)
+RegisterKeymap("explorer_multiselect", "Escape", "Exit Multiselect", () => SwitchToLayer("explorer"))
+RegisterKeymap("explorer_multiselect", "x", "Cut", VimCut)
+RegisterKeymap("explorer_multiselect", "d", "Cut/Delete", VimDelete)
+RegisterKeymap("explorer_multiselect", "D", "Delete Permanently", PermanentlyDelete)
+RegisterKeymap("explorer_multiselect", "y", "Yank line", VimYank)
