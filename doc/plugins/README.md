@@ -112,6 +112,7 @@ Si eres nuevo en Hybrid CapsLock, te recomendamos empezar con estos plugins:
 - [Network Actions](#network-actions-network_actionsahk)
 - [Timestamp Actions](#timestamp-actions-timestamp_actionsahk)
 - [VaultFlow Actions](#vaultflow-actions-vaultflow_actionsahk)
+- [Windows Manager](#windows-manager-windows_managerahk)
 
 ---
 
@@ -333,6 +334,28 @@ Implements a dedicated **Scroll Layer** for navigation without holding modifier 
 - `k` / `j`: Scroll Up / Down
 - `h` / `l`: Scroll Left / Right
 
+
+---
+
+## 🪟 Windows Manager (`windows_manager.ahk`)
+
+Comprehensive window management and navigation system.
+
+**Key Features:**
+- **Smart Window Listing**: Uses Task View (Win+Tab) with Vim-style navigation (hjkl).
+- **Tab Management**: Unified interface for closing/creating tabs in browsers and editors.
+- **Safety**: Confirmation dialogs for destructive operations.
+
+**Keymaps (Leader + w):**
+- `d`: **Close Window** (Native Close)
+- `m`: **Toggle Minimize/Restore**
+- `M`: **Force Minimize**
+- `l`: **List Windows** (Task View with navigation)
+- `H`: **Previous Window**
+- `L`: **Next Window**
+- `b`: **Tab Manager Submenu**
+  - `d`: Close Tab
+  - `n`: New Tab
 
 ---
 

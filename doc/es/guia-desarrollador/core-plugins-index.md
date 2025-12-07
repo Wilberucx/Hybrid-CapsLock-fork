@@ -247,7 +247,7 @@ ActivateDynamicLayer() {
 
 ---
 
-### 5. Kanata Manager
+### 6. Kanata Manager
 **Archivo**: `system/plugins/kanata_manager.ahk`  
 **Documentación**: Documentación inline en el archivo del plugin
 
@@ -346,6 +346,31 @@ RegisterKeymap("leader", "h", "k", "s", "Kanata Status", (*) => KanataShowStatus
 - **Captura de Output**: Usa `shell.Exec` para capturar STDOUT/STDERR
 - **Lógica de Reintentos**: Reintentos automáticos con delays configurables
 - **Configurable**: Configuración centralizada en `settings.ahk`
+
+---
+
+### 7. Notification System
+**Archivo**: `system/plugins/notification.ahk`  
+**Documentación**: [API Reference](api-notification.md)
+
+**Propósito**: Proveer un sistema unificado de retroalimentación visual animada para todos los plugins.
+
+**Funciones Principales**:
+- `ShowTooltipFeedback(message, type, timeout)` - Mostrar notificación animada
+
+**Tipos Soportados**:
+- `info` (🔵), `success` (🟢), `warning` (🟠), `error` (🔴), `confirm` (🟣)
+
+**Ejemplo de Uso**:
+```autohotkey
+; Éxito
+ShowTooltipFeedback("Archivo guardado", "success")
+
+; Error
+ShowTooltipFeedback("Fallo en conexión", "error", 3000)
+```
+
+**Usado Por**: Todos los plugins futuros y actualizados.
 
 ---
 

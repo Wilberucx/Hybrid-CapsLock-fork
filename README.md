@@ -154,6 +154,7 @@ Abre cualquier editor de texto y:
 - **[API Context Utils](doc/es/guia-desarrollador/api-context-utils.md)** - Detectar contexto del sistema
 - **[API Dynamic Layer](doc/es/guia-desarrollador/api-dynamic-layer.md)** - Sistema de capas dinámicas
 - **[API Hybrid Actions](doc/es/guia-desarrollador/api-hybrid-actions.md)** - Gestión del sistema
+- **[API Notification System](doc/es/guia-desarrollador/api-notification.md)** - Sistema de notificaciones unificado
 - **[Protocolo Tooltip API](doc/es/guia-desarrollador/Tooltip_Api_Protocol.md)** - Integración con tooltips C#
 
 ### 📖 Referencia
