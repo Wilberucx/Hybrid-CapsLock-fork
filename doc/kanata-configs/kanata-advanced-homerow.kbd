@@ -1,0 +1,124 @@
+;; kanata.kbd - Configuración mejorada
+
+(defcfg
+  process-unmapped-keys yes
+  danger-enable-cmd no
+)
+
+;; Teclado completo
+(defsrc
+  esc  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt rmet rctl
+)
+;; Variables de tiempo 
+(defvar
+  tap-time 270
+  hold-time 290
+  tap-time-fast 250
+  hold-time-fast 170
+)
+
+;; Aliases
+(defalias
+  ;; CapsLock: tap=F23 (AHK nvim), hold=vim-nav layer
+  nav (tap-hold $tap-time-fast $hold-time-fast f23 (layer-while-held vim-nav))
+  ;; Layers con tap-hold
+  e (tap-hold $tap-time $hold-time e (layer-while-held media))
+
+  ;; Layers with alts
+  lalt (tap-hold $tap-time-fast $hold-time-fast lalt (layer-while-held numrow))
+  ralt (tap-hold $tap-time-fast $hold-time-fast ralt (layer-while-held functionrow))
+
+  ;; Homerow mods - mano izquierda
+  a (tap-hold $tap-time-fast $hold-time-fast a lctl)
+  s (tap-hold $tap-time $hold-time s lalt)
+  d (tap-hold $tap-time $hold-time d lmet)
+  f (tap-hold $tap-time-fast $hold-time-fast f lsft)
+  g (tap-hold $tap-time $hold-time g (layer-while-held numpad))
+  
+  ;; Homerow mods - mano derecha (prioridad tap para vim)
+  j (tap-hold $tap-time-fast $hold-time-fast j lsft)
+  k (tap-hold $tap-time $hold-time k lmet)
+  l (tap-hold $tap-time $hold-time l lalt)
+  ; (tap-hold $tap-time-fast $hold-time-fast ; lctl)
+  
+  ;; Otras teclas especiales
+  w (tap-hold $tap-time-fast $hold-time-fast w ralt)
+  caps (tap-dance 300 (lsft caps))
+  
+  ;; Mouse clicks
+  n (tap-hold $tap-time $hold-time n mlft)
+  m (tap-hold $tap-time $hold-time m mrtp)
+  b (tap-hold $tap-time $hold-time b mmtp)
+
+  ;; Custom aliases 
+  ;; next word, prev word
+  bw (multi lctl left)
+  nw (multi lctl right)
+  A-Spc (multi lalt spc)
+
+  ;; Mouse scroll
+  mwu (mwheel-up 50 120)     ;; Scroll hacia arriba
+  mwd (mwheel-down 50 120)   ;; Scroll hacia abajo
+  ;; Hyper keys
+  H_v (multi lctl lsft lalt v)
+  H_i (multi lctl lsft lalt i)
+)
+
+;; Capa base
+(deflayer base
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  _    _    @w  @e    _    _    _    _    _    _    _  bspc   XX   XX
+  @nav @a   @s  @d    @f  @g    _   @j   @k   @l   @;    _    _
+  @caps _    _   _    _   @b   @n   @m    _    _    _    _
+  _    _  @lalt            _            @ralt  _    _
+)
+
+;; Capa de navegación vim (caps)
+(deflayer vim-nav
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  _    _   @nw   _   end   _    _   @mwu  @H_i _   home  _    _    _
+  _    _    _   @mwd @H_i  _    left down up  rght  _    _    _
+  _    _   del   _   @H_v @bw   _    _    _    _    _    _
+  _    _    _              f24            _    _    _
+)
+
+
+;; Numpad izquierdo (h & g) 
+(deflayer numpad
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  XX   XX   XX   XX   XX   XX   -    1    2    3    +    bspc XX   XX
+  XX   XX   XX   XX   XX   XX  S-8   4    5    6    0    del  XX
+  XX   XX   XX   XX   XX   XX   =    7    8    9    /    XX
+  XX   XX   XX             XX             XX   XX   XX
+  )
+
+;; Capa de media (e)
+(deflayer media
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    volu prev pp  next  _    _    _
+  _    _    _    _    _    _    vold mute _    _    _    _
+  _    _    _              _              _    _    _
+)
+
+;; numrow layer 
+(deflayer numrow
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX  XX
+  esc  1    2    3    4    5    6    7    8    9    0    [    XX  XX
+  esc S-1  S-2  S-3  S-4  S-5  S-6  S-7  S-8  S-9  S-0   ]    XX
+  XX  S-grv grv  -   S--   =   S-=  S-[  S-]  S-\   \   XX
+  XX   XX   XX            @A-Spc          XX   XX   XX
+)
+
+;; numrow layer 
+(deflayer functionrow
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX  XX
+  XX   F1   F2   F3   F4   F5   F6   F7   F8   F9   F10  XX   XX  XX
+  XX   F11  F12  F13  F14  F15  F16  F17  F18  F19  F20  XX   XX
+  XX   F21  F22  F23  F24  XX   XX   XX   XX   XX   XX   XX
+  XX   XX   XX             XX             XX   XX   XX
+)

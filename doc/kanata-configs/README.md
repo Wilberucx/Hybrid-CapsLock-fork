@@ -58,6 +58,48 @@ Este directorio contiene múltiples archivos de configuración de Kanata para di
 
 ---
 
+### `kanata-advanced-homerow.kbd` (Configuración Ergonómica Extrema)
+
+**Nivel**: 🔥 **EXTREMO** - Solo para usuarios muy avanzados  
+**Descripción**: ⚠️ **ADVERTENCIA CRÍTICA** - Esta NO es solo una configuración con homerow mods. Es una **reasignación ergonómica COMPLETA del teclado** basada en el workflow personal del autor.
+
+**🚨 CAMBIOS RADICALES vs Teclado Estándar:**
+- ❌ **Backspace movido a la tecla `[`** - La tecla backspace original no funciona
+- ❌ **Numrow superior deshabilitado** - Los números 1-0 en la fila superior no funcionan
+- ⚡ **Alt Left = Capa de números/símbolos** - Mantener Alt Izq para acceder a números
+- ⚡ **Alt Right = Capa de teclas de función** - Mantener Alt Der para F1-F24
+- ⚡ **G (hold) = Numpad** - Teclado numérico en mano derecha
+- 🖱️ **Mouse integrado**: N=Click Izq, M=Click Der, B=Click Medio
+- 🎯 **Homerow Mods**: a/s/d/f y j/k/l/; como modificadores
+- ⚙️ **Timing ultra-optimizado** para escritura rápida
+
+**⚠️ IMPORTANTE**: 
+- **ESTO NO ES UN TECLADO NORMAL** - Muchas teclas están reasignadas completamente
+- **Lee la documentación COMPLETA** en `doc/[es|en]/guia-usuario/homerow-mods.md` antes de usar
+- **NO copies esto directamente** sin entender cada cambio
+- Requiere período de adaptación de SEMANAS, no días
+- Diseñado para ergonomía extrema, sacrificando compatibilidad
+
+**Ideal para**: Solo usuarios extremadamente avanzados que entienden Kanata a fondo, están dispuestos a reaprender el teclado completamente, y quieren ergonomía al máximo.
+
+**⚠️ Cómo usar (SOLO SI SABES LO QUE HACES)**:
+```powershell
+# 1. LEE PRIMERO la documentación completa
+# 2. Revisa TODO el archivo kanata-advanced-homerow.kbd línea por línea
+# 3. Haz backup de tu config actual
+Copy-Item ahk\config\kanata.kbd ahk\config\kanata.kbd.backup
+
+# 4. Copia como base y PERSONALIZA (NO uses tal cual)
+Copy-Item doc\kanata-configs\kanata-advanced-homerow.kbd ahk\config\kanata-custom.kbd
+
+# 5. EDITA kanata-custom.kbd según TUS necesidades
+# 6. Prueba en un documento de texto antes de usar en producción
+```
+
+**📚 Documentación detallada**: Ver sección "Plantilla Ergonómica Extrema" en las guías de usuario.
+
+---
+
 ## 🔄 Cómo Cambiar de Configuración
 
 ### Método 1: Renombrar archivos (Recomendado)
