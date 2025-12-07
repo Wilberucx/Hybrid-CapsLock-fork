@@ -17,6 +17,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Configurable timeout per notification (default: 2000ms)
   - Theme-aware styling (respects configured tooltip colors)
 - Test script demonstrating all feedback types with live examples
+- **`ExitCurrentLayer()` function** (`system/core/layer_manager.ahk`): New public API for explicit, unconditional exit from any layer to base state, ignoring navigation history
+- Auto-preservation of current layer context in `SwitchToLayer()` when origin layer is not explicitly specified
+- Intelligent fallback logic: if `originLayer` parameter is empty, the system now automatically uses `CurrentActiveLayer` as the previous layer
+- **Homerow Mods documentation**: Added comprehensive guides in English and Spanish (`doc/en/user-guide/homerow-mods.md`, `doc/es/guia-usuario/homerow-mods.md`)
+
+### Changed
+- **`SwitchToLayer()` behavior** (`system/core/layer_manager.ahk`): Now automatically preserves `CurrentActiveLayer` as `PreviousLayer` when the `originLayer` parameter is not provided, ensuring proper navigation history tracking
+- Layer navigation now maintains correct context without requiring explicit origin specification in every call
+
+### Fixed
+- **Critical navigation bug**: `ReturnToPreviousLayer()` no longer incorrectly exits to base state when returning from nested layers (e.g., vim → vim_visual → Escape now correctly returns to vim instead of deactivating all layers)
+- Layer navigation history now properly preserved across all plugin transitions
+- Modal layer switching (vim visual mode, window selection, etc.) now works as expected without manual origin tracking
 
 ## [Unreleased] - 2025-12-05
 

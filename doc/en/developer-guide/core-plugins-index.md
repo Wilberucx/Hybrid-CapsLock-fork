@@ -220,8 +220,37 @@ ActivateDynamicLayer() {
     process := GetActiveProcessName()  ; Context Utils
     layerId := GetLayerForProcess(process)  ; Dynamic Layer
     if (layerId != "") {
-        SwitchToLayer(layerId)
+        SwitchToLayer(layerId)  ; Auto-preserves current layer
     }
+}
+```
+
+### Pattern 2b: Smart Layer Navigation (new v2025-12-06)
+
+```autohotkey
+; Navigation with automatic history
+EnterEditMode() {
+    SwitchToLayer("edit")  ; System automatically preserves current layer
+}
+
+ExitEditMode() {
+    ReturnToPreviousLayer()  ; Returns to the layer from which "edit" was activated
+}
+
+; Force exit (panic button)
+EmergencyExit() {
+    ExitCurrentLayer()  ; Exits immediately to base state, ignores history
+}
+
+; Navigation between related modes
+SwitchToVisualMode() {
+    ; From "vim" normal, enter "vim_visual"
+    SwitchToLayer("vim_visual")  ; Auto-preserves "vim" as previous layer
+}
+
+ExitVisualMode() {
+    ; Escape pressed: returns to "vim" automatically
+    ReturnToPreviousLayer()  ; vim_visual → vim (not to base state)
 }
 ```
 

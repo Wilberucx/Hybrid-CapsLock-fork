@@ -25,7 +25,7 @@ Activa manualmente la capa asignada al proceso actual.
 **Comportamiento:**
 1. Obtiene el proceso activo usando `GetActiveProcessName()`
 2. Busca en `data/layer_bindings.json` si hay una capa asignada
-3. Si existe, activa esa capa con `SwitchToLayer()`
+3. Si existe, activa esa capa con `SwitchToLayer()` (el sistema automáticamente preserva la capa actual como previa desde v2025-12-06)
 4. Muestra tooltip con resultado
 
 **Ejemplo:**

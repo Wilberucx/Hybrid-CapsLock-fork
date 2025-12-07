@@ -25,7 +25,7 @@ Manually activates the layer assigned to the current process.
 **Behavior:**
 1. Gets the active process using `GetActiveProcessName()`
 2. Searches in `data/layer_bindings.json` if there's an assigned layer
-3. If it exists, activates that layer with `SwitchToLayer()`
+3. If it exists, activates that layer with `SwitchToLayer()` (system automatically preserves current layer as previous since v2025-12-06)
 4. Shows tooltip with result
 
 **Example:**

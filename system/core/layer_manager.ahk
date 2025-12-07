@@ -96,8 +96,12 @@ SwitchToLayer(targetLayer, originLayer := "") {
         DeactivateLayer(CurrentActiveLayer)
     }
     
-    ; Set state
-    PreviousLayer := originLayer
+    ; Set state - preserve current layer if origin not specified
+    if (originLayer == "") {
+        PreviousLayer := CurrentActiveLayer  ; Auto-preserve current layer for proper return navigation
+    } else {
+        PreviousLayer := originLayer
+    }
     CurrentActiveLayer := targetLayer
     
     ; Force close any existing tooltips (like Leader Menu) before activating new layer
@@ -146,6 +150,63 @@ ReturnToPreviousLayer() {
         RestoreOriginLayerContext(tempPrevious)
         Log.d("Returned to previous layer: " . CurrentActiveLayer, "LAYER")
     }
+}
+
+; ===================================================================
+; ExitCurrentLayer()
+; ===================================================================
+; **PUBLIC API** - Explicitly exit the current layer and return to base state.
+;
+; Use this function when you want to FORCE EXIT from any layer,
+; ignoring navigation history and returning directly to base state.
+;
+; Differences from ReturnToPreviousLayer():
+;   - ReturnToPreviousLayer(): Smart navigation (returns to previous layer if exists)
+;   - ExitCurrentLayer():      Force exit (always returns to base state)
+;
+; Use Cases:
+;   ✅ Emergency exit / panic button (e.g., double-tap Escape)
+;   ✅ Explicit "close layer" commands (e.g., "q" to quit)
+;   ✅ Reset to base state in error conditions
+;   ✅ User-triggered "exit all layers" hotkey
+;
+; Example Usage:
+;   ; In a plugin keymap:
+;   RegisterKeymap("my_layer", "q", "Force Exit", ExitCurrentLayer)
+;   
+;   ; Or in custom logic:
+;   if (error_condition) {
+;       ExitCurrentLayer()
+;   }
+;
+; State Changes:
+;   Before: CurrentActiveLayer = "some_layer", PreviousLayer = "other_layer"
+;   After:  CurrentActiveLayer = "", PreviousLayer = ""
+; ===================================================================
+ExitCurrentLayer() {
+    global CurrentActiveLayer, PreviousLayer
+    
+    Log.t("========================================", "LAYER")
+    Log.d("EXIT CURRENT LAYER CALLED (FORCE EXIT)", "LAYER")
+    Log.d("CurrentActiveLayer: " . CurrentActiveLayer, "LAYER")
+    Log.t("========================================", "LAYER")
+    
+    ; Store layer name for logging before clearing
+    exitedLayer := CurrentActiveLayer
+    
+    ; Deactivate current layer if active
+    if (CurrentActiveLayer != "") {
+        DeactivateLayer(CurrentActiveLayer)
+        Log.d("Force exited layer: " . exitedLayer, "LAYER")
+    } else {
+        Log.d("No active layer to exit (already in base state)", "LAYER")
+    }
+    
+    ; Clear all layer state - return to base
+    CurrentActiveLayer := ""
+    PreviousLayer := ""
+    
+    Log.d("Returned to base state (force exit)", "LAYER")
 }
 
 ActivateLayer(layerName) {

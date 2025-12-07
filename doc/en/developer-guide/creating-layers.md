@@ -136,10 +136,66 @@ SwitchToGaming() {
 RegisterKeymap("leader", "g", "Enter Gaming Mode", SwitchToGaming, false, 5)
 ```
 
+## 5. Layer Navigation
+
+### Main Functions
+
+The layer system offers three main functions for navigation:
+
+#### `SwitchToLayer(targetLayer, originLayer := "")`
+
+Switches to a specific layer. If `originLayer` is not specified, the system automatically preserves the current layer as the previous layer.
+
+```autohotkey
+; Simple switch - automatically preserves current layer
+SwitchToLayer("gaming")
+
+; Switch with explicit origin (advanced usage)
+SwitchToLayer("gaming", "leader")
+```
+
+#### `ReturnToPreviousLayer()`
+
+Returns to the previous layer. If there's no previous layer, returns to base state (no active layers).
+
+```autohotkey
+; Exit current layer and return to previous
+RegisterKeymap("gaming", "Escape", "Exit", ReturnToPreviousLayer)
+```
+
+**Behavior:**
+- If there's a previous layer → returns to that layer
+- If there's no previous layer → deactivates all layers (base state)
+
+#### `ExitCurrentLayer()`
+
+**New in v2025-12-06**: Exits immediately to base state, ignoring navigation history.
+
+```autohotkey
+; Force exit (ignores previous layer)
+RegisterKeymap("gaming", "q", "Force Quit", ExitCurrentLayer)
+```
+
+**Use cases:**
+- Panic button / emergency exit
+- Explicit "close layer" commands (like Vim-style "q")
+- Reset to base state in error conditions
+- User shortcuts to "exit all layers"
+
+**Key differences:**
+```autohotkey
+; Smart navigation (follows history)
+ReturnToPreviousLayer()  ; vim_visual → vim → leader → base
+
+; Force exit (always to base state)
+ExitCurrentLayer()       ; vim_visual → base (no intermediate steps)
+```
+
 ## Flow Summary
 
 1. **Define**: `RegisterLayer("my_layer", ...)`
 2. **Populate**: `RegisterKeymap("my_layer", ...)`
 3. **Connect**: `RegisterKeymap("leader", ..., SwitchToLayer("my_layer"))`
+4. **Navigate**: Use `ReturnToPreviousLayer()` or `ExitCurrentLayer()` as needed
 
-And that's it! The system takes care of managing menus, tooltips, and persistence automatically.
+And that's it! The system takes care of managing menus, tooltips, persistence, and navigation history automatically.

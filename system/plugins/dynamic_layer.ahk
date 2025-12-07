@@ -137,21 +137,21 @@ GetLayerForProcess(processName) {
  */
 ActivateDynamicLayer() {
     if (!DYNAMIC_LAYER_ENABLED) {
-        ToolTip("Dynamic Layer system is disabled", , , 20)
+        ShowTooltipFeedback("Dynamic Layer system is disabled", "warning", 1500)
         SetTimer(() => ToolTip(, , , 20), -1500)
         return false
     }
     
     currentProcess := GetActiveProcessName()
     if (currentProcess == "") {
-        ToolTip("Unable to detect active process", , , 20)
+        ShowTooltipFeedback("Unable to detect active process", "error", 1500)
         SetTimer(() => ToolTip(, , , 20), -1500)
         return false
     }
     
     layerId := GetLayerForProcess(currentProcess)
     if (layerId == "") {
-        ToolTip("No layer bound to: " . currentProcess, , , 20)
+        ShowTooltipFeedback("No layer bound to: " . currentProcess, "info", 2000)
         SetTimer(() => ToolTip(, , , 20), -2000)
         return false
     }
@@ -161,7 +161,7 @@ ActivateDynamicLayer() {
         Log.i("Activated layer: " . layerId . " for process: " . currentProcess, "DYNAMIC_LAYER")
         return true
     } catch {
-        ToolTip("Failed to activate layer: " . layerId, , , 20)
+        ShowTooltipFeedback("Failed to activate layer: " . layerId, "error", 2000)
         SetTimer(() => ToolTip(, , , 20), -2000)
         Log.e("Failed to switch to layer " . layerId)
         return false
@@ -173,7 +173,7 @@ ToggleDynamicLayer() {
     DYNAMIC_LAYER_ENABLED := !DYNAMIC_LAYER_ENABLED
     
     status := DYNAMIC_LAYER_ENABLED ? "ENABLED" : "DISABLED"
-    ToolTip("Dynamic Layer: " . status, , , 20)
+    ShowTooltipFeedback("Dynamic Layer system " . status, "info", 2000)
     SetTimer(() => ToolTip(, , , 20), -2000)
     
     Log.i("Dynamic Layer system " . status, "DYNAMIC_LAYER")

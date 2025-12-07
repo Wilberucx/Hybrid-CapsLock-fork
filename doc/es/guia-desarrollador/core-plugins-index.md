@@ -220,8 +220,37 @@ ActivateDynamicLayer() {
     process := GetActiveProcessName()  ; Context Utils
     layerId := GetLayerForProcess(process)  ; Dynamic Layer
     if (layerId != "") {
-        SwitchToLayer(layerId)
+        SwitchToLayer(layerId)  ; Auto-preserva capa actual
     }
+}
+```
+
+### Patrón 2b: Navegación Inteligente de Capas (nuevo v2025-12-06)
+
+```autohotkey
+; Navegación con historial automático
+EnterEditMode() {
+    SwitchToLayer("edit")  ; Sistema preserva automáticamente la capa actual
+}
+
+ExitEditMode() {
+    ReturnToPreviousLayer()  ; Regresa a la capa desde donde se activó "edit"
+}
+
+; Salida forzada (botón de pánico)
+EmergencyExit() {
+    ExitCurrentLayer()  ; Sale inmediatamente al estado base, ignora historial
+}
+
+; Navegación entre modos relacionados
+SwitchToVisualMode() {
+    ; Desde "vim" normal, entra a "vim_visual"
+    SwitchToLayer("vim_visual")  ; Auto-preserva "vim" como capa previa
+}
+
+ExitVisualMode() {
+    ; Escape presionado: regresa a "vim" automáticamente
+    ReturnToPreviousLayer()  ; vim_visual → vim (no a estado base)
 }
 ```
 

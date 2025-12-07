@@ -37,8 +37,11 @@ RegisterKeymap("gaming", "w", "Move Forward", () => Send("{Up}"))
 ; Complex action (calling a function)
 RegisterKeymap("gaming", "r", "Reload", ReloadWeaponFunction)
 
-; Exit the layer (Standard pattern)
+; Exit the layer (Standard pattern - returns to previous layer)
 RegisterKeymap("gaming", "Escape", "Exit", ReturnToPreviousLayer)
+
+; Alternative: Force exit to base state (ignores history)
+; RegisterKeymap("gaming", "q", "Force Quit", ExitCurrentLayer)
 ```
 
 ### 3. Create an Entry Point

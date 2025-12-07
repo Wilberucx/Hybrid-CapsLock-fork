@@ -136,10 +136,66 @@ SwitchToGaming() {
 RegisterKeymap("leader", "g", "Enter Gaming Mode", SwitchToGaming, false, 5)
 ```
 
+## 5. Navegación entre Capas
+
+### Funciones Principales
+
+El sistema de capas ofrece tres funciones principales para la navegación:
+
+#### `SwitchToLayer(targetLayer, originLayer := "")`
+
+Cambia a una capa específica. Si no se especifica `originLayer`, el sistema automáticamente preserva la capa actual como la capa previa.
+
+```autohotkey
+; Cambio simple - preserva automáticamente la capa actual
+SwitchToLayer("gaming")
+
+; Cambio con origen explícito (uso avanzado)
+SwitchToLayer("gaming", "leader")
+```
+
+#### `ReturnToPreviousLayer()`
+
+Regresa a la capa anterior. Si no hay capa previa, regresa al estado base (sin capas activas).
+
+```autohotkey
+; Salir de la capa actual y regresar a la anterior
+RegisterKeymap("gaming", "Escape", "Exit", ReturnToPreviousLayer)
+```
+
+**Comportamiento:**
+- Si hay una capa previa → regresa a esa capa
+- Si no hay capa previa → desactiva todas las capas (estado base)
+
+#### `ExitCurrentLayer()`
+
+**Nuevo en v2025-12-06**: Sale inmediatamente al estado base, ignorando el historial de navegación.
+
+```autohotkey
+; Salida forzada (no importa la capa previa)
+RegisterKeymap("gaming", "q", "Force Quit", ExitCurrentLayer)
+```
+
+**Casos de uso:**
+- Botón de pánico / salida de emergencia
+- Comandos explícitos de "cerrar capa" (como "q" al estilo Vim)
+- Reseteo al estado base en condiciones de error
+- Atajos de usuario para "salir de todas las capas"
+
+**Diferencias clave:**
+```autohotkey
+; Navegación inteligente (sigue el historial)
+ReturnToPreviousLayer()  ; vim_visual → vim → leader → base
+
+; Salida forzada (siempre al estado base)
+ExitCurrentLayer()       ; vim_visual → base (sin pasos intermedios)
+```
+
 ## Resumen del Flujo
 
 1.  **Definir**: `RegisterLayer("mi_capa", ...)`
 2.  **Poblar**: `RegisterKeymap("mi_capa", ...)`
 3.  **Conectar**: `RegisterKeymap("leader", ..., SwitchToLayer("mi_capa"))`
+4.  **Navegar**: Usa `ReturnToPreviousLayer()` o `ExitCurrentLayer()` según tus necesidades
 
-¡Y listo! El sistema se encarga de gestionar los menús, los tooltips y la persistencia automáticamente.
+¡Y listo! El sistema se encarga de gestionar los menús, los tooltips, la persistencia y el historial de navegación automáticamente.
