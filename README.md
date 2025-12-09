@@ -2,9 +2,13 @@
 
 <div align="center">
 
+![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)
+![License](https://img.shields.io/badge/license-GPLv2-green.svg)
+![AHK](https://img.shields.io/badge/AutoHotkey-v2.0+-red.svg)
+
 **Transforma tu teclado en una herramienta de productividad ergonómica**
 
-*La potencia de [Kanata](https://github.com/jtroo/kanata) (remapping a nivel kernel) + la inteligencia de AutoHotkey (context-aware)*
+_La potencia de [Kanata](https://github.com/jtroo/kanata) (remapping a nivel kernel) + la inteligencia de AutoHotkey (context-aware)_
 
 </div>
 
@@ -17,12 +21,14 @@ Imagina poder **navegar, editar y controlar tu sistema** sin mover las manos de 
 ### El Problema que Resuelve
 
 ❌ **Antes:**
+
 - Mover constantemente la mano derecha al mouse o flechas
 - Atajos de teclado complejos que requieren contorsiones (`Ctrl+Shift+Alt+...`)
 - Cambiar de contexto mental entre aplicaciones
 - Tecla CapsLock desperdiciada
 
 ✅ **Después:**
+
 - Navegación tipo Vim (`h/j/k/l`) desde cualquier aplicación
 - Capas contextuales que se adaptan a la aplicación activa
 - Menús visuales que muestran todas las opciones disponibles
@@ -33,6 +39,7 @@ Imagina poder **navegar, editar y controlar tu sistema** sin mover las manos de 
 ## ✨ Características Principales
 
 ### 🎯 **Navegación Ergonómica**
+
 Mantén `CapsLock` y usa `h/j/k/l` para navegar como en Vim, en **cualquier aplicación** (navegador, editor, Excel, etc.)
 
 ```
@@ -42,24 +49,31 @@ CapsLock (tap)             →  Dynamic Layer (capas por aplicación)
 ```
 
 > 💡 **Configuraciones disponibles**: El sistema incluye múltiples archivos `kanata.kbd` de ejemplo en [doc/kanata-configs](doc/kanata-configs/):
+>
 > - `kanata.kbd` (básico) - Solo navegación con flechas (configuración actual)
 > - `kanata-homerow.kbd` - Incluye homerow mods (a/s/d/f como modificadores)
 > - `kanata-extended.kbd` - Listo para plugins adicionales
 
 ### 🧠 **Context-Aware Intelligence**
+
 El sistema detecta qué aplicación está activa y adapta el comportamiento automáticamente:
+
 - En **Excel**: `CapsLock + j/k` navega entre celdas
 - En **navegadores**: atajos específicos para tabs y navegación
 - En **editores**: funciones de edición avanzadas
 
 ### 🎨 **Feedback Visual Elegante**
+
 Tooltips C# modernos que muestran:
+
 - Menús contextuales con todas las opciones disponibles
 - Estado actual del sistema (capas activas, modo, etc.)
 - Información de keybindings organizados por categorías
 
 ### 🧩 **Sistema Modular de Plugins**
+
 El core es ligero. **Tú decides** qué funcionalidades instalar:
+
 - 📂 Gestión de carpetas y archivos
 - 🐙 Integración con Git
 - 📊 Monitoreo del sistema
@@ -68,6 +82,7 @@ El core es ligero. **Tú decides** qué funcionalidades instalar:
 - ...y más en el [catálogo de plugins](doc/plugins/README.md)
 
 ### ⚡ **Timing Perfecto**
+
 Gracias a Kanata (nivel kernel), los tap-hold y homerow mods funcionan sin falsos positivos ni delay perceptible.
 
 ---
@@ -115,6 +130,7 @@ h - Hybrid Management
 ### 3️⃣ Prueba la Navegación
 
 Abre cualquier editor de texto y:
+
 1. **Mantén presionado** `CapsLock` (no lo sueltes)
 2. Mientras lo mantienes, presiona `j` varias veces → cursor baja (↓)
 3. Presiona `k` varias veces → cursor sube (↑)
@@ -174,18 +190,21 @@ Abre cualquier editor de texto y:
 ## 💡 Casos de Uso Comunes
 
 ### Para Desarrolladores
+
 - Navegación rápida en código sin mouse
 - Integración con Git para commits rápidos
 - Lanzamiento de terminales y herramientas
 - Gestión de ventanas y espacios de trabajo
 
 ### Para Usuarios de Productividad
+
 - Navegación en Excel sin mouse
 - Gestión rápida de carpetas y archivos
 - Snippets de texto para respuestas frecuentes
 - Control de energía y monitoreo del sistema
 
 ### Para Power Users
+
 - Creación de capas personalizadas para aplicaciones específicas
 - Automatización de flujos de trabajo repetitivos
 - Integración con herramientas externas (ADB, VaultFlow, etc.)
@@ -195,6 +214,7 @@ Abre cualquier editor de texto y:
 ## 📚 Documentación
 
 ### Para Usuarios
+
 - **[Introducción](doc/es/guia-usuario/introduccion.md)** - Comienza aquí
 - **[Instalación](doc/es/guia-usuario/instalacion.md)** - Guía de instalación paso a paso
 - **[Conceptos](doc/es/guia-usuario/conceptos.md)** - Arquitectura y filosofía
@@ -203,6 +223,7 @@ Abre cualquier editor de texto y:
 - **[Homerow Mods](doc/es/guia-usuario/homerow-mods.md)** - Modificadores en home row
 
 ### Para Desarrolladores
+
 - **[📖 Developer Guide Index](doc/en/developer-guide/README.md)** - Complete developer documentation
 - **[🛡️ Defensive Programming Patterns](doc/en/developer-guide/defensive-programming-patterns.md)** ⭐ **ESSENTIAL**
 - **[Plugin Architecture](doc/en/developer-guide/plugin-architecture.md)** - System architecture
@@ -222,6 +243,21 @@ Abre cualquier editor de texto y:
 ## 📄 Licencia
 
 Este proyecto mantiene la misma licencia que el proyecto original Hybrid-CapsLock.
+
+Copyright (C) 2025 Wilberucx
+
+Este programa es software libre; puedes redistribuirlo y/o modificarlo
+bajo los términos de la GNU General Public License tal como está publicada por
+la Free Software Foundation; ya sea la versión 2 de la Licencia, o
+(a tu elección) cualquier versión posterior.
+
+Este programa se distribuye con la esperanza de que sea útil,
+pero SIN NINGUNA GARANTÍA; ni siquiera la garantía implícita de
+COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Consulta la
+GNU General Public License para más detalles.
+
+Deberías haber recibido una copia de la GNU General Public License junto
+con este programa; si no, consulta <https://www.gnu.org/licenses/>.
 
 ---
 
