@@ -5,9 +5,10 @@ All notable changes to the HybridCapslock project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2025-12-06
+## [3.1.0] - 2025-01-10
 
 ### Added
+
 - **Unified Feedback System**: New core plugin `system/plugins/notification.ahk` providing centralized notification API
   - `ShowTooltipFeedback(message, type := "info", timeout := 2000)` - Single API for all plugin feedback
   - 5 feedback types with automatic icons and color-coding: `info` (💡 blue), `success` (✅ green), `warning` (⚠️ orange), `error` (❌ red), `confirm` (❓ purple)
@@ -21,40 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Auto-preservation of current layer context in `SwitchToLayer()` when origin layer is not explicitly specified
 - Intelligent fallback logic: if `originLayer` parameter is empty, the system now automatically uses `CurrentActiveLayer` as the previous layer
 - **Homerow Mods documentation**: Added comprehensive guides in English and Spanish (`doc/en/user-guide/homerow-mods.md`, `doc/es/guia-usuario/homerow-mods.md`)
-
-### Changed
-- **`SwitchToLayer()` behavior** (`system/core/layer_manager.ahk`): Now automatically preserves `CurrentActiveLayer` as `PreviousLayer` when the `originLayer` parameter is not provided, ensuring proper navigation history tracking
-- Layer navigation now maintains correct context without requiring explicit origin specification in every call
-
-### Fixed
-- **Critical navigation bug**: `ReturnToPreviousLayer()` no longer incorrectly exits to base state when returning from nested layers (e.g., vim → vim_visual → Escape now correctly returns to vim instead of deactivating all layers)
-- Layer navigation history now properly preserved across all plugin transitions
-- Modal layer switching (vim visual mode, window selection, etc.) now works as expected without manual origin tracking
-
-## [Unreleased] - 2025-12-05
-
-### Added
 - **Three-button confirmation dialog**: MsgBox now shows Yes/No/Cancel buttons for more explicit user control
-
-### Changed
-- **Native MsgBox confirmations**: Replaced tooltip-based confirmation system with standard Windows MsgBox in `ShowUnifiedConfirmation()`
-  - More visible modal dialog with keyboard accessibility (Y/N/Esc)
-  - Simplified code architecture
-- **Simplified power actions**: Removed redundant confirmation logic from all functions in `doc/plugins/power_actions.ahk`
-- **Cleaner architecture**: Power action functions now rely on centralized `ShowUnifiedConfirmation()`
-- **CloseActiveWindow fix**: Changed behavior in `doc/plugins/windows_manager.ahk` to instant close (confirm := false)
-
-### Fixed
-- **Removed code duplication**: Delegated power action confirmations to centralized system
-- **CloseActiveWindow behavior**: Fixed incorrect confirmation setting that prevented instant close
-- **Architectural clarity**: Separation of concerns between actions and confirmation logic
-
-### Security
-- **Maintained safe defaults**: Critical power actions (shutdown, restart) still require confirmation by default
-
-## [Unreleased] - 2025-12-04
-
-### Added
 - **Windows Manager Plugin** (`doc/plugins/windows_manager.ahk`): Comprehensive window management system
   - **Window Control**: Close (`wd`), toggle minimize (`wm`), force minimize (`wM`)
   - **Window Navigation**: Previous/Next window (`wH`/`wL`), smart window list with hjkl (`wl`)
@@ -64,11 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Hierarchical Category**: `windows` registered as category in leader menu
   - **Visual Feedback**: Native tooltips for status messages
   - **Safety**: Confirmation dialog for destructive operations
-
-## [Unreleased] - 2025-12-03
-
-### Added
-
 - **Kanata Manager Plugin** (`system/plugins/kanata_manager.ahk`): New core plugin that manages Kanata lifecycle (start, stop, restart, toggle) using native AutoHotkey v2 functions.
 - **Kanata Configuration Section** in `ahk/config/settings.ahk`: Centralized configuration with auto-start control, custom paths, and automatic path detection.
 - **Extended Kanata API**:
@@ -92,6 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`SwitchToLayer()` behavior** (`system/core/layer_manager.ahk`): Now automatically preserves `CurrentActiveLayer` as `PreviousLayer` when the `originLayer` parameter is not provided, ensuring proper navigation history tracking
+- Layer navigation now maintains correct context without requiring explicit origin specification in every call
+- **Native MsgBox confirmations**: Replaced tooltip-based confirmation system with standard Windows MsgBox in `ShowUnifiedConfirmation()`
+  - More visible modal dialog with keyboard accessibility (Y/N/Esc)
+  - Simplified code architecture
+- **Simplified power actions**: Removed redundant confirmation logic from all functions in `doc/plugins/power_actions.ahk`
+- **Cleaner architecture**: Power action functions now rely on centralized `ShowUnifiedConfirmation()`
+- **CloseActiveWindow fix**: Changed behavior in `doc/plugins/windows_manager.ahk` to instant close (confirm := false)
 - **Kanata Management**: Migrated from VBScript-based approach to native AutoHotkey v2 implementation using `Run()` with "Hide" flag and `ProcessClose()`.
 - **Plugin Architecture**: Moved Kanata management from `system/core/` to `system/plugins/` following established plugin pattern.
 - **Auto-Loading**: Kanata plugin now loads automatically via auto_loader instead of manual include in `init.ahk`.
@@ -121,12 +92,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Critical navigation bug**: `ReturnToPreviousLayer()` no longer incorrectly exits to base state when returning from nested layers (e.g., vim → vim_visual → Escape now correctly returns to vim instead of deactivating all layers)
+- Layer navigation history now properly preserved across all plugin transitions
+- Modal layer switching (vim visual mode, window selection, etc.) now works as expected without manual origin tracking
+- **Removed code duplication**: Delegated power action confirmations to centralized system
+- **CloseActiveWindow behavior**: Fixed incorrect confirmation setting that prevented instant close
+- **Architectural clarity**: Separation of concerns between actions and confirmation logic
 - **Portability**: Eliminated hardcoded absolute paths in VBS scripts. Paths are now configurable and auto-detected.
 - **Complexity**: Reduced from 4+ files (AHK + VBS) to single plugin file.
 - **Maintenance**: Eliminated dependency on external VBScript files, simplifying codebase.
-- **Error Visibility**: Added proper error handling and logging (previously silent failures in VBS).
-- **Silent Failures**: Config validation now happens BEFORE starting Kanata, preventing cryptic startup failures.
-- **Error Messages**: Users now get detailed, actionable error messages instead of generic "Kanata failed to start".
+### Error Visibility**: Added proper error handling and logging (previously silent failures in VBS)
+- **Silent Failures**: Config validation now happens BEFORE starting Kanata, preventing cryptic startup failures
+- **Error Messages**: Users now get detailed, actionable error messages instead of generic "Kanata failed to start"
+
+### Security
+
+- **Maintained safe defaults**: Critical power actions (shutdown, restart) still require confirmation by default
 
 ### Technical Notes
 
@@ -183,7 +164,7 @@ For Custom Configurations:
 
 ---
 
-## [3.1.0] - 2025-12-01
+## [3.0.1] - 2025-12-01
 
 ### Added
 
