@@ -22,12 +22,21 @@ if (!IsSet(ConfigIni)) {
     global ConfigIni := A_ScriptDir . "\ahk\config\configuration.ini"
 }
 
-; Global variables for tooltip configuration
-global tooltipConfig := ReadTooltipConfig()
+; Global variables for tooltip configuration (lazy-loaded)
+global tooltipConfig := unset
 
 ; Global state variables
 global tooltipMenuActive := false
 global tooltipCurrentTitle := ""
+
+; Lazy loader for tooltipConfig (prevents initialization order issues)
+GetTooltipConfig() {
+    global tooltipConfig
+    if (!IsSet(tooltipConfig)) {
+        tooltipConfig := ReadTooltipConfig()
+    }
+    return tooltipConfig
+}
 
 
 ; ===================================================================
@@ -46,22 +55,90 @@ CleanIniValue(value) {
 ReadTooltipConfig() {
     global HybridConfig
     
-    if (IsSet(HybridConfig)) {
-        config := {}
-        config.enabled := HybridConfig.tooltips.enabled
-        config.handleInput := HybridConfig.tooltips.handles_input
-        config.optionsTimeout := HybridConfig.tooltips.timeouts.options_menu
-        config.statusTimeout := HybridConfig.tooltips.timeouts.status_notification
-        config.autoHide := HybridConfig.tooltips.features.auto_hide_on_action
-        config.persistent := HybridConfig.tooltips.features.persistent_menus
-        config.fadeAnimation := HybridConfig.tooltips.features.fade_animation
-        config.clickThrough := HybridConfig.tooltips.features.click_through
-        config.exePath := HybridConfig.tooltips.exe_path
-        config.menuLayout := HybridConfig.tooltips.layout.menu_layout
-        return config
+    ; DEFENSIVE: Check if HybridConfig exists, is an object, AND has tooltips property
+    if (!IsSet(HybridConfig)) {
+        ; HybridConfig not loaded yet - use fallback
+        return GetFallbackTooltipConfig()
     }
     
-    ; Default fallback if HybridConfig is missing
+    if (!IsObject(HybridConfig)) {
+        ; HybridConfig is not an object - use fallback
+        return GetFallbackTooltipConfig()
+    }
+    
+    if (!HybridConfig.HasOwnProp("tooltips")) {
+        ; tooltips property doesn't exist - use fallback
+        return GetFallbackTooltipConfig()
+    }
+    
+    ; Now safely try to read the config
+    try {
+        tooltipObj := HybridConfig.tooltips
+        
+        ; Verify it's an object before accessing nested properties
+        if (!IsObject(tooltipObj)) {
+            return GetFallbackTooltipConfig()
+        }
+        
+        ; Create proper object with base Object class (AHK v2 compatible)
+        config := {
+            enabled: true,
+            handleInput: false,
+            optionsTimeout: 10000,
+            statusTimeout: 2000,
+            autoHide: true,
+            persistent: false,
+            fadeAnimation: true,
+            clickThrough: true,
+            exePath: "",
+            menuLayout: "grid"
+        }
+        
+        ; Override with values from HybridConfig if they exist
+        if (tooltipObj.HasOwnProp("enabled"))
+            config.enabled := tooltipObj.enabled
+        if (tooltipObj.HasOwnProp("handles_input"))
+            config.handleInput := tooltipObj.handles_input
+        
+        ; Timeouts with nested object check
+        if (tooltipObj.HasOwnProp("timeouts") && IsObject(tooltipObj.timeouts)) {
+            if (tooltipObj.timeouts.HasOwnProp("options_menu"))
+                config.optionsTimeout := tooltipObj.timeouts.options_menu
+            if (tooltipObj.timeouts.HasOwnProp("status_notification"))
+                config.statusTimeout := tooltipObj.timeouts.status_notification
+        }
+        
+        ; Features with nested object check
+        if (tooltipObj.HasOwnProp("features") && IsObject(tooltipObj.features)) {
+            if (tooltipObj.features.HasOwnProp("auto_hide_on_action"))
+                config.autoHide := tooltipObj.features.auto_hide_on_action
+            if (tooltipObj.features.HasOwnProp("persistent_menus"))
+                config.persistent := tooltipObj.features.persistent_menus
+            if (tooltipObj.features.HasOwnProp("fade_animation"))
+                config.fadeAnimation := tooltipObj.features.fade_animation
+            if (tooltipObj.features.HasOwnProp("click_through"))
+                config.clickThrough := tooltipObj.features.click_through
+        }
+        
+        ; exe_path with proper check
+        if (tooltipObj.HasOwnProp("exe_path"))
+            config.exePath := tooltipObj.exe_path
+        
+        ; Layout with nested object check
+        if (tooltipObj.HasOwnProp("layout") && IsObject(tooltipObj.layout)) {
+            if (tooltipObj.layout.HasOwnProp("menu_layout"))
+                config.menuLayout := tooltipObj.layout.menu_layout
+        }
+        
+        return config
+    } catch as e {
+        ; If any error occurs during reading, use fallback
+        return GetFallbackTooltipConfig()
+    }
+}
+
+; Helper function to return fallback config (DRY principle)
+GetFallbackTooltipConfig() {
     return {
         enabled: true,
         handleInput: false,
@@ -114,8 +191,8 @@ ScheduleTooltipJsonWrite(json) {
 ; Función principal para mostrar tooltip C# (con timeout personalizado)
 ShowCSharpTooltip(title, items, navigation := "", timeout := 0) {
     ; Decide layout based on configuration
-    global tooltipConfig
-    tooltipType := (tooltipConfig.menuLayout = "list_vertical") ? "bottom_right_list" : "leader"
+    config := GetTooltipConfig()
+    tooltipType := (config.menuLayout = "list_vertical") ? "bottom_right_list" : "leader"
     return ShowCSharpTooltipWithType(title, items, navigation, timeout, tooltipType)
 }
 
@@ -125,9 +202,9 @@ ShowBottomRightListTooltip(title, items, navigation := "", timeout := 0) {
 }
 
 ShowCSharpTooltipWithType(title, items, navigation := "", timeout := 0, tooltipType := "leader") {
-    global tooltipConfig
+    config := GetTooltipConfig()
     ; Enforce layout from INI: if list_vertical is configured, always use bottom_right_list for menus
-    if (tooltipConfig.menuLayout = "list_vertical" && tooltipType = "leader") {
+    if (config.menuLayout = "list_vertical" && tooltipType = "leader") {
         tooltipType := "bottom_right_list"
     }
 
@@ -136,11 +213,11 @@ ShowCSharpTooltipWithType(title, items, navigation := "", timeout := 0, tooltipT
     
     ; Si no se especifica timeout, usar el de opciones por defecto
     if (timeout = 0) {
-        timeout := tooltipConfig.optionsTimeout
+        timeout := config.optionsTimeout
     }
     
     ; Si persistent_menus está habilitado, usar timeout muy largo
-    if (tooltipConfig.persistent) {
+    if (config.persistent) {
         timeout := 300000  ; 5 minutos (prácticamente infinito)
     }
 
@@ -198,7 +275,7 @@ ShowCSharpTooltipWithType(title, items, navigation := "", timeout := 0, tooltipT
 
     ; === NEW: Animation support (v2.1 API) ===
     ; Add default fade animation if enabled in config
-    if (tooltipConfig.fadeAnimation) {
+    if (config.fadeAnimation) {
         cmd["animation"] := Map()
         cmd["animation"]["type"] := "fade"
         cmd["animation"]["duration_ms"] := 200
@@ -228,9 +305,9 @@ HideCSharpTooltip() {
 
 ; Función específica para tooltips de ESTADO/NOTIFICACIONES (duración corta)
 ShowCSharpStatusNotification(title, message) {
-    global tooltipConfig
+    config := GetTooltipConfig()
     items := "status:" . message
-    ShowCSharpTooltip(title, items, "Esc: Close", tooltipConfig.statusTimeout)
+    ShowCSharpTooltip(title, items, "Esc: Close", config.statusTimeout)
 }
 
 ; Función para iniciar la aplicación C# tooltip
@@ -239,13 +316,24 @@ IsAbsolutePath(p) {
 }
 
 StartTooltipApp() {
-    global tooltipConfig
-    global tooltipConfig
+    config := GetTooltipConfig()
+    
+    ; DEFENSIVE: Verify config is a valid object with exePath property
+    if (!IsObject(config)) {
+        ; Config is not an object, force fallback
+        config := GetFallbackTooltipConfig()
+    }
+    
+    if (!config.HasOwnProp("exePath")) {
+        ; exePath property missing, force fallback
+        config := GetFallbackTooltipConfig()
+    }
+    
     ; Verificar si ya está ejecutándose
     if (!ProcessExist("TooltipApp.exe")) {
         ; Intentar ejecutar desde diferentes ubicaciones
-        if (tooltipConfig.exePath) {
-            exePath := tooltipConfig.exePath
+        if (config.exePath != "" && config.exePath) {
+            exePath := config.exePath
             if (!IsAbsolutePath(exePath))
                 exePath := A_ScriptDir . "\\" . exePath
             if (FileExist(exePath))
@@ -390,12 +478,12 @@ HandleTooltipSelection(key) {
 ; Ensure ShowCSharpOptionsMenu marks menu as active and remembers title
 ; (we hook by wrapping ShowCSharpOptionsMenu via a helper)
 Original_ShowCSharpOptionsMenu(title, items, navigation := "", timeout := 0) {
+    config := GetTooltipConfig()
     if (timeout = 0) {
-        timeout := tooltipConfig.optionsTimeout
+        timeout := config.optionsTimeout
     }
-    global tooltipConfig
     ; Force layout decision here as well, so every options menu respects INI layout
-    tooltipType := (tooltipConfig.menuLayout = "list_vertical") ? "bottom_right_list" : "leader"
+    tooltipType := (config.menuLayout = "list_vertical") ? "bottom_right_list" : "leader"
     ShowCSharpTooltipWithType(title, items, navigation, timeout, tooltipType)
 }
 
@@ -410,8 +498,9 @@ ShowCSharpOptionsMenu(title, items, navigation := "", timeout := 0) {
 ; Context helpers for scoping hotkeys
 ; Context helpers for scoping hotkeys
 TooltipInMenu() {
-    global tooltipMenuActive, tooltipConfig
-    return tooltipMenuActive && tooltipConfig.handleInput
+    global tooltipMenuActive
+    config := GetTooltipConfig()
+    return tooltipMenuActive && config.handleInput
 }
 
 ; Handle confirmation selection (Y/N)
@@ -424,8 +513,9 @@ HandleConfirmationSelection(confirmed) {
 }
 
 TooltipInConfirmationMode() {
-    global tooltipMenuActive, tooltipCurrentTitle, tooltipConfig
-    return tooltipMenuActive && tooltipConfig.handleInput && (tooltipCurrentTitle = "CONFIRMATION")
+    global tooltipMenuActive, tooltipCurrentTitle
+    config := GetTooltipConfig()
+    return tooltipMenuActive && config.handleInput && (tooltipCurrentTitle = "CONFIRMATION")
 }
 
 #HotIf TooltipInConfirmationMode()
@@ -981,7 +1071,7 @@ BuildNavArray(navInput) {
 
 ; Construir items de bienvenida con estado de capas y colores success/error
 ShowWelcomeStatusCS() {
-    global tooltipConfig
+    config := GetTooltipConfig()
     theme := ReadTooltipThemeDefaults()
 
     ; Build single-line version item matching leader scheme, no navigation
@@ -994,7 +1084,7 @@ ShowWelcomeStatusCS() {
     itemsArr.Push(item)
 
     ; Decide tooltip type like leader does (respect INI menu_layout)
-    tooltipType := (tooltipConfig.menuLayout = "list_vertical") ? "bottom_right_list" : "leader"
+    tooltipType := (config.menuLayout = "list_vertical") ? "bottom_right_list" : "leader"
 
     cmd := Map()
     cmd["show"] := true
@@ -1038,12 +1128,12 @@ ShowWelcomeStatusCS() {
 
 ; API avanzada: admite layout, columnas, estilo, posición, animación y flags (v2.1)
 ShowCSharpTooltipAdvanced(title, items, navigation := "", opts := 0) {
-    global tooltipConfig
+    config := GetTooltipConfig()
     StartTooltipApp()
 
     ; Defaults de timeout
-    timeout := (tooltipConfig.optionsTimeout)
-    if (tooltipConfig.persistent)
+    timeout := (config.optionsTimeout)
+    if (config.persistent)
         timeout := 300000
     if (IsObject(opts) && opts.Has("timeout_ms"))
         timeout := opts["timeout_ms"]
@@ -1089,7 +1179,7 @@ ShowCSharpTooltipAdvanced(title, items, navigation := "", opts := 0) {
     }
 
     ; tooltip_type compat si layout=list y no definido
-    if (!cmd.Has("layout") && tooltipConfig.menuLayout = "list_vertical") {
+    if (!cmd.Has("layout") && config.menuLayout = "list_vertical") {
         cmd["layout"] := Map()
         cmd["layout"]["mode"] := "list"
     }
@@ -1138,7 +1228,7 @@ ShowCSharpTooltipAdvanced(title, items, navigation := "", opts := 0) {
     ; === NEW: Animation support (v2.1 API) ===
     if (IsObject(opts) && opts.Has("animation")) {
         cmd["animation"] := opts["animation"]
-    } else if (tooltipConfig.fadeAnimation) {
+    } else if (config.fadeAnimation) {
         ; Default fade animation if enabled
         cmd["animation"] := Map()
         cmd["animation"]["type"] := "fade"

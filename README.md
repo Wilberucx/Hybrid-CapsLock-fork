@@ -192,6 +192,25 @@ Abre cualquier editor de texto y:
 
 ---
 
+## 📚 Documentación
+
+### Para Usuarios
+- **[Introducción](doc/es/guia-usuario/introduccion.md)** - Comienza aquí
+- **[Instalación](doc/es/guia-usuario/instalacion.md)** - Guía de instalación paso a paso
+- **[Conceptos](doc/es/guia-usuario/conceptos.md)** - Arquitectura y filosofía
+- **[Layers](doc/es/guia-usuario/layers.md)** - Sistema de capas
+- **[Modo Líder](doc/es/guia-usuario/modo-lider.md)** - Menús contextuales
+- **[Homerow Mods](doc/es/guia-usuario/homerow-mods.md)** - Modificadores en home row
+
+### Para Desarrolladores
+- **[📖 Developer Guide Index](doc/en/developer-guide/README.md)** - Complete developer documentation
+- **[🛡️ Defensive Programming Patterns](doc/en/developer-guide/defensive-programming-patterns.md)** ⭐ **ESSENTIAL**
+- **[Plugin Architecture](doc/en/developer-guide/plugin-architecture.md)** - System architecture
+- **[Creating Layers](doc/en/developer-guide/creating-layers.md)** - Custom layer creation
+- **[Keymap System](doc/en/developer-guide/keymap-system.md)** - Keymap API reference
+
+---
+
 ## 🤝 Créditos
 
 - **Autor**: [Wilberucx](https://github.com/Wilberucx) - Creador de Hybrid-CapsLock original y este fork con Kanata
