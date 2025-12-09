@@ -91,16 +91,37 @@ Gracias a Kanata (nivel kernel), los tap-hold y homerow mods funcionan sin falso
 
 ### 1️⃣ Instalación
 
+**Requisitos previos:**
+- Windows 10/11 (64-bit)
+- AutoHotkey v2.0+ ([Descargar](https://www.autohotkey.com/))
+- **TooltipApp v2.1+** (✓ Incluido en release portable)
+- Kanata v1.6.1+ (Opcional, recomendado)
+
+**Opción A: Release Portable (Recomendado)**
+```powershell
+# 1. Descarga HybridCapsLock-v3.1.0.zip desde Releases
+# 2. Extrae a tu ubicación preferida
+# 3. Verifica que tooltip_csharp/TooltipApp.exe existe
+# 4. Ejecuta HybridCapslock.ahk
+```
+
+**Opción B: Desde repositorio (Desarrollo)**
 ```powershell
 # Clona el repositorio
 git clone https://github.com/Wilberucx/Hybrid-CapsLock-fork.git
 cd Hybrid-CapsLock-fork
+
+# IMPORTANTE: Descarga TooltipApp por separado
+# https://github.com/Wilberucx/TooltipApp/releases
+# Extrae TooltipApp.exe en la carpeta tooltip_csharp/
 
 # Ejecuta el script principal
 .\HybridCapslock.ahk
 ```
 
 > 📖 **Guía completa**: [Instalación detallada](doc/es/guia-usuario/instalacion.md)
+> 
+> ⚠️ **Nota v3.1.0+**: TooltipApp es ahora **REQUERIDO** (antes era opcional). El release portable lo incluye automáticamente.
 
 ### 2️⃣ Tu Primera Acción: Modo Líder
 
