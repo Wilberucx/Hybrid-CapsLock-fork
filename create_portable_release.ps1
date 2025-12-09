@@ -59,7 +59,7 @@ $filesToCopy = @{
     "install.ps1" = "install.ps1"
 }
 
-$directoriesToCopy = @("config", "src", "data", "doc", "scripts")
+$directoriesToCopy = @("system", "ahk", "data", "doc", "img")
 
 # Copiar archivos principales
 foreach ($file in $filesToCopy.Keys) {
@@ -177,9 +177,9 @@ It's included in this release and will start automatically with HybridCapsLock.
 Repository: https://github.com/Wilberucx/TooltipApp
 
 3. **Configuration:**
-   - Settings: ``config\settings.ahk``
-   - Keymaps: ``config\kanata.kbd``
-   - Colors: ``config\colorscheme.ahk``
+   - Settings: ``ahk\config\settings.ahk``
+   - Keymaps: ``ahk\config\kanata.kbd``
+   - Colors: ``ahk\config\colorscheme.ahk``
 
 ## 📚 Documentation
 
