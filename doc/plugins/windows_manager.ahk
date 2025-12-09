@@ -23,11 +23,6 @@
 ; HELPER FUNCTIONS
 ; ==============================
 
-ShowWindowsFeedback(message) {
-    ; Use native tooltip with dedicated ID 18 for Windows Manager
-    ToolTip(message, , , 18)
-    SetTimer(() => ToolTip(, , , 18), -2000)
-}
 
 GetActiveWindowState() {
     ; Returns the minimize/maximize state of the active window
@@ -50,16 +45,16 @@ CloseActiveWindow() {
     try {
         windowTitle := WinGetTitle("A")
         if (windowTitle = "") {
-            ShowWindowsFeedback("❌ No active window")
+            ShowTooltipFeedback("❌ No active window", "error")
             return
         }
         
         ; WinClose sends WM_CLOSE directly to the window
         ; More reliable than Alt+F4 which can be intercepted
         WinClose("A", , 3)
-        ShowWindowsFeedback("🗙 Closing: " . windowTitle)
+        ShowTooltipFeedback("🗙 Closing: " . windowTitle, "info")
     } catch as e {
-        ShowWindowsFeedback("❌ Error: " . e.Message)
+        ShowTooltipFeedback("❌ Error: " . e.Message, "error")
     }
 }
 
@@ -69,7 +64,7 @@ ToggleMinimizeWindow() {
     try {
         windowTitle := WinGetTitle("A")
         if (windowTitle = "") {
-            ShowWindowsFeedback("❌ No active window")
+            ShowTooltipFeedback("❌ No active window", "error")
             return
         }
         
@@ -78,14 +73,13 @@ ToggleMinimizeWindow() {
         if (state = -1) {
             ; Window is minimized, restore it
             WinRestore("A")
-            ShowWindowsFeedback("📤 Restored: " . windowTitle)
         } else {
             ; Window is normal or maximized, minimize it
             WinMinimize("A")
-            ShowWindowsFeedback("📥 Minimized: " . windowTitle)
+            ShowTooltipFeedback("📥 Minimized: " . windowTitle, "info")
         }
     } catch as e {
-        ShowWindowsFeedback("❌ Error: " . e.Message)
+        ShowTooltipFeedback("❌ Error: " . e.Message, "error")
     }
 }
 
@@ -94,14 +88,14 @@ MinimizeToTaskbar() {
     try {
         windowTitle := WinGetTitle("A")
         if (windowTitle = "") {
-            ShowWindowsFeedback("❌ No active window")
+            ShowTooltipFeedback("❌ No active window", "error")
             return
         }
         
         WinMinimize("A")
-        ShowWindowsFeedback("📥 Minimized to taskbar: " . windowTitle)
+        ShowTooltipFeedback("📥 Minimized to taskbar: " . windowTitle, "info")
     } catch as e {
-        ShowWindowsFeedback("❌ Error: " . e.Message)
+        ShowTooltipFeedback("❌ Error: " . e.Message, "error")
     }
 }
 
@@ -113,9 +107,9 @@ NavigateToPreviousWindow() {
     ; Navigates to previous window using Alt+Shift+Tab
     try {
         Send("!+{Tab}")
-        ShowWindowsFeedback("⬅️ Previous window")
+        ShowTooltipFeedback("⬅️ Previous window", "info")
     } catch as e {
-        ShowWindowsFeedback("❌ Error: " . e.Message)
+        ShowTooltipFeedback("❌ Error: " . e.Message, "error")
     }
 }
 
@@ -123,9 +117,8 @@ NavigateToNextWindow() {
     ; Navigates to next window using Alt+Tab
     try {
         Send("!{Tab}")
-        ShowWindowsFeedback("➡️ Next window")
+        ShowTooltipFeedback("➡️ Next window", "info")
     } catch as e {
-        ShowWindowsFeedback("❌ Error: " . e.Message)
     }
 }
 
@@ -143,10 +136,14 @@ ListWindowsWithNavigation() {
         
         ; Switch to navigation layer
         SwitchToLayer("windows_list")
-        
-        ShowWindowsFeedback("🪟 Task View | Navigate: hjkl/arrows | Enter: Select | Esc: Close")
+        info := "TASK VIEW OPENED `n" 
+        info := "=================`n"
+        info := "Navigate with HJKL or arrow keys.`n"
+        info := "ENTER to select, ESC to cancel."
+
+        ShowTooltipFeedback(info, "info")
     } catch as e {
-        ShowWindowsFeedback("❌ Error: " . e.Message)
+        ShowTooltipFeedback("❌ Error: " . e.Message, "error")
     }
 }
 
@@ -196,14 +193,14 @@ WindowListConfirm() {
     ; Just press Enter - no need to release keys
     Send("{Enter}")
     ReturnToPreviousLayer()
-    ShowWindowsFeedback("✅ Window selected")
+    ShowTooltipFeedback("✅ Window selected", "info")
 }
 
 WindowListCancel() {
     ; Close Task View without selecting
     Send("{Escape}")   
     ReturnToPreviousLayer()
-    ShowWindowsFeedback("❌ Cancelled")
+    ShowTooltipFeedback("❌ Cancelled", "info")
 }
 
 ; ==============================
@@ -215,9 +212,9 @@ CloseCurrentTab() {
     ; Works in browsers, editors, and most tab-enabled applications
     try {
         Send("^w")
-        ShowWindowsFeedback("🗙 Tab closed (Ctrl+W)")
+        ShowTooltipFeedback("🗙 Tab closed (Ctrl+W)", "info")
     } catch as e {
-        ShowWindowsFeedback("❌ Error: " . e.Message)
+        ShowTooltipFeedback("❌ Error: " . e.Message, "error")
     }
 }
 
@@ -226,9 +223,8 @@ OpenNewTab() {
     ; Works in browsers, editors, and most tab-enabled applications
     try {
         Send("^t")
-        ShowWindowsFeedback("➕ New tab (Ctrl+T)")
     } catch as e {
-        ShowWindowsFeedback("❌ Error: " . e.Message)
+        ShowTooltipFeedback("❌ Error: " . e.Message, "error")
     }
 }
 

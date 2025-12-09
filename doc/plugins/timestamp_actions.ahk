@@ -7,12 +7,6 @@
 ; HELPER FUNCTIONS
 ; ==============================
 
-ShowTimestampFeedback(message) {
-    ; Use native tooltip with dedicated ID 18 for Timestamp Actions
-    ToolTip(message, , , 18)
-    SetTimer(() => ToolTip(, , , 18), -2000)
-}
-
 InsertTimestampText(text, description) {
     ; Save current clipboard content (including non-text data)
     savedClip := ClipboardAll()
@@ -34,7 +28,7 @@ InsertTimestampText(text, description) {
     }
     
     tooltipMsg := description ? description . ": " . text : "TIMESTAMP: " . text
-    ShowTimestampFeedback(tooltipMsg)
+    ShowTooltipFeedback(tooltipMsg, "info")
 }
 
 ; ==============================

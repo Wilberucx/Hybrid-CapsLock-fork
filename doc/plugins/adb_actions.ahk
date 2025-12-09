@@ -19,7 +19,7 @@ GetAdbDataPath() {
 RunAdbCommand(cmd, title := "ADB Command") {
     ; Visual feedback
     try {
-        ShowCenteredToolTip("Running " . title)
+        ShowTooltipFeedback("Running " . title . "...", "Info")
         SetTimer(() => RemoveToolTip(), -1500)
     }
     

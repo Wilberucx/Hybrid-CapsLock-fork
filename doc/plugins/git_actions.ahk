@@ -49,7 +49,7 @@ RunGitCommand(cmd, title := "Git Command") {
     
     ; Visual feedback
     try {
-        ShowCenteredToolTip("Running " . title . "`n📂 " . wd)
+        ShowTooltipFeedback("Running " . title . "..." . wd, "info")
         SetTimer(() => RemoveToolTip(), -1500)
     }
     

@@ -99,11 +99,6 @@ SaveSnippets(snippets) {
     }
 }
 
-ShowSendInfoFeedback(message) {
-    ; Use native tooltip with dedicated ID 16 for SendInfo
-    ToolTip(message, , , 16)
-    SetTimer(() => ToolTip(, , , 16), -1500)
-}
 
 InsertTextHelper(text, tooltipMsg) {
     ; Save current clipboard content (including non-text data)
@@ -126,7 +121,7 @@ InsertTextHelper(text, tooltipMsg) {
         SetTimer(() => A_Clipboard := savedClip, -200)
     }
     
-    ShowSendInfoFeedback(tooltipMsg)
+    ShowTooltipFeedback(tooltipMsg, "info") 
     Log.d("Inserted: " . SubStr(text, 1, 20) . "...", "TEXT_INSERT")
 }
 
@@ -217,7 +212,7 @@ ShowSnippetManager() {
 AddClipboardToSnippets() {
     content := A_Clipboard
     if (content == "") {
-        ShowSendInfoFeedback("⚠️ Clipboard is empty")
+        ShowTooltipFeedback("⚠️ Clipboard is empty", "error")
         return
     }
     
@@ -229,7 +224,7 @@ AddClipboardToSnippets() {
     snippets[ib.Value] := content
     SaveSnippets(snippets)
     
-    ShowSendInfoFeedback("✅ Snippet saved: " . ib.Value)
+    ShowTooltipFeedback("✅ Snippet saved: " . ib.Value, "success")
 }
 
 ; ===================================================================

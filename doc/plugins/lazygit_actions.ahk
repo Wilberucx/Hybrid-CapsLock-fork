@@ -8,6 +8,7 @@
 ; ==============================
 
 InitLazyGit() {
+    ShowTooltipFeedback("Launching LazyGit...", "Info")
     RunGitCommand("lazygit", "LazyGit")
 }
 

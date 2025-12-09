@@ -29,11 +29,6 @@ InitializePowerActions() {
 ; HELPER FUNCTIONS
 ; ==============================
 
-ShowPowerFeedback(message) {
-    ; Use native tooltip with dedicated ID for Power Actions
-    ToolTip(message, , , 15)
-    SetTimer(() => ToolTip(, , , 15), -2000)
-}
 
 SavePowerSettings() {
     global preventSleepActive
@@ -49,43 +44,43 @@ SavePowerSettings() {
 ; ==============================
 
 SuspendSystem() {
-    ShowPowerFeedback("💤 Suspending system...")
+    ShowTooltipFeedback("Suppending system...", "info")
     Sleep(500)
     DllCall("PowrProf\SetSuspendState", "int", 0, "int", 0, "int", 0)
 }
 
 HibernateSystem() {
-    ShowPowerFeedback("💾 Hibernating system...")
+    ShowTooltipFeedback(" Hybernating system...", "info")
     Sleep(500)
     DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 }
 
 RestartSystem() {
-    ShowPowerFeedback("🔄 Restarting system...")
+    ShowTooltipFeedback(" Restarting system...", "info")
     Sleep(500)
     Run("shutdown.exe /r /t 0")
 }
 
 ShutdownSystem() {
-    ShowPowerFeedback("⚡ Shutting down system...")
+    ShowTooltipFeedback(" Shutting down system...", "info")
     Sleep(500)
     Run("shutdown.exe /s /t 0")
 }
 
 LockWorkstation() {
-    ShowPowerFeedback("🔒 Locking workstation...")
+    ShowTooltipFeedback(" Locking workstation...", "info")
     Sleep(300)
     DllCall("user32\LockWorkStation")
 }
 
 SignOutUser() {
-    ShowPowerFeedback("👋 Signing out...")
+    ShowTooltipFeedback(" Signing out...", "info")
     Sleep(500)
     Run("shutdown.exe /l")
 }
 
 MonitorOff() {
-    ShowPowerFeedback("🖥️ Turning off monitor...")
+    ShowTooltipFeedback(" Turning off monitor...", "info")
     Sleep(300)
     ; Send monitor to low-power state
     SendMessage(0x112, 0xF170, 2, , "Program Manager")
@@ -98,12 +93,12 @@ TogglePreventSleep() {
         ; Disable prevent sleep - return to normal
         DllCall("kernel32\SetThreadExecutionState", "UInt", 0x80000000) ; ES_CONTINUOUS
         preventSleepActive := false
-        ShowPowerFeedback("🌙 Prevent Sleep: OFF")
+        ShowTooltipFeedback("Prevent Sleep: OFF", "warning")
     } else {
         ; Enable prevent sleep - keep system awake
         DllCall("kernel32\SetThreadExecutionState", "UInt", 0x80000003) ; ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED
         preventSleepActive := true
-        ShowPowerFeedback("🔆 Prevent Sleep: ON")
+        ShowTooltipFeedback("Prevent Sleep: ON", "success")
     }
     SavePowerSettings()
 }
@@ -118,11 +113,11 @@ ScheduledShutdown() {
     if (minutes == 0) {
         ; Cancel any scheduled shutdown
         Run("shutdown.exe /a", , "Hide")
-        ShowPowerFeedback("❌ Scheduled shutdown cancelled")
+        ShowTooltipFeedback("Scheduled shutdown cancelled", "warning")
     } else if (minutes > 0) {
         seconds := minutes * 60
         Run("shutdown.exe /s /t " . seconds, , "Hide")
-        ShowPowerFeedback("⏰ Shutdown scheduled in " . minutes . " minute(s)")
+        ShowTooltipFeedback("Shutdown scheduled in " . minutes . " minute(s)", "info")
     }
 }
 
@@ -136,11 +131,11 @@ ScheduledRestart() {
     if (minutes == 0) {
         ; Cancel any scheduled restart
         Run("shutdown.exe /a", , "Hide")
-        ShowPowerFeedback("❌ Scheduled restart cancelled")
+        ShowTooltipFeedback("Scheduled restart cancelled", "warning")
     } else if (minutes > 0) {
         seconds := minutes * 60
         Run("shutdown.exe /r /t " . seconds, , "Hide")
-        ShowPowerFeedback("⏰ Restart scheduled in " . minutes . " minute(s)")
+        ShowTooltipFeedback("Restart scheduled in " . minutes . " minute(s)", "info")
     }
 }
 
@@ -154,7 +149,7 @@ RegisterCategoryKeymap("leader", "o", "Power Options", 10)
 RegisterKeymap("leader", "o", "l", "Lock Screen", LockWorkstation, false, 1)
 RegisterKeymap("leader", "o", "m", "Monitor Off", MonitorOff, false, 2)
 RegisterKeymap("leader", "o", "p", "Toggle Prevent Sleep", TogglePreventSleep, false, 3)
-RegisterKeymap("leader", "o", "s", "Sleep", SuspendSystem, true, 4)
+RegisterKeymap("leader", "o", "s", "Sleep", SuspendSystem, false, 4)
 RegisterKeymap("leader", "o", "h", "Hibernate", HibernateSystem, true, 5)
 RegisterKeymap("leader", "o", "o", "Sign Out", SignOutUser, true, 6)
 RegisterKeymap("leader", "o", "r", "Restart", RestartSystem, true, 7)

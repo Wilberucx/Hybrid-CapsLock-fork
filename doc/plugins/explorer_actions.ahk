@@ -27,13 +27,13 @@ RegisterLayer("explorer", "EXPLORER", "#4A90E2", "#ffffff")
  */
 CopyToClipboard(text, label := "Copied") {
     if (text == "") {
-        ShowCenteredToolTip("Nothing to copy")
+        ShowTooltipFeedback("Nothing to copy", "error")
         SetTimer(() => RemoveToolTip(), -1500)
         return
     }
     
     A_Clipboard := text
-    ShowCenteredToolTip(label . ": " . text)
+    ShowTooltipFeedback(label . ": " . text)
     SetTimer(() => RemoveToolTip(), -2000)
 }
 
@@ -103,7 +103,7 @@ CopySelectedItemPath() {
     if (itemPath != "") {
         CopyToClipboard(itemPath, "Item Path")
     } else {
-        ShowCenteredToolTip("No item selected")
+        ShowTooltipFeedback("No item selected", "error")
         SetTimer(() => RemoveToolTip(), -1500)
     }
 }
@@ -116,7 +116,7 @@ CopyCurrentDirectory() {
     if (dirPath != "") {
         CopyToClipboard(dirPath, "Directory")
     } else {
-        ShowCenteredToolTip("No Explorer window active")
+        ShowTooltipFeedback("No Explorer window active", "error")
         SetTimer(() => RemoveToolTip(), -1500)
     }
 }
@@ -130,7 +130,7 @@ CopyFileName() {
         SplitPath(itemPath, &fileName)
         CopyToClipboard(fileName, "Filename")
     } else {
-        ShowCenteredToolTip("No item selected")
+        ShowTooltipFeedback("No item selected", "error")
         SetTimer(() => RemoveToolTip(), -1500)
     }
 }
@@ -142,7 +142,7 @@ CopyFileName() {
 CreateFileOrFolder() {
     currentPath := GetActiveExplorerPath()
     if (currentPath == "") {
-        ShowCenteredToolTip("No Explorer window active")
+        ShowTooltipFeedback("No Explorer window active", "error")
         SetTimer(() => RemoveToolTip(), -1500)
         return
     }
@@ -164,10 +164,10 @@ CreateFileOrFolder() {
         
         try {
             DirCreate(folderPath)
-            ShowCenteredToolTip("Folder created: " . folderName)
+            ShowTooltipFeedback("Folder created: " . folderName, "success")
             SetTimer(() => RemoveToolTip(), -2000)
         } catch Error as e {
-            ShowCenteredToolTip("Error creating folder: " . e.Message)
+            ShowTooltipFeedback("Error creating folder: " . e.Message, "error")
             SetTimer(() => RemoveToolTip(), -3000)
         }
     } else {
@@ -175,10 +175,10 @@ CreateFileOrFolder() {
         try {
             ; Use PowerShell New-Item for file creation
             RunWait('powershell.exe -Command "New-Item -ItemType File -Path \"' . fullPath . '\" -Force"', , "Hide")
-            ShowCenteredToolTip("File created: " . itemName)
+            ShowTooltipFeedback("File created: " . itemName, "success")
             SetTimer(() => RemoveToolTip(), -2000)
         } catch Error as e {
-            ShowCenteredToolTip("Error creating file: " . e.Message)
+            ShowTooltipFeedback("Error creating file: " . e.Message, "error")
             SetTimer(() => RemoveToolTip(), -3000)
         }
     }
@@ -190,7 +190,7 @@ CreateFileOrFolder() {
 EditInNvim() {
     itemPath := GetSelectedExplorerItem()
     if (itemPath == "") {
-        ShowCenteredToolTip("No item selected")
+        ShowTooltipFeedback("No item selected", "error")
         SetTimer(() => RemoveToolTip(), -1500)
         return
     }
@@ -199,7 +199,7 @@ EditInNvim() {
     if FileExist(itemPath) && !InStr(FileExist(itemPath), "D") {
         Run('wt.exe nvim "' . itemPath . '"')
     } else {
-        ShowCenteredToolTip("Please select a file")
+        ShowTooltipFeedback("Please select a file", "error")
         SetTimer(() => RemoveToolTip(), -1500)
     }
 }
@@ -210,7 +210,7 @@ EditInNvim() {
 EditInNotepad() {
     itemPath := GetSelectedExplorerItem()
     if (itemPath == "") {
-        ShowCenteredToolTip("No item selected")
+        ShowTooltipFeedback("No item selected", "error")
         SetTimer(() => RemoveToolTip(), -1500)
         return
     }
@@ -219,7 +219,7 @@ EditInNotepad() {
     if FileExist(itemPath) && !InStr(FileExist(itemPath), "D") {
         Run('notepad.exe "' . itemPath . '"')
     } else {
-        ShowCenteredToolTip("Please select a file")
+        ShowTooltipFeedback("Please select a file", "error")
         SetTimer(() => RemoveToolTip(), -1500)
     }
 }
@@ -253,6 +253,7 @@ TogglePreviewPane() {
 
 PermanentlyDelete() {
     Send("+{Delete}")
+    SwitchToLayer("delete_confirmation")
 }
 
 ; ==============================
@@ -286,6 +287,20 @@ MultiSelectMoveRight() {
 ToggleSelectionWithSpace() {
     Send("^{Space}")
 }
+; ========================
+; Confirmation Dialog Functions
+; =======================
+
+YesDeleteConfirmation() {
+    ShowTooltipFeedback("Item permanently deleted", "success")
+    Send("{Enter}")
+    SwitchToLayer("explorer")
+}
+CancelDeleteConfirmation() {
+    ShowTooltipFeedback("Delete cancelled", "info")
+    Send("{Esc}")
+    SwitchToLayer("explorer")
+}
 
 ; ==============================
 ; GO TO FUNCTIONS (Vim-Style Navigation)
@@ -295,51 +310,52 @@ ToggleSelectionWithSpace() {
 ; - If Explorer is active: navigates the current window
 ; - If Explorer is not active: opens a new window at the target location
 
-GoToDesktop() {
-    NavigateExplorer(EnvGet("USERPROFILE") . "\Desktop")
-}
-
-GoToHome() {
-    NavigateExplorer(EnvGet("USERPROFILE"))
-}
-
-GoToTemp() {
-    NavigateExplorer(EnvGet("TEMP"))
-}
-
-GoToAppData() {
-    NavigateExplorer(EnvGet("APPDATA"))
-}
-
-GoToLocalAppData() {
-    NavigateExplorer(EnvGet("LOCALAPPDATA"))
-}
-
-GoToProgramFiles() {
-    NavigateExplorer("C:\Program Files")
-}
-
-GoToSystem32() {
-    NavigateExplorer("C:\Windows\System32")
-}
-
-GoToDownloads() {
-    NavigateExplorer(EnvGet("USERPROFILE") . "\Downloads")
-}
-
-GoToDocuments() {
-    NavigateExplorer(EnvGet("USERPROFILE") . "\Documents")
-}
-
-GoToRoot() {
-    NavigateExplorer("C:\")
-}
+; GoToDesktop() {
+;     NavigateExplorer(EnvGet("USERPROFILE") . "\Desktop")
+; }
+;
+; GoToHome() {
+;     NavigateExplorer(EnvGet("USERPROFILE"))
+; }
+;
+; GoToTemp() {
+;     NavigateExplorer(EnvGet("TEMP"))
+; }
+;
+; GoToAppData() {
+;     NavigateExplorer(EnvGet("APPDATA"))
+; }
+;
+; GoToLocalAppData() {
+;     NavigateExplorer(EnvGet("LOCALAPPDATA"))
+; }
+;
+; GoToProgramFiles() {
+;     NavigateExplorer("C:\Program Files")
+; }
+;
+; GoToSystem32() {
+;     NavigateExplorer("C:\Windows\System32")
+; }
+;
+; GoToDownloads() {
+;     NavigateExplorer(EnvGet("USERPROFILE") . "\Downloads")
+; }
+;
+; GoToDocuments() {
+;     NavigateExplorer(EnvGet("USERPROFILE") . "\Documents")
+; }
+;
+; GoToRoot() {
+;     NavigateExplorer("C:\")
+; }
 ; ==============================
 ; LAYER REGISTRATION
 ; ==============================
 RegisterLayer("explorer_visual", "VISUAL MODE", "#ffafcc", "#000000")
 RegisterLayer("explorer_insert", "INSERT MODE", "#d0f0c0", "#000000", false)
 RegisterLayer("explorer_multiselect", "MULTISELECT", "#ffa500", "#000000")
+RegisterLayer("delete_confirmation", "DELETE CONFIRM", "#ff0000", "#ffffff", false)
 
 ; ==============================
 ; KEYMAP REGISTRATION
@@ -386,6 +402,7 @@ RegisterKeymap("explorer", "y", "Yank line", VimYank)
 RegisterKeymap("explorer", "p", "Paste", VimPaste)
 RegisterKeymap("explorer", "u", "Undo", VimUndo)
 RegisterKeymap("explorer", "R", "Redo", VimRedo)
+RegisterKeymap("explorer", "Enter", "Open", () => Send("{Enter}"))
 ; view commands
 RegisterKeymap("explorer", "P", "Toggle preview", TogglePreviewPane)
 
@@ -396,6 +413,9 @@ RegisterKeymap("explorer", "r", "Rename", RenameSelectedItem)
 
 ; Search Box
 RegisterKeymap("explorer", "/", "Filter", SearchBox)
+
+; Exit to Explorer Layer
+RegisterKeymap("explorer", "Escape", "Exit",  ExitCurrentLayer)
 
 ; Tab Manager Category
 RegisterCategoryKeymap("explorer", "b", "Tab Manager", 4)
@@ -431,7 +451,7 @@ RegisterKeymap("explorer_visual", "G", "Select Bottom", VimVisualBottomOfFile)
 
 RegisterKeymap("explorer_visual", "d", "Cut Selection", VimDelete)
 RegisterKeymap("explorer_visual", "x", "Cut Selection", VimCut)
-RegisterKeymap("explorer_visual", "y", "Copy Selection", VimYank)
+RegisterKeymap("explorer_visual", "y", "Copy Selection", VimYankWithReturn)
 
 RegisterKeymap("explorer_visual", "Escape", "Normal Mode", () => SwitchToLayer("explorer"))
 RegisterKeymap("explorer_visual", "v", "Normal Mode", ExitVisualMode)
@@ -447,4 +467,8 @@ RegisterKeymap("explorer_multiselect", "Escape", "Exit Multiselect", () => Switc
 RegisterKeymap("explorer_multiselect", "x", "Cut", VimCut)
 RegisterKeymap("explorer_multiselect", "d", "Cut/Delete", VimDelete)
 RegisterKeymap("explorer_multiselect", "D", "Delete Permanently", PermanentlyDelete)
-RegisterKeymap("explorer_multiselect", "y", "Yank line", VimYank)
+RegisterKeymap("explorer_multiselect", "y", "Yank line", VimYankWithReturn)
+
+; --- DELETE CONFIRMATION LAYER ---
+RegisterKeymap("delete_confirmation", "y", "Yes Delete", YesDeleteConfirmation)
+RegisterKeymap("delete_confirmation", "n", "No Cancel", CancelDeleteConfirmation)

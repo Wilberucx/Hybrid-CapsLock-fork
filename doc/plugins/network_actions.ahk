@@ -23,7 +23,7 @@ HideNetworkTooltip() {
 
 GetPublicIP() {
     try {
-        ShowNetworkTooltip("Fetching Public IP...")
+        ShowTooltipFeedback("Fetching Public IP...", "Info")
         http := ComObject("WinHttp.WinHttpRequest.5.1")
         http.Open("GET", "https://api.ipify.org", true)
         http.Send()
@@ -32,11 +32,11 @@ GetPublicIP() {
         ip := http.ResponseText
         A_Clipboard := ip
         
-        ShowNetworkTooltip("🌍 Public IP: " . ip . "`n(Copied to Clipboard)")
+        ShowTooltipFeedback("Public IP " . ip . " copied to clipboard.", "Success")
         SetTimer(() => HideNetworkTooltip(), -3000)
         return ip
     } catch as e {
-        ShowNetworkTooltip("Error fetching IP: " . e.Message)
+        ShowTooltipFeedback("Error fetching Public IP.", "Error")
         SetTimer(() => HideNetworkTooltip(), -3000)
         return ""
     }
@@ -73,7 +73,7 @@ ShowNetworkStatus() {
     info .= "------------------`n"
     info .= "Local IP : " . localIP . "`n"
     
-    ShowNetworkTooltip(info . "`nFetching Public IP...")
+    ShowTooltipFeedback(info . "`nFetching Public IP...", "Info")
     
     ; Async fetch public IP to update tooltip
     SetTimer(FetchPublicIPAsync, -10)
@@ -93,7 +93,7 @@ FetchPublicIPAsync() {
         info .= "Local IP : " . localIP . "`n"
         info .= "Public IP: " . publicIP
         
-        ShowNetworkTooltip(info)
+        ShowTooltipFeedback(info, "info")
         SetTimer(() => HideNetworkTooltip(), -4000)
     } catch {
         ShowNetworkTooltip("Network Status:`nLocal IP: " . GetLocalIP() . "`nPublic IP: Error")
@@ -101,12 +101,13 @@ FetchPublicIPAsync() {
 }
 
 RunSpeedTest() {
-ShowNetworkTooltip("🚀 Opening Speedtest...")
+    ShowTooltipFeedback("🚀 Opening Speedtest...")
     Run("https://fast.com")
     SetTimer(() => HideNetworkTooltip(), -2000)
 }
 
 ShowIPConfig() {
+    ShowTooltipFeedback("Obtaining IP Configuration...", 500)
     Run("cmd.exe /k ipconfig /all")
 }
 

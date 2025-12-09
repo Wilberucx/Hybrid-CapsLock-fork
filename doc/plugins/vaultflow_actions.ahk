@@ -5,16 +5,6 @@
 ; Requires 'vaultflow' to be in system PATH
 
 ; ==============================
-; HELPER FUNCTIONS
-; ==============================
-
-ShowVaultFlowFeedback(message) {
-    ; Use native tooltip with dedicated ID 19 for VaultFlow
-    ToolTip(message, , , 19)
-    SetTimer(() => ToolTip(, , , 19), -3000)
-}
-
-; ==============================
 ; ACTION FUNCTIONS
 ; ==============================
 
@@ -33,7 +23,7 @@ VaultFlowStatus() {
 VaultFlowCommit() {
     path := GetActiveExplorerPath()
     if (path == "") {
-        ShowVaultFlowFeedback("⚠️ Open a Vault folder in Explorer first")
+        ShowTooltipFeedback("⚠️ Open a Vault folder in Explorer first", "info")
         return
     }
     
@@ -43,7 +33,7 @@ VaultFlowCommit() {
     }
     
     message := ib.Value
-    ShowVaultFlowFeedback("⏳ Committing...")
+    ShowTooltipFeedback("⏳ Committing...", "info")
     
     ; Manual git commit as requested: git add . && git commit -m "msg"
     ; We use cmd /c to chain commands
@@ -54,9 +44,9 @@ VaultFlowCommit() {
     ; but direct RunWait is fine for this specific composite action.
     try {
         RunWait(command, path, "Hide")
-        ShowVaultFlowFeedback("✅ Custom commit created: " . message)
+        ShowTooltipFeedback("✅ Custom commit created: " . message, "success")
     } catch {
-        ShowVaultFlowFeedback("❌ Commit failed")
+        ShowTooltipFeedback("❌ Commit failed", "error")
     }
 }
 

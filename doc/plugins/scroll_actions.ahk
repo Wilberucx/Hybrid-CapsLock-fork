@@ -78,15 +78,23 @@ ScrollToBottom() {
 
 RegisterLayer("scroll", "SCROLL MODE", "#E6C07B", "#000000")
 
+; Entry point (Leader + s) - Direct SwitchToLayer call
+RegisterKeymap("leader", "s", "Scroll", () => SwitchToLayer("scroll"), false, 4)
+
 ; Scroll Navigation
 RegisterKeymap("scroll", "k", "Scroll Up", ScrollUp, false, 1)
 RegisterKeymap("scroll", "j", "Scroll Down", ScrollDown, false, 2)
 RegisterKeymap("scroll", "h", "Scroll Left", ScrollLeft, false, 3)
 RegisterKeymap("scroll", "l", "Scroll Right", ScrollRight, false, 4)
+RegisterKeymap("scroll", "K", "Scroll Up Fast", ScrollUpFast, false, 5)
+RegisterKeymap("scroll", "J", "Scroll Down Fast", ScrollDownFast, false, 6)
+RegisterKeymap("scroll", "u", "Page Up", ScrollPageUp, false, 7)
+RegisterKeymap("scroll", "d", "Page Down", ScrollPageDown, false, 8)
+RegisterCategoryKeymap("scroll", "g", "Jump Actions", 9)
+RegisterKeymap("scroll", "g", "g", "Scroll to Top", ScrollToTop, false, 9)
+RegisterKeymap("scroll", "G", "Scroll to Bottom", ScrollToBottom, false, 10)
 
 ; Layer Control
 RegisterKeymap("scroll", "s", "Exit Scroll Layer", ReturnToPreviousLayer, false, 10)
 RegisterKeymap("scroll", "Escape", "Exit Scroll Layer", ReturnToPreviousLayer, false, 11)
 
-; Entry point (Leader + s) - Direct SwitchToLayer call
-RegisterKeymap("leader", "s", "Scroll", () => SwitchToLayer("scroll"), false, 4)

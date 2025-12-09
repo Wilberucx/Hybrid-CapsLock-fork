@@ -3,15 +3,6 @@
 ; ==============================
 ; Declarative system commands using ShellExec API
 
-; ==============================
-; HELPER FUNCTIONS
-; ==============================
-
-ShowSystemFeedback(message) {
-    ; Use native tooltip with dedicated ID 17 for System Actions
-    ToolTip(message, , , 17)
-    SetTimer(() => ToolTip(, , , 17), -2000)
-}
 
 ; ==============================
 ; ACTION FUNCTIONS
@@ -29,9 +20,9 @@ ToggleHiddenFiles() {
             window.Refresh()
         
         statusText := (newValue = 1) ? "👁️ Hidden Files: SHOWN" : "🙈 Hidden Files: HIDDEN"
-        ShowSystemFeedback(statusText)
+        ShowTooltipFeedback("✅ " . statusText)
     } catch Error as e {
-        ShowSystemFeedback("❌ Error: " . e.Message)
+        ShowTooltipFeedback("❌ Error: " . e.Message)
     }
 }
 

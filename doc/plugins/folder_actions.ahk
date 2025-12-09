@@ -64,7 +64,7 @@ GenerateShortcutsFile() {
 
 RunFolderCommand(cmd, title := "Folder Command") {
     try {
-        ShowCenteredToolTip("Running " . title)
+        ShowTooltipFeedback("Running: " . title, "info")
         SetTimer(() => RemoveToolTip(), -1500)
     }
     Run(cmd)
@@ -161,12 +161,13 @@ OpenInTerminal() {
 
 CopyFolderPath() {
     path := GetActiveExplorerPath()
+    ShowTooltipFeedback("Copied: " . path, "info")
     if (path != "") {
         A_Clipboard := path
-        ShowCenteredToolTip("Copied: " . path)
+        ShowTooltipFeedback("Copied: " . path, "info")
         SetTimer(() => RemoveToolTip(), -1500)
     } else {
-        ShowCenteredToolTip("No folder active")
+        ShowTooltipFeedback("No folder active", "error")
         SetTimer(() => RemoveToolTip(), -1500)
     }
 }

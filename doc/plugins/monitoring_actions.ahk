@@ -75,6 +75,7 @@ GetDiskUsage(drive := "C:") {
 ; ==============================
 
 ShowSystemStats() {
+    ShowTooltipFeedback("Obtaining system stats...", "info", 1000)
     cpu := GetCPUUsage()
     ram := GetRAMUsage()
     disk := GetDiskUsage("C:")
@@ -85,7 +86,7 @@ ShowSystemStats() {
     info .= "RAM : " . ram.Load . "% (" . ram.Used . "/" . ram.Total . " GB)`n"
     info .= "DISK: " . disk.Percent . "% Used (" . disk.Free . " GB Free)"
     
-    ShowMonitorTooltip(info)
+    ShowTooltipFeedback(info, "info", 3000)
     SetTimer(() => HideMonitorTooltip(), -3000)
 }
 
@@ -96,10 +97,10 @@ ToggleRealTimeMonitor() {
         SetTimer(UpdateMonitorTooltip, 0) ; Off
         HideMonitorTooltip()
         MonitorTimerActive := false
-        ShowMonitorTooltip("Monitor Stopped")
+        ShowTooltipFeedback("Monitor stopped", "info", 2000)
         SetTimer(() => HideMonitorTooltip(), -1000)
     } else {
-        ShowMonitorTooltip("Starting monitor...")
+        ShowTooltipFeedback("Starting monitor", "info", 2000)
         MonitorTimerActive := true
         SetTimer(UpdateMonitorTooltip, -300) ; First update after 300ms
         SetTimer(UpdateMonitorTooltip, 1000) ; Then every 1s
@@ -116,11 +117,11 @@ UpdateMonitorTooltip() {
     info := "🔴 LIVE MONITOR`n"
     info .= "CPU: " . cpu . "% | RAM: " . ram.Load . "%"
     
-    ShowMonitorTooltip(info)
+    ShowTooltipFeedback( info, "info") ; Keep native tooltip visible
 }
 
 ShowTopProcesses() {
-    ShowMonitorTooltip("Analyzing processes...")
+    ShowTooltipFeedback("Analyzing processes...", "info")
     
     ; Use powershell hidden to get sorted CPU usage
     ; We write to a temp file to avoid window flickering from StdOut read
@@ -138,13 +139,13 @@ ShowTopProcesses() {
             info .= "----------------------`n"
             info .= result
             
-            ShowMonitorTooltip(info)
+            ShowTooltipFeedback(info, "info")
             SetTimer(() => HideMonitorTooltip(), -4000)
         } else {
-             ShowMonitorTooltip("Error: Could not fetch processes")
+             ShowTooltipFeedback("Error fetching processes", "error", 3000)
         }
     } catch {
-        ShowMonitorTooltip("Error executing PowerShell")
+        ShowTooltipFeedback("Error executing PowerShell", "error", 5000)
     }
 }
 
