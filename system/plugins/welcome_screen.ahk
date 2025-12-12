@@ -41,7 +41,7 @@ ShowWelcomeScreen() {
     }
     
     ; Get version info
-    version := "v3.1.0"
+    version := "v3.1.1"
     if (IsSet(HybridConfig) && HybridConfig.HasOwnProp("version")) {
         version := HybridConfig.version
     }
@@ -139,7 +139,7 @@ ShowWelcomeScreenSimple() {
     global HybridConfig
     
     ; Get version
-    version := "v3.1.0"
+    version := "v3.1.1"
     if (IsSet(HybridConfig) && HybridConfig.HasOwnProp("version")) {
         version := HybridConfig.version
     }
