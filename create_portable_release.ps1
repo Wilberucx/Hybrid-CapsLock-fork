@@ -38,6 +38,18 @@ New-Item -Path "$ReleaseDir\bin" -ItemType Directory -Force | Out-Null
 
 Write-Host "✓ Created release directory: $ReleaseDir" -ForegroundColor Green
 
+# ===== VERIFICAR TOOLTIPAPP =====
+Write-Host "`nValidating TooltipApp..." -ForegroundColor Cyan
+$tooltipPath = "tooltip_csharp\TooltipApp.exe"
+if (-not (Test-Path $tooltipPath)) {
+    Write-Host "✗ CRITICAL: TooltipApp.exe not found at $tooltipPath" -ForegroundColor Red
+    Write-Host "  TooltipApp is REQUIRED for v3.1.0+" -ForegroundColor Yellow
+    Write-Host "  Download from: https://github.com/Wilberucx/TooltipApp" -ForegroundColor Yellow
+    throw "Cannot create release without TooltipApp"
+}
+$tooltipSize = (Get-Item $tooltipPath).Length / 1MB
+Write-Host "✓ TooltipApp.exe found ($([math]::Round($tooltipSize, 1))MB)" -ForegroundColor Green
+
 # ===== COPIAR ARCHIVOS PRINCIPALES =====
 $filesToCopy = @{
     "HybridCapslock.ahk" = "HybridCapslock.ahk"
@@ -47,7 +59,7 @@ $filesToCopy = @{
     "install.ps1" = "install.ps1"
 }
 
-$directoriesToCopy = @("config", "src", "data", "doc", "scripts")
+$directoriesToCopy = @("system", "ahk", "data", "doc", "img")
 
 # Copiar archivos principales
 foreach ($file in $filesToCopy.Keys) {
@@ -68,6 +80,39 @@ foreach ($dir in $directoriesToCopy) {
         Write-Host "⚠ Missing directory: $dir" -ForegroundColor Yellow
     }
 }
+
+# ===== COPIAR TOOLTIPAPP =====
+Write-Host "`nCopying TooltipApp..." -ForegroundColor Cyan
+New-Item -Path "$ReleaseDir\tooltip_csharp" -ItemType Directory -Force | Out-Null
+
+$tooltipFiles = @(
+    "TooltipApp.exe",
+    "TooltipApp.pdb",
+    "TooltipApp.dll",
+    "TooltipApp.runtimeconfig.json",
+    "D3DCompiler_47_cor3.dll",
+    "PenImc_cor3.dll",
+    "PresentationNative_cor3.dll",
+    "vcruntime140_cor3.dll",
+    "wpfgfx_cor3.dll"
+)
+
+$copiedCount = 0
+foreach ($file in $tooltipFiles) {
+    $sourcePath = "tooltip_csharp\$file"
+    if (Test-Path $sourcePath) {
+        Copy-Item $sourcePath "$ReleaseDir\tooltip_csharp\$file" -Force
+        $copiedCount++
+    }
+}
+
+# Copy all remaining files in tooltip_csharp folder
+Get-ChildItem "tooltip_csharp" -File | Where-Object { $tooltipFiles -notcontains $_.Name } | ForEach-Object {
+    Copy-Item $_.FullName "$ReleaseDir\tooltip_csharp\$($_.Name)" -Force
+    $copiedCount++
+}
+
+Write-Host "✓ Copied $copiedCount TooltipApp files" -ForegroundColor Green
 
 # ===== DESCARGAR DEPENDENCIAS =====
 
@@ -123,12 +168,18 @@ $portableReadme = @"
 
 2. **Dependencies:**
    - **AutoHotkey v2**: Download from https://www.autohotkey.com/download/ahk-v2.exe
+   - **TooltipApp v2.1+**: ✓ Included in tooltip_csharp\ folder (REQUIRED)
    - **Kanata** (optional): $(if ($IncludeKanata) { "Included in bin\ folder" } else { "Download from https://github.com/jtroo/kanata/releases" })
 
+**About TooltipApp:**
+TooltipApp is a self-contained .NET 6 application (~156MB) that provides the enhanced notification system.
+It's included in this release and will start automatically with HybridCapsLock.
+Repository: https://github.com/Wilberucx/TooltipApp
+
 3. **Configuration:**
-   - Settings: ``config\settings.ahk``
-   - Keymaps: ``config\kanata.kbd``
-   - Colors: ``config\colorscheme.ahk``
+   - Settings: ``ahk\config\settings.ahk``
+   - Keymaps: ``ahk\config\kanata.kbd``
+   - Colors: ``ahk\config\colorscheme.ahk``
 
 ## 📚 Documentation
 
@@ -198,6 +249,7 @@ Write-Host "🏷️  Version: v$Version" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Contents:" -ForegroundColor White
 Write-Host "• HybridCapsLock core files ✓" -ForegroundColor Green
+Write-Host "• TooltipApp v2.1+ (~156MB) ✓" -ForegroundColor Green
 Write-Host "• Complete documentation ✓" -ForegroundColor Green
 Write-Host "• Configuration templates ✓" -ForegroundColor Green
 Write-Host "• PowerShell installer ✓" -ForegroundColor Green

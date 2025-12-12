@@ -120,11 +120,10 @@ ShowAnimatedNotification(message, config, timeout) {
     cmd["id"] := "notification_feedback"
     cmd["tooltip_type"] := "text_block"  ; Use text_block for multi-line support
     
-    ; Position: top_left (temporary workaround for anchor bug)
-    ; TODO: Change to top_right when TooltipApp supports right-side anchoring
+    ; Position: top_right (animation disabled as temporary fix)
     cmd["position"] := Map()
-    cmd["position"]["anchor"] := "top_left"
-    cmd["position"]["offset_x"] := 20
+    cmd["position"]["anchor"] := "top_right"
+    cmd["position"]["offset_x"] := -20  ; Negative for right side
     cmd["position"]["offset_y"] := 20
     
     ; Style: notification design with explicit max_width
@@ -140,11 +139,12 @@ ShowAnimatedNotification(message, config, timeout) {
     cmd["style"]["item_font_size"] := 11  ; Content text size
     cmd["style"]["max_width"] := 400  ; Hard limit to prevent off-screen rendering
     
-    ; Animation: slide_left
-    cmd["animation"] := Map()
-    cmd["animation"]["type"] := "slide_left"
-    cmd["animation"]["duration_ms"] := 300
-    cmd["animation"]["easing"] := "ease_out"
+    ; Animation: disabled temporarily due to positioning issues with slide_left + top_right
+    ; TODO: Re-enable when TooltipApp slide animation + top_right anchor is fixed
+    ; cmd["animation"] := Map()
+    ; cmd["animation"]["type"] := "slide_left"
+    ; cmd["animation"]["duration_ms"] := 300
+    ; cmd["animation"]["easing"] := "ease_out"
     
     ; Window: topmost, click-through (non-interactive)
     cmd["window"] := Map()

@@ -13,10 +13,11 @@ class DependencyChecker {
         results := {
             autohotkey: this.CheckAutoHotkey(),
             kanata: this.CheckKanata(),
+            tooltipApp: this.CheckTooltipApp(),
             config: this.CheckConfigFiles()
         }
         
-        results.allGood := results.autohotkey.status && results.kanata.status && results.config.status
+        results.allGood := results.autohotkey.status && results.kanata.status && results.tooltipApp.status && results.config.status
         
         if (!results.allGood) {
             this.ShowDependencyDialog(results)
@@ -78,6 +79,46 @@ class DependencyChecker {
         }
     }
     
+    ; ---- Verificar TooltipApp ----
+    static CheckTooltipApp() {
+        tooltipPath := ""
+        tooltipRunning := false
+        
+        ; Check if TooltipApp is running
+        if (ProcessExist("TooltipApp.exe")) {
+            tooltipRunning := true
+            try {
+                for proc in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_Process where Name = 'TooltipApp.exe'") {
+                    tooltipPath := proc.ExecutablePath
+                    break
+                }
+            }
+        }
+        
+        ; If not running, check expected locations
+        if (!tooltipPath) {
+            expectedPaths := [
+                A_ScriptDir . "\tooltip_csharp\TooltipApp.exe",
+                A_ScriptDir . "\TooltipApp.exe"
+            ]
+            
+            for location in expectedPaths {
+                if (FileExist(location)) {
+                    tooltipPath := location
+                    break
+                }
+            }
+        }
+        
+        return {
+            status: tooltipPath != "",
+            running: tooltipRunning,
+            path: tooltipPath,
+            message: tooltipRunning ? "TooltipApp is running ✓" : (tooltipPath ? "TooltipApp found (not running)" : "TooltipApp not found ❌ (REQUIRED)"),
+            downloadUrl: "https://github.com/Wilberucx/TooltipApp"
+        }
+    }
+    
     ; ---- Verificar archivos de configuración ----
     static CheckConfigFiles() {
         ; Nueva estructura Neovim-style: user config en ahk/config/
@@ -122,6 +163,12 @@ class DependencyChecker {
         message .= "⌨️  Kanata: " . results.kanata.message . "`n"
         if (!results.kanata.status) {
             message .= "    Download: " . results.kanata.downloadUrl . "`n"
+        }
+        
+        ; TooltipApp status
+        message .= "🔔 TooltipApp: " . results.tooltipApp.message . "`n"
+        if (!results.tooltipApp.status) {
+            message .= "    Download: " . results.tooltipApp.downloadUrl . "`n"
         }
         
         ; Config files status
