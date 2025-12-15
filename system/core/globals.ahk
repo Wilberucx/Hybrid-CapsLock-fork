@@ -46,18 +46,7 @@ global nvimStaticEnabled := true
 ; Debug flag - controls development logging (mantenido para compatibilidad)
 global debug_mode := false
 
-; Funciones de compatibilidad - redirigen al nuevo sistema
-DebugLog(message, category := "DEBUG") {
-    LogDebug(message, category)
-}
-
-InfoLog(message, category := "INFO") {
-    LogInfo(message, category)
-}
-
-ErrorLog(message, category := "ERROR") {
-    LogError(message, category)
-}
+; Legacy wrapper functions removed - use Log.d(), Log.i(), Log.e() instead
 
 ; Sincronizar debug_mode con el nuevo sistema cuando se cargue la configuración
 SyncDebugMode() {
