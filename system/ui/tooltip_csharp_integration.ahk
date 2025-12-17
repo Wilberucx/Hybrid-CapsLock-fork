@@ -671,7 +671,7 @@ ShowCenteredToolTipCS(text, duration := 0) {
 
 ; Short, navigation-less status tooltip for CapsLock toggle
 ShowCapsLockStatusCS(stateText) {
-    ; Build a tooltip like NVIM/Excel style: title, single item, no navigation
+    ; Build a tooltip like NVIM style: title, single item, no navigation
     theme := ReadTooltipThemeDefaults()
     cmd := Map()
     cmd["show"] := true

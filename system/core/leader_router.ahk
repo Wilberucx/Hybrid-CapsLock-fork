@@ -41,7 +41,7 @@ global LeaderLayerEnabled := true  ; Feature flag for leader layer
 ; Can be called from:
 ;   - F24 hotkey (Kanata trigger)
 ;   - Other scripts/layers if needed
-; Similar to ActivateScrollLayer(), ActivateExcelLayer(), etc.
+; Similar to ActivateScrollLayer(), etc.
 
 ActivateLeaderLayer() {
     global leaderActive, isNvimLayerActive, hybridPauseActive

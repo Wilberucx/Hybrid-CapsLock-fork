@@ -15,11 +15,6 @@ global VisualMode := false
 
 ; Leader state flag
 global leaderActive := false
-
-; Other runtime flags
-global excelLayerActive := false
-; Default: enable static Excel hotkeys unless dynamic mappings disable them
-global excelStaticEnabled := true
 global rightClickHeld := false
 global scrollModeActive := false
 global _yankAwait := false

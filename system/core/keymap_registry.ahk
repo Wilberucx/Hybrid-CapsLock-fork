@@ -20,73 +20,7 @@
 ;    RegisterCategoryKeymap("leader", "c", "s", "System Commands", 1)
 
 global KeymapRegistry := Map()      ; Keymaps jerárquicos: layer.path → Map de teclas
-global CategoryRegistry := Map()    ; Categories with metadata (legacy flat system)
-global CategoryOrder := []          ; Orden de categorías (legacy)
 global LayerRegistry := Map()       ; Registry for layer metadata (color, display name)
-
-; ==============================
-; REGISTRO DE CATEGORÍAS
-; ==============================
-
-; RegisterCategory(symbol, internal, title, order := 999)
-; SINTAXIS FLAT (legacy compatible):
-;   symbol: key to activate (e.g.: "h", "s")
-;   internal: internal name for keymaps (e.g.: "hybrid", "system")
-;   title: título mostrado
-;   order: posición en menú
-RegisterCategory(symbol, internal, title, order := 999) {
-    global CategoryRegistry, CategoryOrder
-    
-    CategoryRegistry[symbol] := Map(
-        "symbol", symbol,
-        "internal", internal,
-        "title", title,
-        "order", order
-    )
-    
-    CategoryOrder.Push(symbol)
-    
-    ; Initialize Map of keymaps for this category (flat)
-    if (!KeymapRegistry.Has(internal)) {
-        KeymapRegistry[internal] := Map()
-    }
-}
-
-; GetCategoryBySymbol(symbol)
-GetCategoryBySymbol(symbol) {
-    global CategoryRegistry
-    return CategoryRegistry.Has(symbol) ? CategoryRegistry[symbol] : false
-}
-
-; GetSortedCategories()
-GetSortedCategories() {
-    global CategoryRegistry, CategoryOrder
-    
-    categories := []
-    for sym in CategoryOrder {
-        if (CategoryRegistry.Has(sym))
-            categories.Push(CategoryRegistry[sym])
-    }
-    
-    ; Bubble sort por 'order'
-    n := categories.Length
-    Loop n - 1 {
-        swapped := false
-        Loop n - A_Index {
-            i := A_Index
-            if (categories[i]["order"] > categories[i + 1]["order"]) {
-                temp := categories[i]
-                categories[i] := categories[i + 1]
-                categories[i + 1] := temp
-                swapped := true
-            }
-        }
-        if (!swapped)
-            break
-    }
-    
-    return categories
-}
 
 ; ==============================
 ; REGISTRO DE KEYMAPS (SINTAXIS UNIFICADA)
@@ -517,17 +451,6 @@ ParseModifierKey(key) {
 ; CONSULTA DE KEYMAPS (DUAL MODE)
 ; ==============================
 
-; GetCategoryKeymaps(category)
-; FLAT: category = "system"
-GetCategoryKeymaps(category) {
-    global KeymapRegistry
-    
-    if (!KeymapRegistry.Has(category))
-        return Map()
-    
-    return KeymapRegistry[category]
-}
-
 ; GetKeymapsForPath(path)
 ; JERÁRQUICO: path = "leader.c.a"
 GetKeymapsForPath(path) {
@@ -537,13 +460,6 @@ GetKeymapsForPath(path) {
         return Map()
     
     return KeymapRegistry[path]
-}
-
-; GetSortedCategoryKeymaps(category)
-; FLAT
-GetSortedCategoryKeymaps(category) {
-    keymaps := GetCategoryKeymaps(category)
-    return SortKeymaps(keymaps)
 }
 
 ; GetSortedKeymapsForPath(path)
@@ -583,20 +499,6 @@ SortKeymaps(keymapsMap) {
     }
     
     return items
-}
-
-; FindKeymap(category, key)
-; FLAT
-FindKeymap(category, key) {
-    global KeymapRegistry
-    
-    if (!KeymapRegistry.Has(category))
-        return false
-    
-    if (!KeymapRegistry[category].Has(key))
-        return false
-    
-    return KeymapRegistry[category][key]
 }
 
 ; ==============================
@@ -654,54 +556,6 @@ ExecuteKeymapAtPath(path, key) {
 ; GENERACIÓN DE MENÚS
 ; ==============================
 
-; BuildMainMenuFromRegistry()
-; FLAT (legacy)
-BuildMainMenuFromRegistry() {
-    text := "COMMAND PALETTE`n`n"
-    
-    categories := GetSortedCategories()
-    
-    if (categories.Length = 0) {
-        text .= "[No categories registered]`n"
-        return text
-    }
-    
-    for cat in categories {
-        text .= cat["symbol"] . " - " . cat["title"] . "`n"
-    }
-    
-    text .= "`n[Backspace: Back] [Esc: Exit]"
-    return text
-}
-
-; BuildCategoryMenuFromRegistry(categoryInternal)
-; FLAT (legacy)
-BuildCategoryMenuFromRegistry(categoryInternal) {
-    global CategoryRegistry
-    
-    title := categoryInternal
-    for sym, cat in CategoryRegistry {
-        if (cat["internal"] = categoryInternal) {
-            title := cat["title"]
-            break
-        }
-    }
-    
-    text := title . "`n`n"
-    keymaps := GetSortedCategoryKeymaps(categoryInternal)
-    
-    if (keymaps.Length = 0) {
-        text .= "[No keymaps registered]`n"
-    } else {
-        for km in keymaps {
-            text .= km["key"] . " - " . km["desc"] . "`n"
-        }
-    }
-    
-    text .= "`n[Backspace: Back] [Esc: Exit]"
-    return text
-}
-
 ; BuildMenuForPath(path, title := "")
 ; JERÁRQUICO
 BuildMenuForPath(path, title := "") {
@@ -720,24 +574,6 @@ BuildMenuForPath(path, title := "") {
     }
     
     return menuText
-}
-
-; GenerateCategoryItems(category)
-; FLAT (para tooltip C#)
-GenerateCategoryItems(category) {
-    keymaps := GetSortedCategoryKeymaps(category)
-    
-    if (keymaps.Length = 0)
-        return ""
-    
-    items := ""
-    for km in keymaps {
-        if (items != "")
-            items .= "|"
-        items .= km["key"] . ":" . km["desc"]
-    }
-    
-    return items
 }
 
 ; GenerateCategoryItemsForPath(path)
