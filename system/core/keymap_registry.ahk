@@ -1,48 +1,245 @@
-; ==============================
-; Keymap Registry - Sistema Declarativo Jerárquico
-; ==============================
-; Central registry Neovim which-key style with hierarchical support
-; 
-; FILOSOFÍA: El layer/context SIEMPRE es explícito (primer parámetro)
-; Esto permite mapear teclas en cualquier layer (leader, scroll, custom_layer, etc.)
+; ██████████████████████████████████████████████████████████████████████████████
+; ██                                                                          ██
+; ██  KEYMAP REGISTRY - Core Keymap Management System                         ██
+; ██                                                                          ██
+; ██  This file centralizes ALL keymap system management:                     ██
+; ██  - Registration: Register keymaps and categories                         ██
+; ██  - Navigation: Hierarchical navigation and execution                     ██
+; ██  - Display: Menu and tooltip construction                                ██
+; ██  - Layers: Layer management and persistence                              ██
+; ██                                                                          ██
+; ██  Organized in 3 MAIN SECTIONS (see table of contents below)              ██
+; ██                                                                          ██
+; ██████████████████████████████████████████████████████████████████████████████
+
+; ================================
+; 📑 TABLE OF CONTENTS
+; ================================
 ;
-; SINTAXIS CONSISTENTE:
-; 1. Keymaps de un nivel:
-;    RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
-;    RegisterKeymap("scroll", "h", "Scroll Up", WheelScrollUp, false, 1)
+; SECTION 1: REGISTRY & QUERIES ..................... Line 65
+;   ├─ Global Variables (KeymapRegistry, LayerRegistry)
+;   ├─ Query Functions (GetKeymapsForPath, GetSortedKeymapsForPath)
+;   ├─ Helpers (SortKeymaps, JoinArray, ParseModifierKey)
+;   └─ Utility (HasKeymaps)
 ;
-; 2. Keymaps multinivel (jerárquicos):
-;    RegisterKeymap("leader", "c", "a", "d", "List Devices", ADBListDevices, false, 1)
-;    Crea: leader → c → a → d
+; SECTION 2: ACTIONS & NAVIGATION ................... Line 200
+;   ├─ Registration (RegisterKeymap, RegisterKeymapHierarchical)
+;   ├─ Category Registration (RegisterCategoryKeymap)
+;   ├─ Layer Registration (RegisterLayer, RegisterTrigger)
+;   ├─ Execution (ExecuteKeymapAtPath)
+;   ├─ Navigation (NavigateHierarchicalInLayer)
+;   ├─ Input Handling (ListenForLayerKeymaps)
+;   └─ Validation (ShowUnifiedConfirmation)
 ;
-; 3. Categorías (submenu navigation):
-;    RegisterCategoryKeymap("leader", "h", "Hybrid Management", 1)
-;    RegisterCategoryKeymap("leader", "c", "s", "System Commands", 1)
+; SECTION 3: DISPLAY & LAYERS ....................... Line 750
+;   ├─ Menu Builders (BuildMenuForPath)
+;   ├─ Tooltip Generators (GenerateCategoryItemsForPath)
+;   ├─ Layer Help (ShowLayerHelp, GenerateLayerHelpItems)
+;   ├─ Layer Management (GetLayerMetadata)
+;   └─ Persistence (UpdateLayersJsonFile)
+;
+; ================================
+;
+; PHILOSOPHY:
+; - Layer/context is ALWAYS explicit (first parameter)
+; - Hierarchical support (multi-level keymaps)
+; - Neovim which-key inspired
+;
+; EXAMPLES:
+; - Single level:
+;   RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
+;
+; - Multi-level (hierarchical):
+;   RegisterKeymap("leader", "c", "a", "d", "List Devices", ADBListDevices, false, 1)
+;   Creates: leader → c → a → d
+;
+; - Categories (submenu navigation):
+;   RegisterCategoryKeymap("leader", "h", "Hybrid Management", 1)
+;
+; ================================
+
+
+
+
+; ██████████████████████████████████████████████████████████████████████████████
+; ██                                                                          ██
+; ██  SECTION 1: REGISTRY & QUERIES                                           ██
+; ██                                                                          ██
+; ██  Responsibility:                                                         ██
+; ██  - Store global keymap registry                                          ██
+; ██  - Provide query API (get, sort, check existence)                        ██
+; ██  - Helper utilities (sort, join, parse)                                  ██
+; ██                                                                          ██
+; ██████████████████████████████████████████████████████████████████████████████
+
+; ========================================
+; GLOBAL VARIABLES
+; ========================================
+
 
 global KeymapRegistry := Map()      ; Keymaps jerárquicos: layer.path → Map de teclas
-global LayerRegistry := Map()       ; Registry for layer metadata (color, display name)
+
+; ========================================
+; QUERY FUNCTIONS
+; ========================================
+
+
+; GetKeymapsForPath(path)
+; JERÁRQUICO: path = "leader.c.a"
+GetKeymapsForPath(path) {
+    global KeymapRegistry
+    
+    if (!KeymapRegistry.Has(path))
+        return Map()
+    
+    return KeymapRegistry[path]
+}
+
+; GetSortedKeymapsForPath(path)
+; JERÁRQUICO
+GetSortedKeymapsForPath(path) {
+    keymaps := GetKeymapsForPath(path)
+    return SortKeymaps(keymaps)
+}
+
+
+; SortKeymaps(keymapsMap)
+; Convierte Map a array ordenado por 'order'
+SortKeymaps(keymapsMap) {
+    if (keymapsMap.Count = 0)
+        return []
+    
+    ; Convertir a array
+    items := []
+    for key, data in keymapsMap {
+        items.Push(data)
+    }
+    
+    ; Bubble sort por 'order'
+    n := items.Length
+    Loop n - 1 {
+        swapped := false
+        Loop n - A_Index {
+            i := A_Index
+            if (items[i]["order"] > items[i + 1]["order"]) {
+                temp := items[i]
+                items[i] := items[i + 1]
+                items[i + 1] := temp
+                swapped := true
+            }
+        }
+        if (!swapped)
+            break
+    }
+    
+    return items
+}
+
+
+; HasKeymaps(category)
+; FLAT
+HasKeymaps(category) {
+    global KeymapRegistry
+    return KeymapRegistry.Has(category) && KeymapRegistry[category].Count > 0
+}
+
+
+; ========================================
+; HELPER UTILITIES
+; ========================================
+
+; FUNCIONES AUXILIARES
+; ==============================
+
+JoinArray(arr, separator := "") {
+    result := ""
+    Loop arr.Length {
+        result .= arr[A_Index]
+        if (A_Index < arr.Length) {
+            result .= separator
+        }
+    }
+    return result
+}
 
 ; ==============================
-; REGISTRO DE KEYMAPS (SINTAXIS UNIFICADA)
+; PARSER DE MODIFICADORES
 ; ==============================
 
-; RegisterKeymap(layer, key(s)..., desc, action, [confirm], [order])
-; El layer/context SIEMPRE es el primer parámetro (explícito)
+
 ;
-; EJEMPLOS:
-; - Un nivel:
-;   RegisterKeymap("leader", "s", "Scroll", ActivateScrollLayer, false, 4)
-;   RegisterKeymap("scroll", "h", "Scroll Up", WheelScrollUp, false, 1)
-;
-; - Multinivel (jerárquico):
-;   RegisterKeymap("leader", "c", "a", "d", "List Devices", ADBListDevices, false, 1)
-;   Resultado: leader.c.a.d → List Devices
-;
-; Metadata siempre al final:
-;   - desc (requerido)
-;   - action (requerido)
-;   - confirm (opcional, boolean)
-;   - order (opcional, integer)
+; NOTA: Shift (S) es solo para combinaciones con Ctrl/Alt.
+;       Para Shift+key simple, usar mayúscula: "A" en vez de "<S-a>"
+ParseModifierKey(key) {
+    ; Si no tiene el patrón <...>, retornar sin cambios
+    if (!RegExMatch(key, "^<(.+)>$", &match)) {
+        return Map("parsed", key, "display", key)
+    }
+    
+    ; Extraer contenido entre < y >
+    content := match[1]
+    
+    ; Dividir por guión
+    parts := StrSplit(content, "-")
+    
+    ; Si solo hay una parte, es inválido (debería ser <X-key>)
+    if (parts.Length < 2) {
+        return Map("parsed", key, "display", key)
+    }
+    
+    ; La última parte es la tecla base
+    baseKey := parts[parts.Length]
+    
+    ; Las partes anteriores son modificadores
+    hasCtrl := false
+    hasAlt := false
+    hasShift := false
+    
+    Loop parts.Length - 1 {
+        modifier := parts[A_Index]
+        if (modifier = "C") {
+            hasCtrl := true
+        } else if (modifier = "A") {
+            hasAlt := true
+        } else if (modifier = "S") {
+            hasShift := true
+        }
+        ; Ignorar modificadores desconocidos
+    }
+    
+    ; Construir sintaxis de AutoHotkey
+    ; Orden correcto: ^ (Ctrl), ! (Alt), + (Shift)
+    ahkKey := ""
+    if (hasCtrl)
+        ahkKey .= "^"
+    if (hasAlt)
+        ahkKey .= "!"
+    if (hasShift)
+        ahkKey .= "+"
+    ahkKey .= baseKey
+    
+    return Map("parsed", ahkKey, "display", key)
+}
+
+
+; ██████████████████████████████████████████████████████████████████████████████
+; ██                                                                          ██
+; ██  SECTION 2: ACTIONS & NAVIGATION                                        ██
+; ██                                                                          ██
+; ██  Responsibility:                                                         ██
+; ██  - Register keymaps in hierarchical registry                            ██
+; ██  - Register categories and layers                                       ██
+; ██  - Execute keymap actions                                               ██
+; ██  - Navigate hierarchically (Backspace, Escape)                          ██
+; ██  - Handle InputHook for persistent layers                               ██
+; ██  - Validate and confirm actions                                         ██
+; ██                                                                          ██
+; ██████████████████████████████████████████████████████████████████████████████
+
+; ========================================
+; REGISTRATION FUNCTIONS
+; ========================================
+
 
 RegisterKeymap(args*) {
     global KeymapRegistry
@@ -184,7 +381,7 @@ RegisterKeymapHierarchical(layer, pathKeys, description, actionFunc, needsConfir
 
 ; ==============================
 ; REGISTRO DE CATEGORÍAS JERÁRQUICAS
-; ==============================
+
 
 ; RegisterCategoryKeymap(layer, path..., title, [order])
 ; Registra una categoría que lleva a otro nivel
@@ -270,7 +467,11 @@ RegisterCategoryKeymap(args*) {
 ; Registra metadata visual para un layer
 ; layerId: identificador interno (ej: "scroll", "nvim")
 ; displayName: nombre para mostrar (ej: "SCROLL MODE")
-; color: color hex para el status pill background (ej: "#E6C07B")
+
+; ========================================
+; LAYER REGISTRATION
+; ========================================
+
 ; textColor: color hex para el texto del status pill (ej: "#ffffff")
 ; suppressUnmapped: si true (default), suprime teclas no mapeadas. Si false, las deja pasar.
 RegisterLayer(layerId, displayName, color, textColor := "#ffffff", suppressUnmapped := true) {
@@ -288,222 +489,35 @@ RegisterLayer(layerId, displayName, color, textColor := "#ffffff", suppressUnmap
     UpdateLayersJsonFile()
 }
 
-; GetLayerMetadata(layerId)
-; Retorna el mapa de metadata o valores por defecto
-GetLayerMetadata(layerId) {
-    global LayerRegistry
-    
-    if (LayerRegistry.Has(layerId)) {
-        return LayerRegistry[layerId]
-    }
-    
-    ; Default fallback
-    return Map(
-        "id", layerId,
-        "name", StrUpper(layerId),
-        "color", "#007acc",      ; Default blue
-        "textColor", "#ffffff",  ; Default white
-        "suppressUnmapped", true ; Default: suppress unmapped keys
-    )
-}
 
-; UpdateLayersJsonFile()
-; Actualiza el archivo centralizado data/layers.json con todos los layers registrados
-; Solo guarda id y name para cada layer
-UpdateLayersJsonFile() {
-    global LayerRegistry
+;   RegisterTrigger("F24", ActivateLeaderLayer, "LeaderLayerEnabled")
+;   RegisterTrigger("F23", ActivateDynamicLayer, "DYNAMIC_LAYER_ENABLED")
+;   RegisterTrigger("<C-s>", SaveFile, "EditorActive")
+RegisterTrigger(key, action, condition := "") {
+    ; Parsear la key para soportar sintaxis de modificadores
+    keyInfo := ParseModifierKey(key)
+    parsedKey := keyInfo["parsed"]
     
-    ; Ensure data directory exists
-    dataDir := A_ScriptDir . "\data"
-    if (!DirExist(dataDir)) {
-        try {
-            DirCreate(dataDir)
-        } catch as e {
-            ; Silently fail if can't create directory
-            return
+    if (condition != "") {
+        ; Si la condición es una variable global, usar una función lambda para evaluarla
+        if (Type(condition) = "String") {
+            HotIf (*) => %condition%
+        } else {
+            HotIf condition
         }
+    } else {
+        HotIf
     }
     
-    ; Build layers array with only id and name
-    layersArray := []
-    for layerId, metadata in LayerRegistry {
-        layerEntry := Map(
-            "id", metadata["id"],
-            "name", metadata["name"]
-        )
-        layersArray.Push(layerEntry)
-    }
-    
-    ; Build complete JSON structure
-    jsonData := Map(
-        "layers", layersArray,
-        "lastUpdate", FormatTime(, "yyyyMMddHHmmss")
-    )
-    
-    ; Serialize to JSON
-    try {
-        jsonContent := SerializeJson(jsonData)
-        
-        ; Write to file
-        layersFile := dataDir . "\layers.json"
-        try {
-            FileDelete(layersFile)
-        }
-        FileAppend(jsonContent, layersFile, "UTF-8")
-    } catch as e {
-        ; Silently fail if serialization or file write fails
-        ; This prevents breaking the layer registration if JSON functions aren't available yet
-    }
+    ; Registrar hotkey con opción "S" (SuspendExempt)
+    ; Envolver la acción en una función lambda para crear un callback válido
+    Hotkey(parsedKey, (*) => action(), "S")
 }
 
-; ==============================
-; FUNCIONES AUXILIARES
-; ==============================
+; ========================================
+; EXECUTION & VALIDATION
+; ========================================
 
-JoinArray(arr, separator := "") {
-    result := ""
-    Loop arr.Length {
-        result .= arr[A_Index]
-        if (A_Index < arr.Length) {
-            result .= separator
-        }
-    }
-    return result
-}
-
-; ==============================
-; PARSER DE MODIFICADORES
-; ==============================
-
-; ParseModifierKey(key)
-; Parsea sintaxis estilo Vim de modificadores: <C-a>, <S-C-a>, <A-S-k>, etc.
-; Convierte a sintaxis de AutoHotkey: ^a, +^a, !+k, etc.
-;
-; Modificadores soportados:
-;   C = Ctrl  → ^
-;   S = Shift → +
-;   A = Alt   → !
-;
-; Ejemplos:
-;   "<C-a>"     → {parsed: "^a", display: "<C-a>"}
-;   "<S-C-a>"   → {parsed: "+^a", display: "<S-C-a>"}
-;   "<A-S-k>"   → {parsed: "!+k", display: "<A-S-k>"}
-;   "<C-A-S-x>" → {parsed: "^!+x", display: "<C-A-S-x>"}
-;   "a"         → {parsed: "a", display: "a"}
-;   "R"         → {parsed: "R", display: "R"}
-;
-; Retorna: Map con "parsed" (sintaxis AHK) y "display" (sintaxis original)
-;
-; NOTA: Shift (S) es solo para combinaciones con Ctrl/Alt.
-;       Para Shift+key simple, usar mayúscula: "A" en vez de "<S-a>"
-ParseModifierKey(key) {
-    ; Si no tiene el patrón <...>, retornar sin cambios
-    if (!RegExMatch(key, "^<(.+)>$", &match)) {
-        return Map("parsed", key, "display", key)
-    }
-    
-    ; Extraer contenido entre < y >
-    content := match[1]
-    
-    ; Dividir por guión
-    parts := StrSplit(content, "-")
-    
-    ; Si solo hay una parte, es inválido (debería ser <X-key>)
-    if (parts.Length < 2) {
-        return Map("parsed", key, "display", key)
-    }
-    
-    ; La última parte es la tecla base
-    baseKey := parts[parts.Length]
-    
-    ; Las partes anteriores son modificadores
-    hasCtrl := false
-    hasAlt := false
-    hasShift := false
-    
-    Loop parts.Length - 1 {
-        modifier := parts[A_Index]
-        if (modifier = "C") {
-            hasCtrl := true
-        } else if (modifier = "A") {
-            hasAlt := true
-        } else if (modifier = "S") {
-            hasShift := true
-        }
-        ; Ignorar modificadores desconocidos
-    }
-    
-    ; Construir sintaxis de AutoHotkey
-    ; Orden correcto: ^ (Ctrl), ! (Alt), + (Shift)
-    ahkKey := ""
-    if (hasCtrl)
-        ahkKey .= "^"
-    if (hasAlt)
-        ahkKey .= "!"
-    if (hasShift)
-        ahkKey .= "+"
-    ahkKey .= baseKey
-    
-    return Map("parsed", ahkKey, "display", key)
-}
-
-; ==============================
-; CONSULTA DE KEYMAPS (DUAL MODE)
-; ==============================
-
-; GetKeymapsForPath(path)
-; JERÁRQUICO: path = "leader.c.a"
-GetKeymapsForPath(path) {
-    global KeymapRegistry
-    
-    if (!KeymapRegistry.Has(path))
-        return Map()
-    
-    return KeymapRegistry[path]
-}
-
-; GetSortedKeymapsForPath(path)
-; JERÁRQUICO
-GetSortedKeymapsForPath(path) {
-    keymaps := GetKeymapsForPath(path)
-    return SortKeymaps(keymaps)
-}
-
-; SortKeymaps(keymapsMap)
-; Convierte Map a array ordenado por 'order'
-SortKeymaps(keymapsMap) {
-    if (keymapsMap.Count = 0)
-        return []
-    
-    ; Convertir a array
-    items := []
-    for key, data in keymapsMap {
-        items.Push(data)
-    }
-    
-    ; Bubble sort por 'order'
-    n := items.Length
-    Loop n - 1 {
-        swapped := false
-        Loop n - A_Index {
-            i := A_Index
-            if (items[i]["order"] > items[i + 1]["order"]) {
-                temp := items[i]
-                items[i] := items[i + 1]
-                items[i + 1] := temp
-                swapped := true
-            }
-        }
-        if (!swapped)
-            break
-    }
-    
-    return items
-}
-
-; ==============================
-; EJECUCIÓN (JERÁRQUICO)
-; ==============================
 
 ; ShowUnifiedConfirmation(description)
 ; Función unificada que detecta si C# tooltips están activos y usa el apropiado
@@ -552,183 +566,11 @@ ExecuteKeymapAtPath(path, key) {
     return true
 }
 
-; ==============================
-; GENERACIÓN DE MENÚS
-; ==============================
 
-; BuildMenuForPath(path, title := "")
-; JERÁRQUICO
-BuildMenuForPath(path, title := "") {
-    items := GetSortedKeymapsForPath(path)
-    
-    if (items.Length = 0)
-        return ""
-    
-    menuText := title != "" ? title . "`n`n" : ""
-    
-    for item in items {
-        icon := item["isCategory"] ? "→" : "-"
-        ; Usar displayKey si existe, sino usar key
-        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
-        menuText .= displayKey . " " . icon . " " . item["desc"] . "`n"
-    }
-    
-    return menuText
-}
+; ========================================
+; NAVIGATION & INPUT HANDLING
+; ========================================
 
-; GenerateCategoryItemsForPath(path)
-; JERÁRQUICO (para tooltip C#)
-GenerateCategoryItemsForPath(path) {
-    items := GetSortedKeymapsForPath(path)
-    
-    if (items.Length = 0)
-        return ""
-    
-    result := ""
-    for item in items {
-        if (result != "")
-            result .= "|"
-        ; Usar displayKey si existe, sino usar key
-        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
-        result .= displayKey . ":" . item["desc"]
-    }
-    
-    return result
-}
-
-; ==============================
-; REGISTRO DE TRIGGERS
-; ==============================
-
-; RegisterTrigger(key, action, condition := "")
-; Registra un hotkey global con condición opcional y SuspendExempt
-; Reemplaza el uso de #HotIf y #SuspendExempt en keymap.ahk
-;
-; Ejemplos:
-;   RegisterTrigger("F24", ActivateLeaderLayer, "LeaderLayerEnabled")
-;   RegisterTrigger("F23", ActivateDynamicLayer, "DYNAMIC_LAYER_ENABLED")
-;   RegisterTrigger("<C-s>", SaveFile, "EditorActive")
-RegisterTrigger(key, action, condition := "") {
-    ; Parsear la key para soportar sintaxis de modificadores
-    keyInfo := ParseModifierKey(key)
-    parsedKey := keyInfo["parsed"]
-    
-    if (condition != "") {
-        ; Si la condición es una variable global, usar una función lambda para evaluarla
-        if (Type(condition) = "String") {
-            HotIf (*) => %condition%
-        } else {
-            HotIf condition
-        }
-    } else {
-        HotIf
-    }
-    
-    ; Registrar hotkey con opción "S" (SuspendExempt)
-    ; Envolver la acción en una función lambda para crear un callback válido
-    Hotkey(parsedKey, (*) => action(), "S")
-    
-    ; Resetear HotIf
-    HotIf
-}
-
-; HasKeymaps(category)
-; FLAT
-HasKeymaps(category) {
-    global KeymapRegistry
-    return KeymapRegistry.Has(category) && KeymapRegistry[category].Count > 0
-}
-
-; ==============================
-; DYNAMIC LAYER HELP SYSTEM
-; ==============================
-
-; GenerateLayerHelpItems(layerName)
-; Genera dinámicamente los items de ayuda para un layer consultando el KeymapRegistry
-; Retorna un string formateado para tooltips C# (key:desc|key:desc|...)
-GenerateLayerHelpItems(layerName) {
-    global KeymapRegistry
-    
-    ; Verificar que el layer existe
-    if (!KeymapRegistry.Has(layerName)) {
-        Log.w("Layer not found in registry: " . layerName, "HELP")
-        return ""
-    }
-    
-    ; Obtener keymaps ordenados
-    items := GetSortedKeymapsForPath(layerName)
-    
-    if (items.Length = 0) {
-        return ""
-    }
-    
-    ; Generar string de items
-    result := ""
-    for item in items {
-        if (result != "")
-            result .= "|"
-        
-        ; Usar displayKey si existe, sino usar key
-        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
-        
-        ; Agregar indicador visual para categorías
-        desc := item["desc"]
-        if (item["isCategory"]) {
-            desc .= " →"
-        }
-        
-        result .= displayKey . ":" . desc
-    }
-    
-    return result
-}
-
-; ShowLayerHelp(layerName)
-; Muestra un tooltip C# con todos los keymaps disponibles en el layer actual
-ShowLayerHelp(layerName) {
-    Log.d("Showing help for layer: " . layerName, "HELP")
-    
-    ; Generar items de ayuda
-    items := GenerateLayerHelpItems(layerName)
-    
-    if (items = "") {
-        ShowCenteredToolTip("No keymaps registered for layer: " . layerName)
-        SetTimer(() => RemoveToolTip(), -2000)
-        return
-    }
-    
-    ; Verificar si tooltips C# están habilitados
-    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        ; Obtener metadata del layer para el título
-        layerMeta := GetLayerMetadata(layerName)
-        title := "Layer: " . layerMeta["name"] . " - Help"
-        
-        ; IMPORTANT: Mark menu as active so ListenForLayerKeymaps knows to handle ESC
-        global tooltipMenuActive
-        tooltipMenuActive := true
-        
-        ; Mostrar tooltip C# con timeout 0 (permanece hasta ESC)
-        ShowCSharpTooltipWithType(title, items, "Esc: Close", 0, "leader")
-    } else {
-        ; Fallback a tooltip nativo
-        menuText := "Layer: " . StrUpper(layerName) . " - Help`n`n"
-        menuText .= BuildMenuForPath(layerName)
-        menuText .= "`n[Esc: Close]"
-        ShowCenteredToolTip(menuText)
-    }
-}
-
-; ==============================
-; LISTEN FOR PERSISTENT LAYER KEYMAPS
-; ==============================
-; Similar to NavigateHierarchical but for persistent layers (scroll, custom_layer, etc.)
-; Listens for inputs while layer is active and executes registered keymaps
-
-; ListenForLayerKeymaps(layerName, layerActiveVarName)
-; layerName: nombre del layer en KeymapRegistry (ej: "scroll", "my_app")
-; layerActiveVarName: nombre de la variable global que indica si layer está activo (ej: "isScrollLayerActive")
-;
-; Uso:
 ;   En OnScrollLayerActivate():
 ;     ListenForLayerKeymaps("scroll", "isScrollLayerActive")
 
@@ -886,7 +728,7 @@ ListenForLayerKeymaps(layerName, layerActiveVarName) {
     ; Cleanup
     CurrentLayerInputHook := ""
     Log.d("Stopped listener for layer: " . layerName, "LAYER")
-    return true
+
 }
 
 ; NavigateHierarchicalInLayer(currentPath, layerActiveVarName)
@@ -1046,25 +888,237 @@ NavigateHierarchicalInLayer(currentPath, layerActiveVarName) {
     Log.d("Stopped hierarchical navigation", "LAYER")
 }
 
+
+; ██████████████████████████████████████████████████████████████████████████████
+; ██                                                                          ██
+; ██  SECTION 3: DISPLAY & LAYERS                                            ██
+; ██                                                                          ██
+; ██  Responsibility:                                                         ██
+; ██  - Build text menus for native tooltips                                 ██
+; ██  - Generate items for C# tooltips                                       ██
+; ██  - Show layer help                                                      ██
+; ██  - Manage layer metadata                                                ██
+; ██  - Persist layers to JSON (data/layers.json)                            ██
+; ██                                                                          ██
+; ██████████████████████████████████████████████████████████████████████████████
+
+; ========================================
+; MENU BUILDERS
+; ========================================
+
+
+; BuildMenuForPath(path, title := "")
+; JERÁRQUICO
+BuildMenuForPath(path, title := "") {
+    items := GetSortedKeymapsForPath(path)
+    
+    if (items.Length = 0)
+        return ""
+    
+    menuText := title != "" ? title . "`n`n" : ""
+    
+    for item in items {
+        icon := item["isCategory"] ? "→" : "-"
+        ; Usar displayKey si existe, sino usar key
+        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
+        menuText .= displayKey . " " . icon . " " . item["desc"] . "`n"
+    }
+    
+    return menuText
+}
+
+
+; GenerateCategoryItemsForPath(path)
+; JERÁRQUICO (para tooltip C#)
+GenerateCategoryItemsForPath(path) {
+    items := GetSortedKeymapsForPath(path)
+    
+    if (items.Length = 0)
+        return ""
+    
+    result := ""
+    for item in items {
+        if (result != "")
+            result .= "|"
+        ; Usar displayKey si existe, sino usar key
+        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
+        result .= displayKey . ":" . item["desc"]
+    }
+    
+    return result
+}
+
+
+; ========================================
+; LAYER HELP & DISPLAY
+; ========================================
+
+; GenerateLayerHelpItems(layerName)
+; Genera dinámicamente los items de ayuda para un layer consultando el KeymapRegistry
+; Retorna un string formateado para tooltips C# (key:desc|key:desc|...)
+GenerateLayerHelpItems(layerName) {
+    global KeymapRegistry
+    
+    ; Verificar que el layer existe
+    if (!KeymapRegistry.Has(layerName)) {
+        Log.w("Layer not found in registry: " . layerName, "HELP")
+        return ""
+    }
+    
+    ; Obtener keymaps ordenados
+    items := GetSortedKeymapsForPath(layerName)
+    
+    if (items.Length = 0) {
+        return ""
+    }
+    
+    ; Generar string de items
+    result := ""
+    for item in items {
+        if (result != "")
+            result .= "|"
+        
+        ; Usar displayKey si existe, sino usar key
+        displayKey := item.Has("displayKey") ? item["displayKey"] : item["key"]
+        
+        ; Agregar indicador visual para categorías
+        desc := item["desc"]
+        if (item["isCategory"]) {
+            desc .= " →"
+        }
+        
+        result .= displayKey . ":" . desc
+    }
+    
+    return result
+}
+
+; ShowLayerHelp(layerName)
+; Muestra un tooltip C# con todos los keymaps disponibles en el layer actual
+ShowLayerHelp(layerName) {
+    Log.d("Showing help for layer: " . layerName, "HELP")
+    
+    ; Generar items de ayuda
+    items := GenerateLayerHelpItems(layerName)
+    
+    if (items = "") {
+        ShowCenteredToolTip("No keymaps registered for layer: " . layerName)
+        SetTimer(() => RemoveToolTip(), -2000)
+        return
+    }
+    
+    ; Verificar si tooltips C# están habilitados
+    if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
+        ; Obtener metadata del layer para el título
+        layerMeta := GetLayerMetadata(layerName)
+        title := "Layer: " . layerMeta["name"] . " - Help"
+        
+        ; IMPORTANT: Mark menu as active so ListenForLayerKeymaps knows to handle ESC
+        global tooltipMenuActive
+        tooltipMenuActive := true
+        
+        ; Mostrar tooltip C# con timeout 0 (permanece hasta ESC)
+        ShowCSharpTooltipWithType(title, items, "Esc: Close", 0, "leader")
+    } else {
+        ; Fallback a tooltip nativo
+        menuText := "Layer: " . StrUpper(layerName) . " - Help`n`n"
+        menuText .= BuildMenuForPath(layerName)
+        menuText .= "`n[Esc: Close]"
+        ShowCenteredToolTip(menuText)
+    }
+}
+
 ; ==============================
-; EJEMPLOS DE USO:
+; LISTEN FOR PERSISTENT LAYER KEYMAPS
 ; ==============================
-; FLAT (legacy):
-;   RegisterCategory("s", "system", "System Commands", 1)
-;   RegisterKeymap("system", "s", "System Info", ShowSystemInfo, false, 1)
-;
-; JERÁRQUICO (nuevo):
-;   RegisterCategoryKeymap("c", "Commands", 1)
-;   RegisterCategoryKeymap("c", "a", "ADB Tools", 1)
-;   RegisterKeymap("c", "a", "d", "List Devices", ADBListDevices, false, 1)
-;
-; PERSISTENT LAYERS (nuevo):
-;   RegisterKeymap("scroll", "h", "Scroll Left", ScrollLeft, false, 1)
-;   RegisterKeymap("scroll", "j", "Scroll Down", ScrollDown, false, 2)
-;   ; En scroll_layer.ahk:
-;   OnScrollLayerActivate() {
-;       isScrollLayerActive := true
-;       ListenForLayerKeymaps("scroll", "isScrollLayerActive")
-;   }
-;
-; Todas las sintaxis funcionan simultáneamente en el mismo sistema.
+; Similar to NavigateHierarchical but for persistent layers (scroll, custom_layer, etc.)
+; Listens for inputs while layer is active and executes registered keymaps
+
+; ListenForLayerKeymaps(layerName, layerActiveVarName)
+; layerName: nombre del layer en KeymapRegistry (ej: "scroll", "my_app")
+
+; ========================================
+; LAYER MANAGEMENT & PERSISTENCE
+; ========================================
+
+; Retorna el mapa de metadata o valores por defecto
+GetLayerMetadata(layerId) {
+    global LayerRegistry
+    
+    if (LayerRegistry.Has(layerId)) {
+        return LayerRegistry[layerId]
+    }
+    
+    ; Default fallback
+    return Map(
+        "id", layerId,
+        "name", StrUpper(layerId),
+        "color", "#007acc",      ; Default blue
+        "textColor", "#ffffff",  ; Default white
+        "suppressUnmapped", true ; Default: suppress unmapped keys
+    )
+}
+
+; UpdateLayersJsonFile()
+; Actualiza el archivo centralizado data/layers.json con todos los layers registrados
+; Solo guarda id y name para cada layer
+UpdateLayersJsonFile() {
+    global LayerRegistry
+    
+    ; Ensure data directory exists
+    dataDir := A_ScriptDir . "\data"
+    if (!DirExist(dataDir)) {
+        try {
+            DirCreate(dataDir)
+        } catch as e {
+            ; Silently fail if can't create directory
+            return
+        }
+    }
+    
+    ; Build layers array with only id and name
+    layersArray := []
+    for layerId, metadata in LayerRegistry {
+        layerEntry := Map(
+            "id", metadata["id"],
+            "name", metadata["name"]
+        )
+        layersArray.Push(layerEntry)
+    }
+    
+    ; Build complete JSON structure
+    jsonData := Map(
+        "layers", layersArray,
+        "lastUpdate", FormatTime(, "yyyyMMddHHmmss")
+    )
+    
+    ; Serialize to JSON
+    try {
+        jsonContent := SerializeJson(jsonData)
+        
+        ; Write to file
+        layersFile := dataDir . "\layers.json"
+        try {
+            FileDelete(layersFile)
+        }
+        FileAppend(jsonContent, layersFile, "UTF-8")
+    } catch as e {
+        ; Silently fail if serialization or file write fails
+        ; This prevents breaking the layer registration if JSON functions aren't available yet
+    }
+}
+
+
+
+; ██████████████████████████████████████████████████████████████████████████████
+; ██                                                                          ██
+; ██  END OF KEYMAP REGISTRY                                                 ██
+; ██                                                                          ██
+; ██  Total: ~1070 lines organized in 3 sections                             ██
+; ██                                                                          ██
+; ██  Navigation:                                                             ██
+; ██  - Ctrl+F "SECTION 1" → Registry & Queries                              ██
+; ██  - Ctrl+F "SECTION 2" → Actions & Navigation                            ██
+; ██  - Ctrl+F "SECTION 3" → Display & Layers                                ██
+; ██                                                                          ██
+; ██████████████████████████████████████████████████████████████████████████████
