@@ -4,7 +4,7 @@
 ; Central registry Neovim which-key style with hierarchical support
 ; 
 ; FILOSOFÍA: El layer/context SIEMPRE es explícito (primer parámetro)
-; Esto permite mapear teclas en cualquier layer (leader, scroll, nvim, excel, etc.)
+; Esto permite mapear teclas en cualquier layer (leader, scroll, custom_layer, etc.)
 ;
 ; SINTAXIS CONSISTENTE:
 ; 1. Keymaps de un nivel:
@@ -721,11 +721,11 @@ ShowLayerHelp(layerName) {
 ; ==============================
 ; LISTEN FOR PERSISTENT LAYER KEYMAPS
 ; ==============================
-; Similar to NavigateHierarchical but for persistent layers (nvim, scroll, excel, etc.)
+; Similar to NavigateHierarchical but for persistent layers (scroll, custom_layer, etc.)
 ; Listens for inputs while layer is active and executes registered keymaps
 
 ; ListenForLayerKeymaps(layerName, layerActiveVarName)
-; layerName: nombre del layer en KeymapRegistry (ej: "scroll", "nvim")
+; layerName: nombre del layer en KeymapRegistry (ej: "scroll", "my_app")
 ; layerActiveVarName: nombre de la variable global que indica si layer está activo (ej: "isScrollLayerActive")
 ;
 ; Uso:

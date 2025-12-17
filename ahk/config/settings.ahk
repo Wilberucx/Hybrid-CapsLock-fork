@@ -36,18 +36,6 @@ LayerConfig := {
     
     ; Individual layer configurations
     layers: {
-        nvim: {
-            enabled: true,
-            timeout: 5000,
-            tap_threshold_ms: 250,
-            yank_feedback_return: true
-        },
-        
-        excel: {
-            enabled: true,
-            timeout: 8000
-        },
-        
         leader: {
             enabled: true,
             timeout: 7000

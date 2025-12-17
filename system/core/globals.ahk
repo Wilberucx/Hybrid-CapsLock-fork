@@ -4,28 +4,18 @@
 ; Define global state early so any included module can use them safely
 
 ; ---- Layer runtime states ----
-global isNvimLayerActive := false
 global CurrentLayerInputHook := "" ; Track active input hook for direct control
 
 ; Hybrid pause state
 global hybridPauseActive := false
 
-global _tempEditMode := false
-global VisualMode := false
-
 ; Leader state flag
 global leaderActive := false
 global rightClickHeld := false
-global scrollModeActive := false
-global _yankAwait := false
-global _deleteAwait := false
 
 ; Temporary status tracking (UI)
 global currentTempStatus := ""
 global tempStatusExpiry := 0
-
-; ---- Static mapping toggles for dynamic override ----
-global nvimStaticEnabled := true
 
 ; ===============================
 ; DEBUG SYSTEM - LEGACY COMPATIBILITY

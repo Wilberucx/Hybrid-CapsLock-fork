@@ -347,8 +347,6 @@ class LogCategory {
     static KEY := "KEY"
     static CONFIG := "CONFIG"
     static INIT := "INIT"
-    static NVIM := "NVIM"
-    static EXCEL := "EXCEL"
     static LEADER := "LEADER"
     static TOOLTIP := "TOOLTIP"
     static REGISTRY := "REGISTRY"

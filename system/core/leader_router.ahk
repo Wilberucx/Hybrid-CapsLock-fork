@@ -44,7 +44,7 @@ global LeaderLayerEnabled := true  ; Feature flag for leader layer
 ; Similar to ActivateScrollLayer(), etc.
 
 ActivateLeaderLayer() {
-    global leaderActive, isNvimLayerActive, hybridPauseActive
+    global leaderActive, hybridPauseActive
     
     Log.i("ActivateLeaderLayer() - Activating leader", "LEADER")
     

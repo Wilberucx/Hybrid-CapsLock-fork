@@ -720,7 +720,7 @@ ShowCommandExecutedCS(category, command) {
 }
 
 ; ===================================================================
-; FUNCIONES ESPECÍFICAS PARA NVIM/ VISUAL/ EXCEL/ SCROLL HELP
+; FUNCIONES ESPECÍFICAS PARA CUSTOM LAYERS / SCROLL HELP
 
 ; ===================================================================
 ; FUNCIONES ESPECÍFICAS ELIMINADAS (Usar ShowGenericLayerStatus)
