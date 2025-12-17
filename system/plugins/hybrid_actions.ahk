@@ -9,7 +9,7 @@
 ReloadHybridScript() {
     ; Notificación
     if (IsSet(tooltipConfig) && tooltipConfig.enabled) {
-        try ShowCSharpStatusNotification("HYBRID", "RELOADING...")
+        try ShowTooltipFeedback("Reloading script...", "info", 1000)
     } else {
         ShowCenteredToolTip("RELOADING...")
         SetTimer(() => RemoveToolTip(), -800)
@@ -25,8 +25,9 @@ ReloadHybridScript() {
         KanataRestart()
     }
     
-    ; Reiniciar AHK
-    Run('"' . A_AhkPath . '" "' . A_ScriptFullPath . '"')
+    ; Reiniciar AHK desde el entry point (para ejecutar AutoLoader)
+    mainScript := A_ScriptDir . "\HybridCapslock.ahk"
+    Run('"' . A_AhkPath . '" "' . mainScript . '"')
     ExitApp()
 }
 
