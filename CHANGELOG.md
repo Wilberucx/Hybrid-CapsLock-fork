@@ -5,6 +5,35 @@ All notable changes to the HybridCapslock project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2025-01-16
+
+### Removed
+- **[BREAKING]** Removed Flat Keymap System (Phase 2 legacy cleanup)
+  - `CategoryRegistry` and related flat registry components are removed. System now relies entirely on hierarchical registry.
+- **[BREAKING]** Removed hardcoded `LogCategory.EXCEL` and `LogCategory.NVIM` constants from `Debug_log.ahk`. Use direct strings.
+- **[BREAKING]** `RegisterKeymapFlat()` and `ShowUnifiedConfirmation_OLD()` removed from `keymap_registry.ahk` (legacy cleanup).
+- **[BREAKING]** Legacy logging wrappers (`DebugLog`, `InfoLog`, `ErrorLog`) removed from `globals.ahk`.
+- **[BREAKING]** Removed `LayerConfig.layers.excel` and `LayerConfig.layers.nvim` from `settings.ahk`.
+- Removed unused global variables: `isNvimLayerActive`, `nvimStaticEnabled`, `scrollModeActive`, `VisualMode`, etc.
+
+### Changed
+- **Architectural Cleanup**: Only **Leader** layer is now fundamental/hardcoded. All other layers (Excel, Nvim) are treated as dynamic user configurations.
+- **Keymap Registry Reorganization**: Restructured internals for better modularity and performance.
+- Simplified `keymap_registry.ahk` by removing 175+ lines of dead code.
+- Updated comments in core files to use generic examples instead of specific app names.
+
+## [3.1.1] - 2025-01-12
+
+### Fixed
+- **Notification Positioning**: Moved notifications to `top_right` and temporarily disabled animations to resolve positioning conflicts.
+- **Portable Release**: Fixed `create_portable_release` script behavior.
+- **ReloadHybridScript() now executes AutoLoader correctly**: Changed reload behavior to restart from `HybridCapslock.ahk` (entry point) instead of `init.ahk`, ensuring that the AutoLoader runs on every reload. This fixes the issue where newly added plugins or layers were not detected after a reload. The reload flow is now consistent with the normal startup process.
+  - Impact: Developers can now add plugins to `ahk/plugins/` or `system/plugins/` and reload without manual intervention
+  - Technical: Changed `A_ScriptFullPath` to hardcoded `HybridCapslock.ahk` path in `system/plugins/hybrid_actions.ahk`
+  - Performance: Minimal overhead (~10-50ms) as AutoLoader only modifies `init.ahk` when actual changes are detected
+
+## Prior Versions
+
 ## [3.1.0] - 2025-01-10
 
 ### Added

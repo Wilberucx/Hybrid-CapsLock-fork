@@ -26,7 +26,7 @@ Recarga completamente el sistema (Kanata + AutoHotkey).
 1. Muestra notificación "RELOADING..."
 2. Detiene TooltipApp si está corriendo
 3. Reinicia Kanata si estaba corriendo (vía `KanataRestart()` del plugin kanata_manager)
-4. Reinicia AutoHotkey
+4. Reinicia AutoHotkey desde el punto de entrada (`HybridCapslock.ahk`) para activar el AutoLoader
 5. Sale del script actual
 
 **Ejemplo:**
